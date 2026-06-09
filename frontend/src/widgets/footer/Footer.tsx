@@ -3,104 +3,67 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer style={{ background: 'var(--color-midnight)', color: 'var(--color-white)', padding: 'var(--space-16) 0 var(--space-8)' }}>
-      <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto', padding: '0 var(--space-6)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--space-10)' }} className="footer-grid">
-          {/* Col 1 */}
+    <footer style={{ background: '#0D1B2A', color: '#fff', padding: '4rem 24px 2rem' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: '2.5rem', marginBottom: '3rem' }}>
+          {/* Brand */}
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
-              LumenBridge
-            </div>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.6)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-4)' }}>
-              Краткосрочные займы для физических лиц и малого бизнеса в Европе.
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', marginBottom: '1rem' }}>LumenBridge</div>
+            <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: '1.25rem' }}>
+              Финансовая организация, предоставляющая быстрые и доступные решения в сфере кредитования в Европе.
             </p>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <span>info@lumenbridge.eu</span>
-              <span>+353 1 234 5678</span>
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <span>18 Lower Baggot Street, Dublin 2, Ireland</span>
+              <a href="mailto:support@lumenbridge.example" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }}>support@lumenbridge.example</a>
+              <a href="tel:+35315318420" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }}>+353 1 531 8420</a>
             </div>
           </div>
 
-          {/* Col 2 */}
+          {/* Компания */}
           <div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Компания
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {[
-                { href: '/how-it-works', label: 'Как это работает' },
-                { href: '/business', label: 'Для бизнеса' },
-                { href: '/contacts', label: 'О компании' },
-              ].map(({ href, label }) => (
-                <Link key={href} href={href} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--text-sm)', transition: 'color 150ms' }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = '#fff'}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)'}>
-                  {label}
-                </Link>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>Компания</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {[{ href: '/contacts', label: 'О компании' }, { href: '/how-it-works', label: 'Как это работает' }, { href: '/business', label: 'Для бизнеса' }].map(({ href, label }) => (
+                <Link key={href} href={href} className="footer-link" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</Link>
               ))}
             </div>
           </div>
 
-          {/* Col 3 */}
+          {/* Поддержка */}
           <div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Поддержка
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {[
-                { href: '/faq', label: 'FAQ' },
-                { href: '/contacts', label: 'Обратная связь' },
-                { href: '/contacts', label: 'Контакты' },
-              ].map(({ href, label }, i) => (
-                <Link key={i} href={href} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--text-sm)', transition: 'color 150ms' }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = '#fff'}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)'}>
-                  {label}
-                </Link>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>Поддержка</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {[{ href: '/faq', label: 'Часто задаваемые вопросы' }, { href: '/contacts', label: 'Обратная связь' }, { href: '/contacts', label: 'Контакты' }].map(({ href, label }, i) => (
+                <Link key={i} href={href} className="footer-link" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</Link>
               ))}
             </div>
           </div>
 
-          {/* Col 4 */}
+          {/* Документы */}
           <div>
-            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Документы
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>Документы</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {[
-                { href: '/privacy', label: 'Политика конфиденциальности' },
-                { href: '/cookies', label: 'Cookie Policy' },
-                { href: '/terms', label: 'Условия использования' },
-                { href: '/credit-policy', label: 'Кредитная политика' },
-                { href: '/aml-kyc', label: 'AML/KYC Policy' },
+                { href: '/terms',         label: 'Условия использования' },
+                { href: '/privacy',       label: 'Политика конфиденциальности' },
+                { href: '/cookies',       label: 'Cookie Policy' },
+                { href: '/credit-policy', label: 'Credit Policy' },
+                { href: '/aml-kyc',       label: 'AML/KYC Policy' },
               ].map(({ href, label }) => (
-                <Link key={href} href={href} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 'var(--text-sm)', transition: 'color 150ms' }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = '#fff'}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)'}>
-                  {label}
-                </Link>
+                <Link key={href} href={href} className="footer-link" style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: '0.875rem' }}>{label}</Link>
               ))}
             </div>
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: 'var(--space-12)', paddingTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <p style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            © 2024 LumenBridge Finance Ltd. Все права защищены.
-          </p>
-          <p style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-            LumenBridge Finance Ltd осуществляет деятельность в соответствии с применимым европейским законодательством. Обработка персональных данных в рамках GDPR.
-          </p>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>© 2024 LumenBridge Finance Ltd. Все права защищены.</p>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>LumenBridge Finance Ltd осуществляет деятельность в соответствии с применимым европейским законодательством.</p>
+          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>Обработка персональных данных осуществляется в рамках требований GDPR.</p>
         </div>
       </div>
 
-      <style>{`
-        @media (max-width: 768px) {
-          .footer-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 480px) {
-          .footer-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      <style>{`.footer-link:hover { color: #fff !important; }`}</style>
     </footer>
   );
 }

@@ -1,397 +1,405 @@
 import Link from 'next/link';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
 
-/* ─── Иконки SVG ─── */
-function IconCheck({ color = 'var(--color-accent)' }: { color?: string }) {
+/* ── Мелкие SVG-иконки ── */
+function IconCheck({ color = '#2E7DF7' }: { color?: string }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: '2px' }}>
       <circle cx="10" cy="10" r="10" fill={color} fillOpacity="0.12" />
-      <path d="M6 10l3 3 5-5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function IconShield() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.5">
-      <path d="M12 2L3 7v6c0 5 4.5 9.3 9 10 4.5-.7 9-5 9-10V7L12 2z" />
-    </svg>
-  );
-}
-function IconChartUp() {
-  return (
-    <svg width="80" height="60" viewBox="0 0 80 60" fill="none">
-      <polyline points="5,55 20,40 35,45 55,20 75,10" stroke="var(--color-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <circle cx="75" cy="10" r="4" fill="var(--color-accent)" />
+      <path d="M6 10l3 3 5-5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-/* ─── Accordion item для FAQ ─── */
 function AccordionItem({ q, a }: { q: string; a: string }) {
   return (
-    <details style={{ borderBottom: '1px solid var(--color-silver)', padding: 'var(--space-4) 0' }}>
-      <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-base)', color: 'var(--color-text-primary)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {q}
-        <span style={{ color: 'var(--color-accent)', fontSize: 'var(--text-xl)', fontWeight: 400 }}>+</span>
+    <details style={{ borderBottom: '1px solid #E8ECF0' }}>
+      <summary style={{
+        cursor: 'pointer', listStyle: 'none', display: 'flex',
+        justifyContent: 'space-between', alignItems: 'center',
+        padding: '1.25rem 0', fontWeight: 600, fontSize: '1rem',
+        color: '#0D1B2A', gap: '1rem',
+      }}>
+        <span>{q}</span>
+        <span style={{ color: '#2E7DF7', fontSize: '1.5rem', lineHeight: 1, flexShrink: 0 }}>+</span>
       </summary>
-      <p style={{ marginTop: 'var(--space-3)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-base)', lineHeight: 'var(--leading-relaxed)' }}>{a}</p>
+      <p style={{ paddingBottom: '1.25rem', color: '#4A6580', lineHeight: 1.7, fontSize: '0.9375rem' }}>{a}</p>
     </details>
   );
 }
 
+/* ── Секция: контейнер ── */
+const C = ({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+  <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', ...style }}>
+    {children}
+  </div>
+);
+
 export default function HomePage() {
   return (
     <>
-      {/* ─── 1. HERO ─── */}
-      <section style={{ background: 'var(--color-midnight)', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: 'var(--space-20) 0' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto', padding: '0 var(--space-6)', display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 'var(--space-16)', alignItems: 'center', width: '100%' }} className="hero-grid">
-          {/* Left */}
-          <div>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-accent)', fontWeight: 'var(--font-semibold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 'var(--space-4)' }}>
-              Быстрые займы в Европе
+      {/* ══ 1. HERO ══ */}
+      <section style={{ background: '#0D1B2A', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '5rem 0' }}>
+        <C>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '4rem', alignItems: 'center' }}>
+            {/* Left */}
+            <div>
+              <p style={{ fontSize: '0.875rem', color: '#2E7DF7', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1rem' }}>
+                Быстрые займы в Европе
+              </p>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.2rem,4.5vw,3.75rem)', color: '#fff', lineHeight: 1.15, marginBottom: '1.5rem' }}>
+                Получите деньги тогда, когда это действительно нужно
+              </h1>
+              <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.72)', lineHeight: 1.7, marginBottom: '0.75rem', maxWidth: '50ch' }}>
+                Простые и прозрачные займы для частных лиц и бизнеса в Европе — быстрое решение и безопасное оформление
+              </p>
+              <p style={{ fontSize: '0.9375rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, marginBottom: '2rem', maxWidth: '52ch' }}>
+                Неожиданные расходы или срочные возможности не должны вас останавливать. Сервис помогает быстро получить финансирование — без сложных процедур и скрытых условий.
+              </p>
+              <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.45)', marginBottom: '2rem' }}>
+                Без залога&nbsp;•&nbsp;Быстрое одобрение&nbsp;•&nbsp;Выплата на банковский счёт
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <Link href="/apply" className="btn-primary btn-lg" style={{ textDecoration: 'none' }}>Получить займ</Link>
+                <Link href="/how-it-works" className="btn-ghost btn-lg" style={{ textDecoration: 'none' }}>Как это работает →</Link>
+              </div>
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.5rem, 5vw, var(--text-6xl))', color: 'var(--color-white)', lineHeight: 'var(--leading-tight)', margin: '0 0 var(--space-6)' }}>
-              Получите деньги тогда, когда это действительно нужно
-            </h1>
-            <p style={{ fontSize: 'var(--text-lg)', color: 'rgba(255,255,255,0.7)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-5)', maxWidth: '52ch' }}>
-              Краткосрочные займы для физических лиц и малого бизнеса. Простая заявка, быстрое решение, прозрачные условия.
-            </p>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.5)', marginBottom: 'var(--space-8)' }}>
-              Без залога&nbsp;•&nbsp;Быстрое одобрение&nbsp;•&nbsp;Выплата на банковский счёт
-            </p>
-            <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-              <Link href="/apply" className="btn-primary btn-lg" style={{ textDecoration: 'none' }}>Получить займ</Link>
-              <Link href="/how-it-works" className="btn-ghost btn-lg" style={{ textDecoration: 'none' }}>Как это работает →</Link>
+            {/* Right — Calculator */}
+            <div className="card-dark" style={{ padding: '2rem' }}>
+              <LoanCalculator dark />
             </div>
           </div>
-          {/* Right — Calculator */}
-          <div className="card-dark" style={{ padding: 'var(--space-8)' }}>
-            <LoanCalculator dark />
-          </div>
-        </div>
-        <style>{`
-          @media (max-width: 1023px) { .hero-grid { grid-template-columns: 1fr !important; } }
-        `}</style>
+        </C>
       </section>
 
-      {/* ─── 2. КАЛЬКУЛЯТОР (отдельная секция) ─── */}
-      <section style={{ background: 'var(--color-silver)', padding: 'var(--space-20) var(--space-6)' }}>
+      {/* ══ 2. КАЛЬКУЛЯТОР (отдельная секция) ══ */}
+      <section style={{ background: '#E8ECF0', padding: '5rem 24px' }}>
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <LoanCalculator />
         </div>
       </section>
 
-      {/* ─── 3. УСЛОВИЯ ЗАЙМА ─── */}
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <h2 style={{ textAlign: 'center', fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-12)' }}>
-            Условия займа
+      {/* ══ 3. ОСНОВНЫЕ УСЛОВИЯ ══ */}
+      <section style={{ background: '#fff', padding: '5rem 24px' }}>
+        <C>
+          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '3rem' }}>
+            Основные условия
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--space-6)' }} className="grid-4">
+          <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem' }}>
             {[
-              { icon: '💶', title: 'Сумма', value: '500 — 50 000 EUR' },
-              { icon: '📅', title: 'Срок', value: '7 — 90 дней' },
-              { icon: '📊', title: 'Ставка', value: 'Индивидуально' },
-              { icon: '🔄', title: 'Погашение', value: 'Равными платежами' },
-            ].map(({ icon, title, value }) => (
-              <div key={title} className="card" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-3)' }}>{icon}</div>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-1)' }}>{title}</div>
-                <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)' }}>{value}</div>
+              { label: 'Сумма', value: 'от 500 до 50 000 EUR' },
+              { label: 'Срок', value: 'от 7 до 90 дней' },
+              { label: 'Процентная ставка', value: 'определяется индивидуально' },
+              { label: 'Погашение', value: 'равными платежами' },
+            ].map(({ label, value }) => (
+              <div key={label} className="card" style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: '0.8125rem', color: '#4A6580', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{label}</p>
+                <p style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A' }}>{value}</p>
               </div>
             ))}
           </div>
-        </div>
-        <style>{`@media(max-width:768px){.grid-4{grid-template-columns:repeat(2,1fr)!important}}`}</style>
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: '#4A6580' }}>
+            Итоговые условия зависят от результатов проверки клиента и предоставленных данных.
+          </p>
+        </C>
       </section>
 
-      {/* ─── 4. КОГДА ДЕНЬГИ НУЖНЫ ─── */}
-      <section style={{ background: 'var(--color-silver)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <h2 style={{ textAlign: 'center', fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-12)' }}>
+      {/* ══ 4. КОГДА ДЕНЬГИ НУЖНЫ ══ */}
+      <section style={{ background: '#E8ECF0', padding: '5rem 24px' }}>
+        <C>
+          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem' }}>
             Когда деньги нужны сейчас
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 'var(--space-6)' }} className="grid-2">
+          <p style={{ textAlign: 'center', color: '#4A6580', maxWidth: '56ch', margin: '0 auto 3rem', lineHeight: 1.7 }}>
+            Не все финансовые вопросы можно отложить. Иногда важно принять решение быстро — без сложных процедур и ожиданий.
+          </p>
+          <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1.5rem' }}>
             {[
-              { icon: '⚡', title: 'Срочные расходы', desc: 'Непредвиденный ремонт, медицинские расходы или срочная покупка — мы поможем быстро.' },
-              { icon: '⏳', title: 'Задержка дохода', desc: 'Зарплата задерживается, а платежи не ждут. Займ поможет покрыть разрыв.' },
-              { icon: '💼', title: 'Бизнес-задачи', desc: 'Оборотные средства, закупка товара, маркетинг — быстрое финансирование для роста.' },
-              { icon: '🚀', title: 'Возможности', desc: 'Выгодная сделка или инвестиция, которую нельзя упустить из-за временного дефицита средств.' },
+              { icon: '⚡', title: 'Срочные расходы', desc: 'Неожиданные платежи, которые нельзя перенести' },
+              { icon: '⏳', title: 'Задержка дохода', desc: 'Когда деньги нужны сейчас, а поступления позже' },
+              { icon: '💼', title: 'Бизнес-задачи', desc: 'Кассовые разрывы или операционные расходы' },
+              { icon: '🚀', title: 'Возможности', desc: 'Ситуации, где важно действовать без промедления' },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="card card-interactive">
-                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-3)' }}>{icon}</div>
-                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-2)' }}>{title}</h3>
-                <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', margin: 0 }}>{desc}</p>
+                <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>{icon}</div>
+                <h3 style={{ fontSize: '1.0625rem', fontWeight: 600, color: '#0D1B2A', marginBottom: '0.5rem' }}>{title}</h3>
+                <p style={{ color: '#4A6580', lineHeight: 1.65 }}>{desc}</p>
               </div>
             ))}
           </div>
-        </div>
-        <style>{`@media(max-width:640px){.grid-2{grid-template-columns:1fr!important}}`}</style>
+        </C>
       </section>
 
-      {/* ─── 5. КАК ЭТО РАБОТАЕТ ─── */}
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <h2 style={{ textAlign: 'center', fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-12)' }}>
-            Как это работает
+      {/* ══ 5. КАК ЭТО РАБОТАЕТ ══ */}
+      <section style={{ background: '#fff', padding: '5rem 24px' }}>
+        <C>
+          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.75rem' }}>
+            Как всё происходит
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'var(--space-10)' }} className="grid-3">
+          <p style={{ textAlign: 'center', color: '#4A6580', maxWidth: '56ch', margin: '0 auto 3rem', lineHeight: 1.7 }}>
+            Оформление займа занимает всего несколько минут и полностью проходит онлайн, без визитов в офис и сложных процедур.
+          </p>
+          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2.5rem' }}>
             {[
-              { n: '01', title: 'Регистрация', desc: 'Укажите номер телефона — получите код подтверждения. Никаких лишних данных на этом этапе.' },
-              { n: '02', title: 'Заявка', desc: 'Заполните форму: сумма, срок, личные данные. Займет не более 5 минут.' },
-              { n: '03', title: 'Получение средств', desc: 'После одобрения подпишите договор онлайн — деньги поступят на ваш счёт.' },
+              { n: '01', title: 'Регистрация', desc: 'Введите номер телефона и подтвердите его с помощью SMS-кода.' },
+              { n: '02', title: 'Заявка', desc: 'Выберите сумму и срок займа и отправьте заявку на рассмотрение.' },
+              { n: '03', title: 'Получение средств', desc: 'После одобрения деньги поступают на ваш банковский счёт.' },
             ].map(({ n, title, desc }) => (
               <div key={n} style={{ textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-5xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-accent)', marginBottom: 'var(--space-4)', opacity: 0.9 }}>{n}</div>
-                <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-3)' }}>{title}</h3>
-                <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', margin: 0 }}>{desc}</p>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '3rem', fontWeight: 700, color: '#2E7DF7', marginBottom: '1rem', opacity: 0.9 }}>{n}</div>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0D1B2A', marginBottom: '0.5rem' }}>{title}</h3>
+                <p style={{ color: '#4A6580', lineHeight: 1.7 }}>{desc}</p>
               </div>
             ))}
           </div>
-        </div>
-        <style>{`@media(max-width:768px){.grid-3{grid-template-columns:1fr!important}}`}</style>
+        </C>
       </section>
 
-      {/* ─── 6. ПРОЗРАЧНЫЕ УСЛОВИЯ ─── */}
-      <section style={{ background: 'var(--color-midnight)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-white)', marginBottom: 'var(--space-10)', textAlign: 'center' }}>
-            Прозрачные условия
+      {/* ══ 6. ПРОЗРАЧНЫЕ УСЛОВИЯ ══ */}
+      <section style={{ background: '#0D1B2A', padding: '5rem 24px' }}>
+        <C>
+          <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#fff', marginBottom: '2.5rem', textAlign: 'center' }}>
+            Вы заранее знаете все условия
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }} className="grid-2">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1rem', maxWidth: '800px', margin: '0 auto' }} className="grid-2">
             {[
-              'Полная стоимость займа показана до подписания',
-              'Никаких скрытых комиссий и платежей',
-              'Договор на понятном языке без мелкого шрифта',
-              'Вы можете погасить займ досрочно',
-              'Все данные защищены в соответствии с GDPR',
-            ].map((text) => (
-              <div key={text} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                <IconCheck color="var(--color-accent)" />
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'var(--text-base)', lineHeight: 'var(--leading-normal)' }}>{text}</span>
+              { title: 'Никаких скрытых комиссий', desc: 'Полная стоимость займа известна до оформления' },
+              { title: 'Быстрое рассмотрение', desc: 'Заявки обрабатываются в течение нескольких минут' },
+              { title: 'Безопасность данных', desc: 'Ваши данные защищены современными технологиями' },
+              { title: 'Гибкое погашение', desc: 'Выбирайте удобный срок и погашайте без лишнего давления' },
+              { title: 'Улучшение условий со временем', desc: 'При повторных займах могут быть доступны более выгодные параметры' },
+            ].map(({ title, desc }) => (
+              <div key={title} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <IconCheck color="#2E7DF7" />
+                <div>
+                  <p style={{ fontWeight: 600, color: 'rgba(255,255,255,0.9)', marginBottom: '0.25rem' }}>{title}</p>
+                  <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>{desc}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </C>
       </section>
 
-      {/* ─── 7. О КОМПАНИИ ─── */}
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-8)' }}>
-            О компании
-          </h2>
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-4)' }}>
-            LumenBridge Finance Ltd — европейский финтех-сервис краткосрочного кредитования, работающий в соответствии с применимым европейским законодательством.
-          </p>
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-4)' }}>
-            Наша миссия — сделать доступ к краткосрочному финансированию простым, честным и быстрым. Мы не агрессивный кредитор, а надёжный партнёр, который помогает решить финансовый вопрос в нужный момент.
-          </p>
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>
-            Все условия раскрываются заранее, данные клиентов защищены, а наша команда доступна для поддержки на каждом этапе.
-          </p>
-        </div>
-      </section>
-
-      {/* ─── 8. УЛУЧШЕНИЕ КРЕДИТНОЙ ИСТОРИИ ─── */}
-      <section style={{ background: 'var(--color-silver)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-16)', alignItems: 'center' }} className="grid-2">
-          <div>
-            <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-6)' }}>
-              Улучшение кредитной истории
+      {/* ══ 7. О КОМПАНИИ ══ */}
+      <section style={{ background: '#fff', padding: '5rem 24px' }}>
+        <C>
+          <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '2rem' }}>
+              О LumenBridge Finance Ltd
             </h2>
-            <p style={{ color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-6)' }}>
-              Своевременное погашение займа — это не просто обязательство, это инвестиция в вашу финансовую репутацию.
+            <p style={{ color: '#4A6580', lineHeight: 1.75, marginBottom: '1rem' }}>
+              LumenBridge Finance Ltd — финансовая организация, предоставляющая быстрые и доступные решения в сфере кредитования в Европе.
+              Наша цель — упростить доступ к финансированию за счёт прозрачных условий и современных технологий.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-8)' }}>
-              {['Каждый вовремя погашенный платёж формирует положительную историю', 'Хорошая история открывает доступ к лучшим условиям в будущем', 'Мы предоставляем данные в кредитные бюро в соответствии с законом'].map(t => (
-                <div key={t} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                  <IconCheck />
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-base)' }}>{t}</span>
-                </div>
-              ))}
-            </div>
-            <Link href="/apply" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-              Подать заявку
-            </Link>
+            <p style={{ color: '#4A6580', lineHeight: 1.75 }}>
+              Мы работаем в соответствии с действующим законодательством и уделяем особое внимание защите данных клиентов и ответственному кредитованию.
+            </p>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <div style={{ background: 'var(--color-white)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-12)', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
-              <IconChartUp />
-              <div style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', fontSize: 'var(--text-lg)', textAlign: 'center' }}>
-                Ваш кредитный рейтинг растёт
-              </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                с каждым своевременным платежом
-              </div>
-            </div>
-          </div>
-        </div>
+        </C>
       </section>
 
-      {/* ─── 9. ДЛЯ БИЗНЕСА ─── */}
-      <section style={{ background: 'var(--color-midnight)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-8)', marginBottom: 'var(--space-10)' }}>
-            <div style={{ flex: 1, minWidth: '280px' }}>
-              <div style={{ fontSize: 'var(--text-sm)', color: '#C9923A', fontWeight: 'var(--font-semibold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
-                Для бизнеса
-              </div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-4xl)', color: 'var(--color-white)', marginBottom: 'var(--space-4)' }}>
-                Финансирование для компаний и ИП
+      {/* ══ 8. УЛУЧШЕНИЕ КРЕДИТНОЙ ИСТОРИИ ══ */}
+      <section style={{ background: '#E8ECF0', padding: '5rem 24px' }}>
+        <C>
+          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
+            <div>
+              <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem' }}>
+                Займ — это не только деньги сейчас
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 'var(--leading-relaxed)', marginBottom: 'var(--space-6)' }}>
-                Займы от 30 000 до 500 000 EUR на срок от 1 до 12 месяцев. Заявки принимаются через форму обратной связи.
+              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                Своевременное погашение займа помогает улучшить кредитный рейтинг и открывает доступ к более выгодным условиям в будущем.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
+                {[
+                  'Возможность начать с небольшой суммы',
+                  'Формирование положительной кредитной истории',
+                  'Улучшение условий при повторных обращениях',
+                ].map(t => (
+                  <div key={t} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <IconCheck />
+                    <span style={{ color: '#4A6580', lineHeight: 1.6 }}>{t}</span>
+                  </div>
+                ))}
+              </div>
+              <Link href="/apply" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                Начать с небольшого займа
+              </Link>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ background: '#fff', borderRadius: '1rem', padding: '3rem', boxShadow: '0 8px 24px rgba(13,27,42,0.12)', textAlign: 'center' }}>
+                <svg width="80" height="60" viewBox="0 0 80 60" fill="none" style={{ display: 'block', margin: '0 auto 1rem' }}>
+                  <polyline points="5,55 20,40 35,45 55,20 75,10" stroke="#2E7DF7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  <circle cx="75" cy="10" r="4" fill="#2E7DF7"/>
+                </svg>
+                <p style={{ fontWeight: 700, color: '#0D1B2A', marginBottom: '0.25rem' }}>Ваш кредитный рейтинг растёт</p>
+                <p style={{ fontSize: '0.875rem', color: '#4A6580' }}>с каждым своевременным платежом</p>
+              </div>
+            </div>
+          </div>
+        </C>
+      </section>
+
+      {/* ══ 9. ДЛЯ БИЗНЕСА ══ */}
+      <section style={{ background: '#0D1B2A', padding: '5rem 24px' }}>
+        <C>
+          <div style={{ marginBottom: '2.5rem' }}>
+            <p style={{ fontSize: '0.875rem', color: '#C9923A', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+              Для бизнеса
+            </p>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem,3vw,2.25rem)', color: '#fff', marginBottom: '1rem', maxWidth: '540px' }}>
+              Финансирование для бизнеса
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, maxWidth: '52ch', marginBottom: '1.5rem' }}>
+              Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
+            </p>
+          </div>
+          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '2rem' }}>
+            {[
+              { icon: '💰', title: 'Займы от 30 000 до 500 000 EUR', desc: 'Финансирование под задачи любого масштаба' },
+              { icon: '📅', title: 'Срок от 1 до 12 месяцев', desc: 'Гибкие сроки под ваш бизнес-цикл' },
+              { icon: '✅', title: 'Без залога', desc: 'В стандартных случаях залог не требуется' },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: '0.75rem' }}>{icon}</div>
+                <h3 style={{ color: '#fff', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9375rem' }}>{title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.6 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'rgba(201,146,58,0.1)', border: '1px solid rgba(201,146,58,0.3)', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem', maxWidth: '640px' }}>
+            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', lineHeight: 1.6 }}>
+              На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
+            </p>
+          </div>
+          <Link href="/contacts" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            Оставить заявку
+          </Link>
+        </C>
+      </section>
+
+      {/* ══ 10. БЛОК ДОВЕРИЯ ══ */}
+      <section style={{ background: '#fff', padding: '4rem 24px' }}>
+        <C>
+          <h2 style={{ textAlign: 'center', fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '2.5rem' }}>
+            Работаем прозрачно и в рамках закона
+          </h2>
+          <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem', textAlign: 'center' }}>
+            {[
+              { title: 'Соответствие GDPR', desc: 'Данные клиентов обрабатываются по европейским стандартам' },
+              { title: 'Ответственный подход', desc: 'Ответственный подход к проверке каждой заявки' },
+              { title: 'Защита данных', desc: 'Защита персональных данных на всех уровнях' },
+              { title: 'Чёткие условия', desc: 'Чёткие и понятные условия без мелкого шрифта' },
+            ].map(({ title, desc }) => (
+              <div key={title}>
+                <div style={{ width: '44px', height: '44px', background: '#EBF1FE', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E7DF7" strokeWidth="2"><path d="M12 2L3 7v6c0 5 4.5 9.3 9 10 4.5-.7 9-5 9-10V7L12 2z"/></svg>
+                </div>
+                <p style={{ fontWeight: 600, color: '#0D1B2A', marginBottom: '0.25rem' }}>{title}</p>
+                <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.6 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </C>
+      </section>
+
+      {/* ══ 11. FAQ ПРЕВЬЮ ══ */}
+      <section style={{ background: '#E8ECF0', padding: '5rem 24px' }}>
+        <C>
+          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+            <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '2.5rem', textAlign: 'center' }}>
+              Часто задаваемые вопросы
+            </h2>
+            <AccordionItem q="Кто может получить займ?" a="Любой совершеннолетний резидент страны присутствия сервиса с действующим удостоверением личности и зарегистрированным номером телефона." />
+            <AccordionItem q="Как быстро я получу деньги?" a="Заявки рассматриваются в течение нескольких минут. После одобрения деньги переводятся сразу." />
+            <AccordionItem q="Есть ли скрытые комиссии?" a="Нет. Все условия и платежи отображаются до оформления займа." />
+            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+              <Link href="/faq" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-block' }}>
+                Смотреть все вопросы
+              </Link>
+            </div>
+          </div>
+        </C>
+      </section>
+
+      {/* ══ 12. БЕЗОПАСНОСТЬ ══ */}
+      <section style={{ background: '#0D1B2A', padding: '5rem 24px' }}>
+        <C>
+          <div style={{ maxWidth: '720px', margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{ fontSize: 'clamp(1.75rem,3vw,2.25rem)', fontWeight: 700, color: '#fff', marginBottom: '1.5rem' }}>
+              Безопасность клиентов
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '1rem' }}>
+              Мы уделяем особое внимание защите данных и безопасности наших клиентов. Все операции выполняются через защищённые каналы, а обработка информации осуществляется в соответствии с применимым европейским законодательством.
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+              Используйте только официальный сайт и проверенные контактные данные компании при взаимодействии с сервисом.
+            </p>
+            <div style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: '8px', padding: '1.25rem', maxWidth: '560px', margin: '0 auto' }}>
+              <p style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Важно</p>
+              <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', lineHeight: 1.65 }}>
+                Мы не требуем предоплату и не запрашиваем конфиденциальные данные (пароли, CVV карты, PIN-коды) ни через какие каналы.
               </p>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }} className="grid-3">
-            {[
-              { icon: '⚡', title: 'Быстрое рассмотрение', desc: 'Решение по заявке в кратчайшие сроки' },
-              { icon: '💰', title: 'До 500 000 EUR', desc: 'Финансирование под бизнес-задачи любого масштаба' },
-              { icon: '📋', title: 'Без залога', desc: 'Оценка бизнеса, а не активов' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: 'var(--space-3)' }}>{icon}</div>
-                <h3 style={{ color: 'var(--color-white)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>{title}</h3>
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 'var(--text-sm)', margin: 0 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-          <div style={{ background: 'rgba(201,146,58,0.1)', border: '1px solid rgba(201,146,58,0.3)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--text-sm)', margin: 0 }}>
-              ℹ️ Заявки на бизнес-займы принимаются через форму обратной связи. Наш менеджер свяжется с вами в течение рабочего дня.
-            </p>
-          </div>
-          <Link href="/business" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-            Узнать подробнее
-          </Link>
-        </div>
+        </C>
       </section>
 
-      {/* ─── 10. БЛОК ДОВЕРИЯ ─── */}
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-16) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 'var(--space-6)', textAlign: 'center' }} className="grid-4">
-            {[
-              { icon: <IconShield />, title: 'GDPR', desc: 'Ваши данные защищены по европейским стандартам' },
-              { icon: <IconCheck color="var(--color-success)" />, title: 'Ответственный подход', desc: 'Мы оцениваем платёжеспособность перед выдачей займа' },
-              { icon: <IconShield />, title: 'Защита данных', desc: 'Шифрование и безопасное хранение персональных данных' },
-              { icon: <IconCheck color="var(--color-success)" />, title: 'Чёткие условия', desc: 'Все параметры займа известны до подписания договора' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <div>{icon}</div>
-                <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-midnight)' }}>{title}</div>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)' }}>{desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 11. FAQ ПРЕВЬЮ ─── */}
-      <section style={{ background: 'var(--color-silver)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-8)', textAlign: 'center' }}>
-            Часто задаваемые вопросы
-          </h2>
-          <AccordionItem q="Как быстро я получу деньги?" a="После одобрения заявки и подписания договора средства поступают на ваш счёт в течение 1 рабочего дня. В большинстве случаев — значительно быстрее." />
-          <AccordionItem q="Что нужно для получения займа?" a="Для физических лиц достаточно номера телефона, базовых персональных данных и согласия с условиями. Залог и поручители не требуются." />
-          <AccordionItem q="Можно ли погасить займ досрочно?" a="Да, вы можете погасить займ в любой момент. Проценты начисляются только за фактический срок пользования средствами." />
-          <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
-            <Link href="/faq" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-block' }}>
-              Смотреть все вопросы
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 12. БЕЗОПАСНОСТЬ ─── */}
-      <section style={{ background: 'var(--color-midnight)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-white)', marginBottom: 'var(--space-6)', textAlign: 'center' }}>
-            Безопасность
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', maxWidth: '600px', margin: '0 auto var(--space-8)', lineHeight: 'var(--leading-relaxed)' }}>
-            Мы используем банковские стандарты шифрования для защиты ваших данных. Вся коммуникация ведётся только через официальные каналы.
-          </p>
-          <div style={{ maxWidth: '640px', margin: '0 auto', background: 'rgba(201,57,43,0.1)', border: '1px solid rgba(201,57,43,0.3)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 'var(--font-semibold)', margin: '0 0 var(--space-2)' }}>
-              ⚠️ Важно
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--text-sm)', lineHeight: 'var(--leading-relaxed)', margin: 0 }}>
-              Мы не требуем предоплату и не запрашиваем конфиденциальные данные (пароли, CVV карты, PIN-коды) ни через какие каналы. Если вы получили подобный запрос — это мошенничество.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 13. ОБРАТНАЯ СВЯЗЬ ─── */}
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-16)' }} className="grid-2">
-          {/* Form */}
-          <div>
-            <h2 style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-8)' }}>
-              Обратная связь
-            </h2>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                <div>
-                  <label className="input-label">Имя</label>
-                  <input className="input" type="text" placeholder="Иван" />
+      {/* ══ 13. ОБРАТНАЯ СВЯЗЬ ══ */}
+      <section style={{ background: '#fff', padding: '5rem 24px' }}>
+        <C>
+          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }}>
+            {/* Form */}
+            <div>
+              <h2 style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.5rem' }}>
+                Свяжитесь с нами
+              </h2>
+              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '2rem' }}>
+                Если у вас есть вопросы или вам нужна помощь — наша команда готова помочь.
+              </p>
+              <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div><label className="input-label">Имя</label><input className="input" type="text" placeholder="Иван" /></div>
+                  <div><label className="input-label">Email</label><input className="input" type="email" placeholder="ivan@example.com" /></div>
                 </div>
-                <div>
-                  <label className="input-label">Фамилия</label>
-                  <input className="input" type="text" placeholder="Иванов" />
+                <div><label className="input-label">Телефон</label><input className="input" type="tel" placeholder="+353 1 531 8420" /></div>
+                <div><label className="input-label">Сообщение</label><textarea className="input" rows={4} placeholder="Ваш вопрос..." style={{ resize: 'vertical' }} /></div>
+                <div><label className="input-label">Прикрепить файл</label><input type="file" style={{ fontSize: '0.875rem', color: '#4A6580' }} /></div>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <input type="checkbox" id="consent" style={{ marginTop: '3px', accentColor: '#2E7DF7' }} />
+                  <label htmlFor="consent" style={{ fontSize: '0.875rem', color: '#4A6580', cursor: 'pointer', lineHeight: 1.6 }}>
+                    Согласен с обработкой персональных данных в соответствии с <a href="/privacy" style={{ color: '#2E7DF7' }}>политикой конфиденциальности</a>
+                  </label>
                 </div>
-              </div>
-              <div>
-                <label className="input-label">Email</label>
-                <input className="input" type="email" placeholder="ivan@example.com" />
-              </div>
-              <div>
-                <label className="input-label">Телефон</label>
-                <input className="input" type="tel" placeholder="+353 1 234 5678" />
-              </div>
-              <div>
-                <label className="input-label">Сообщение</label>
-                <textarea className="input" rows={4} placeholder="Ваш вопрос или сообщение..." style={{ resize: 'vertical' }} />
-              </div>
-              <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                <input type="checkbox" id="consent" style={{ marginTop: '2px', accentColor: 'var(--color-accent)' }} />
-                <label htmlFor="consent" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
-                  Я соглашаюсь с <Link href="/privacy" style={{ color: 'var(--color-accent)' }}>политикой конфиденциальности</Link>
-                </label>
-              </div>
-              <button type="submit" className="btn-primary" style={{ alignSelf: 'flex-start' }}>
-                Отправить
-              </button>
-            </form>
-          </div>
-          {/* Contacts */}
-          <div>
-            <h3 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-semibold)', color: 'var(--color-midnight)', marginBottom: 'var(--space-6)' }}>
-              Контактная информация
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              {[
-                { label: 'Email', value: 'info@lumenbridge.eu' },
-                { label: 'Телефон', value: '+353 1 234 5678' },
-                { label: 'Режим работы', value: 'Пн–Пт, 9:00–18:00 (GMT+1)' },
-                { label: 'Адрес', value: 'Dublin, Ireland' },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>{label}</div>
-                  <div style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-primary)', fontWeight: 'var(--font-medium)' }}>{value}</div>
-                </div>
-              ))}
+                <div><button type="submit" className="btn-primary">Отправить</button></div>
+              </form>
             </div>
-            {/* Map placeholder */}
-            <div style={{ marginTop: 'var(--space-6)', height: '180px', background: 'var(--color-silver)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate)', fontSize: 'var(--text-sm)' }}>
-              📍 Dublin, Ireland
+            {/* Contacts */}
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#0D1B2A', marginBottom: '1.5rem' }}>
+                Контактная информация
+              </h3>
+              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+                Вы можете связаться с нами по любым вопросам, связанным с оформлением займа, условиями или обслуживанием.
+              </p>
+              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '2rem', fontSize: '0.875rem' }}>
+                Служба поддержки работает в рабочие часы. Онлайн-заявки принимаются круглосуточно и обрабатываются автоматически.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {[
+                  { label: 'Адрес', value: '18 Lower Baggot Street, Dublin 2, Ireland' },
+                  { label: 'Email', value: 'support@lumenbridge.example' },
+                  { label: 'Телефон', value: '+353 1 531 8420' },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p style={{ fontSize: '0.75rem', color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', fontWeight: 500 }}>{label}</p>
+                    <p style={{ color: '#0D1B2A', fontWeight: 500 }}>{value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </C>
       </section>
     </>
   );
