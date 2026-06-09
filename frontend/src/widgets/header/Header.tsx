@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Menu, X } from 'lucide-react';
 
 const NAV = [
   { href: '/how-it-works', label: 'Как это работает' },
@@ -10,89 +11,117 @@ const NAV = [
 ];
 
 export function Header() {
-  const [scrolled,  setScrolled]  = useState(false);
-  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [open,     setOpen]     = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
-    window.addEventListener('scroll', handler, { passive: true });
-    return () => window.removeEventListener('scroll', handler);
+    const fn = () => setScrolled(window.scrollY > 16);
+    window.addEventListener('scroll', fn, { passive: true });
+    fn();
+    return () => window.removeEventListener('scroll', fn);
   }, []);
 
+  /* Lock body scroll when mobile menu is open */
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
   return (
-    <header style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      height: '64px',
-      background: scrolled ? 'rgba(13,27,42,0.95)' : '#0D1B2A',
-      backdropFilter: scrolled ? 'blur(12px)' : 'none',
-      borderBottom: scrolled ? '1px solid rgba(255,255,255,0.08)' : 'none',
-      transition: 'background 200ms, backdrop-filter 200ms',
-    }}>
-      {/* Main bar */}
-      <div style={{
-        maxWidth: '1200px', margin: '0 auto', padding: '0 24px',
-        height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    <>
+      <header style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        height: '64px',
+        background: scrolled ? 'rgba(13,27,42,0.82)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.07)' : 'none',
+        transition: 'background 300ms cubic-bezier(0.16,1,0.3,1), backdrop-filter 300ms, border-color 300ms',
       }}>
-        {/* Logo */}
-        <Link href="/" style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: '#fff', textDecoration: 'none' }}>
-          LumenBridge
-        </Link>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 32px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-        {/* Desktop nav */}
-        <nav className="hdr-desktop" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-          {NAV.map(({ href, label }) => (
-            <Link key={href} href={href} className="hdr-link" style={{ color: 'rgba(255,255,255,0.72)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
-              {label}
+          {/* Logo */}
+          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.3125rem', color: '#fff', letterSpacing: '-0.01em', lineHeight: 1 }}>
+            LumenBridge
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hdr-desktop" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            {NAV.map(({ href, label }) => (
+              <Link key={href} href={href} style={{
+                color: 'rgba(255,255,255,0.65)',
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                letterSpacing: '0.01em',
+                transition: 'color 200ms ease',
+                padding: '4px 0',
+                borderBottom: '1px solid transparent',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)'; }}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+            <Link href="/login" className="btn btn-outline-light btn-sm hdr-desktop" style={{ letterSpacing: '0.01em' }}>
+              Войти
             </Link>
-          ))}
-        </nav>
-
-        {/* CTA + hamburger */}
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <Link href="/login" className="btn-ghost btn-sm hdr-desktop" style={{ textDecoration: 'none' }}>Войти</Link>
-          <Link href="/apply" className="btn-primary btn-sm" style={{ textDecoration: 'none' }}>Получить займ</Link>
-
-          <button
-            className="hdr-hamburger"
-            onClick={() => setMenuOpen(o => !o)}
-            style={{ display: 'none', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
-            aria-label="Меню"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              {menuOpen
-                ? <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>
-                : <><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></>
-              }
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <div
-          style={{ position: 'fixed', top: '64px', left: 0, right: 0, bottom: 0, background: '#0D1B2A', padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', zIndex: 99 }}
-          onClick={() => setMenuOpen(false)}
-        >
-          {NAV.map(({ href, label }) => (
-            <Link key={href} href={href} style={{ color: '#fff', textDecoration: 'none', fontSize: '1.125rem', fontWeight: 500 }}>
-              {label}
+            <Link href="/apply" className="btn btn-primary btn-sm" style={{ letterSpacing: '0.01em' }}>
+              Получить займ
             </Link>
-          ))}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <Link href="/login" className="btn-ghost" style={{ textDecoration: 'none', textAlign: 'center' }}>Войти</Link>
-            <Link href="/apply" className="btn-primary" style={{ textDecoration: 'none', textAlign: 'center' }}>Получить займ</Link>
+
+            <button
+              className="hdr-burger"
+              onClick={() => setOpen(o => !o)}
+              style={{ display: 'none', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px', lineHeight: 0, borderRadius: '6px' }}
+              aria-label="Меню"
+            >
+              {open ? <X size={22} /> : <Menu size={22} />}
+            </button>
           </div>
         </div>
-      )}
+      </header>
 
-      <style>{`
-        .hdr-link:hover { color: #fff !important; }
-        @media (max-width: 768px) {
-          .hdr-desktop   { display: none !important; }
-          .hdr-hamburger { display: flex !important; }
-        }
-      `}</style>
-    </header>
+      {/* Mobile drawer */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(13,27,42,0.98)',
+        backdropFilter: 'blur(20px)',
+        zIndex: 99,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '88px 32px 40px',
+        gap: '0.25rem',
+        transform: open ? 'translateY(0)' : 'translateY(-100%)',
+        opacity: open ? 1 : 0,
+        transition: 'transform 350ms cubic-bezier(0.16,1,0.3,1), opacity 300ms ease',
+        pointerEvents: open ? 'all' : 'none',
+      }}>
+        {NAV.map(({ href, label }, i) => (
+          <Link key={href} href={href} onClick={() => setOpen(false)} style={{
+            color: 'rgba(255,255,255,0.85)',
+            fontSize: '1.5rem',
+            fontWeight: 500,
+            padding: '0.75rem 0',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            transition: 'color 150ms ease',
+            animationDelay: `${i * 40}ms`,
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)'; }}
+          >
+            {label}
+          </Link>
+        ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '2rem' }}>
+          <Link href="/login"  className="btn btn-outline-light btn-lg" onClick={() => setOpen(false)} style={{ textAlign: 'center', justifyContent: 'center' }}>Войти</Link>
+          <Link href="/apply"  className="btn btn-primary btn-lg"       onClick={() => setOpen(false)} style={{ textAlign: 'center', justifyContent: 'center' }}>Получить займ</Link>
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,40 +1,46 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 
 const FAQ_PERSONAL = [
-  { q: 'Кто может получить займ?', a: 'Займ могут получить совершеннолетние граждане, проживающие в ЕС, с действующим номером телефона.' },
-  { q: 'Какая минимальная и максимальная сумма займа?', a: 'Для физических лиц: от 500 до 50 000 EUR. Для бизнеса: от 30 000 до 500 000 EUR.' },
-  { q: 'На какой срок можно взять займ?', a: 'Для физических лиц: от 7 до 90 дней. Для бизнеса: от 1 до 12 месяцев.' },
-  { q: 'Как рассчитывается сумма к возврату?', a: 'Применяется аннуитетная формула с ежедневной ставкой 0,8%. Итоговую сумму можно рассчитать в калькуляторе на главной странице.' },
-  { q: 'Нужен ли залог?', a: 'Нет, залог не требуется ни для физических лиц, ни для бизнеса.' },
-  { q: 'Как быстро придёт решение?', a: 'Заявка рассматривается нашими специалистами. В большинстве случаев решение принимается в течение рабочего дня.' },
-  { q: 'Можно ли погасить займ досрочно?', a: 'Да. Вы можете погасить займ в любой момент. Штрафов за досрочное погашение нет.' },
-  { q: 'Как подписать договор?', a: 'После одобрения заявки вы получите уведомление в личном кабинете. Договор подписывается онлайн с помощью кода из SMS.' },
-  { q: 'Как внести платёж?', a: 'В личном кабинете создайте заявку на оплату — укажите сумму и реквизиты перевода. Оператор подтвердит получение.' },
-  { q: 'Что делать, если я не могу вовремя внести платёж?', a: 'Обратитесь в поддержку как можно скорее. Мы рассмотрим ситуацию индивидуально.' },
+  { q: 'Кто может получить займ?', a: 'Займ доступен для совершеннолетних пользователей с действующим удостоверением личности и зарегистрированным номером телефона.' },
+  { q: 'Какие документы необходимы?', a: 'Для подачи заявки требуется минимальный набор данных. В большинстве случаев достаточно удостоверения личности и активного номера телефона.' },
+  { q: 'Как подать заявку?', a: 'Выберите сумму и срок займа, заполните форму и отправьте заявку на рассмотрение. Весь процесс проходит онлайн.' },
+  { q: 'Как быстро принимается решение?', a: 'Заявки рассматриваются автоматически и обрабатываются в течение нескольких минут.' },
+  { q: 'Когда я получу деньги?', a: 'После одобрения средства переводятся сразу на указанный банковский счёт.' },
+  { q: 'Есть ли скрытые комиссии?', a: 'Нет. Все условия и платежи отображаются до оформления займа.' },
+  { q: 'Как погасить займ?', a: 'Погашение осуществляется через доступные платёжные способы. Подробная информация предоставляется после оформления займа.' },
+  { q: 'Можно ли погасить займ досрочно?', a: 'Да, вы можете погасить займ раньше установленного срока без дополнительных комиссий.' },
+  { q: 'Что произойдет при просрочке?', a: 'В случае просрочки могут начисляться дополнительные платежи. Это также влияет на внутреннюю оценку клиента и будущие условия.' },
+  { q: 'Как улучшить кредитную историю?', a: 'Своевременно погашайте займы — это помогает формировать положительную кредитную историю и повышает шансы на более выгодные условия в будущем.' },
 ];
 
 const FAQ_BUSINESS = [
-  { q: 'Какие документы нужны для бизнес-займа?', a: 'Учредительные документы, подтверждение деятельности от 6 месяцев, данные руководителя. Точный список зависит от формы бизнеса.' },
-  { q: 'Как подать заявку на бизнес-займ?', a: 'Оставьте заявку через форму обратной связи. Менеджер свяжется с вами и уточнит все детали.' },
-  { q: 'Есть ли требования к обороту?', a: 'Да, компания должна вести реальную деятельность не менее 6 месяцев. Требования к обороту уточняются индивидуально.' },
-  { q: 'Доступны ли займы для ИП?', a: 'Да, индивидуальные предприниматели, зарегистрированные в ЕС, также могут подать заявку.' },
-  { q: 'Каковы сроки рассмотрения бизнес-заявок?', a: 'Стандартный срок рассмотрения — 1–3 рабочих дня после получения полного пакета документов.' },
-  { q: 'Нужно ли личное поручительство директора?', a: 'Это зависит от суммы и параметров сделки. Уточните у менеджера при рассмотрении заявки.' },
-  { q: 'Можно ли получить несколько займов одновременно?', a: 'Каждая заявка рассматривается индивидуально с учётом текущей долговой нагрузки.' },
-  { q: 'Как рассчитываются проценты для бизнеса?', a: 'Условия для бизнес-займов определяются индивидуально в зависимости от суммы, срока и профиля компании.' },
+  { q: 'Кто может получить финансирование?', a: 'Финансирование доступно для зарегистрированных европейских компаний и индивидуальных предпринимателей.' },
+  { q: 'Какие документы требуются?', a: 'Требуется базовый пакет документов: регистрационные данные бизнеса, удостоверение личности и финансовая информация.' },
+  { q: 'Какой размер займа доступен?', a: 'Сумма займа составляет от 30 000 до 500 000 EUR в зависимости от оценки бизнеса и предоставленных документов.' },
+  { q: 'На какой срок предоставляется финансирование?', a: 'Срок займа — от 1 до 12 месяцев.' },
+  { q: 'Как рассчитываются условия?', a: 'Условия определяются индивидуально на основе анализа финансового состояния бизнеса и уровня риска.' },
+  { q: 'Как происходит выплата средств?', a: 'Средства могут быть переведены на корпоративный счёт или через доступные платёжные системы.' },
+  { q: 'Можно ли погасить займ досрочно?', a: 'Да, досрочное погашение возможно без дополнительных штрафов.' },
+  { q: 'Что происходит при просрочке?', a: 'Могут начисляться дополнительные платежи, а информация о задолженности учитывается при дальнейшей оценке клиента.' },
 ];
 
 function AccordionItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <details style={{ borderBottom: '1px solid var(--color-silver)', padding: 'var(--space-4) 0' }}>
-      <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-base)', color: 'var(--color-text-primary)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
+    <div className="accordion-item">
+      <button className="accordion-trigger" onClick={() => setOpen(o => !o)}>
         <span>{q}</span>
-        <span style={{ color: 'var(--color-accent)', fontSize: 'var(--text-xl)', fontWeight: 400, flexShrink: 0 }}>+</span>
-      </summary>
-      <p style={{ marginTop: 'var(--space-3)', color: 'var(--color-text-secondary)', lineHeight: 'var(--leading-relaxed)', paddingRight: 'var(--space-8)' }}>{a}</p>
-    </details>
+        <span className={`accordion-icon${open ? ' open' : ''}`}>
+          <ChevronDown size={18} />
+        </span>
+      </button>
+      <div className={`accordion-body${open ? ' open' : ''}`}>
+        <p>{a}</p>
+      </div>
+    </div>
   );
 }
 
@@ -44,33 +50,48 @@ export default function FaqPage() {
 
   return (
     <>
-      <section style={{ background: 'var(--color-midnight)', padding: 'var(--space-20) var(--space-6)' }}>
-        <div style={{ maxWidth: 'var(--container-xl)', margin: '0 auto', textAlign: 'center' }}>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem,5vw,var(--text-5xl))', color: 'var(--color-white)', marginBottom: 'var(--space-4)' }}>
+      <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 60%, rgba(46,125,247,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', position: 'relative' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '1rem' }}>FAQ</p>
+          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem' }}>
             Часто задаваемые вопросы
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 'var(--text-lg)' }}>
-            Ответы на самые популярные вопросы о наших услугах
+          <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.5)', maxWidth: '50ch', margin: '0 auto', lineHeight: 1.75 }}>
+            Здесь вы найдёте ответы на основные вопросы о займах, условиях и процессе оформления.
           </p>
         </div>
       </section>
 
-      <section style={{ background: 'var(--color-white)', padding: 'var(--space-20) var(--space-6)' }}>
+      <section style={{ background: '#fff', padding: '100px 32px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-10)', background: 'var(--color-silver)', borderRadius: 'var(--radius-md)', padding: '4px' }}>
-            {(['personal', 'business'] as const).map((t) => (
-              <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)', transition: 'all 150ms', background: tab === t ? 'var(--color-white)' : 'transparent', color: tab === t ? 'var(--color-accent)' : 'var(--color-text-secondary)', boxShadow: tab === t ? 'var(--shadow-sm)' : 'none' }}>
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '2.5rem', background: '#F2F5F8', borderRadius: '12px', padding: '4px' }}>
+            {(['personal', 'business'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                flex: 1, padding: '10px 16px', borderRadius: '9px', border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--f-sans)', fontWeight: 600, fontSize: '0.875rem',
+                transition: 'all 200ms cubic-bezier(0.16,1,0.3,1)',
+                background: tab === t ? '#fff' : 'transparent',
+                color: tab === t ? '#0D1B2A' : '#4A6580',
+                boxShadow: tab === t ? '0 1px 3px rgba(13,27,42,0.08), 0 2px 8px rgba(13,27,42,0.05)' : 'none',
+              }}>
                 {t === 'personal' ? 'Для физических лиц' : 'Для бизнеса'}
               </button>
             ))}
           </div>
 
-          {items.map(({ q, a }) => <AccordionItem key={q} q={q} a={a} />)}
+          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid rgba(13,27,42,0.06)', padding: '0 1.5rem', boxShadow: '0 1px 3px rgba(13,27,42,0.04), 0 8px 24px rgba(13,27,42,0.05)' }}>
+            {items.map(({ q, a }) => <AccordionItem key={q} q={q} a={a} />)}
+          </div>
 
-          <div style={{ marginTop: 'var(--space-10)', padding: 'var(--space-6)', background: 'var(--color-silver)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>Не нашли ответ на свой вопрос?</p>
-            <Link href="/contacts" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>Напишите нам</Link>
+          <div style={{ marginTop: '2.5rem', background: '#F2F5F8', borderRadius: '16px', padding: '2rem', textAlign: 'center', border: '1px solid rgba(13,27,42,0.06)' }}>
+            <p style={{ color: '#4A6580', marginBottom: '1.25rem', fontSize: '0.9375rem' }}>
+              Если у вас остались вопросы, свяжитесь с нами через форму обратной связи.
+            </p>
+            <Link href="/contacts" className="btn btn-primary" style={{ gap: '8px' }}>
+              Написать нам <ArrowRight size={15} />
+            </Link>
           </div>
         </div>
       </section>
