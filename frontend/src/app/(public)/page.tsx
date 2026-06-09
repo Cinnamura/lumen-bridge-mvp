@@ -1,89 +1,58 @@
-'use client';
 import Link from 'next/link';
-import { useState } from 'react';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
+import { HomeClient } from './HomeClient';
 import {
   Shield, CheckCircle2, Clock, Lock, TrendingUp,
-  ArrowRight, ChevronDown, MapPin, Mail, Phone,
+  ArrowRight, MapPin, Mail, Phone,
   FileText, Briefcase, Zap, RefreshCw,
 } from 'lucide-react';
 
-/* ─── Animated FAQ Accordion ─── */
-function Faq({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
+/* ─── Inline SVG area chart (static) ─── */
+function TrendChart() {
   return (
-    <div className="accordion-item">
-      <button className="accordion-trigger" onClick={() => setOpen(o => !o)}>
-        <span>{q}</span>
-        <span className={`accordion-icon${open ? ' open' : ''}`}>
-          <ChevronDown size={18} />
-        </span>
-      </button>
-      <div className={`accordion-body${open ? ' open' : ''}`}>
-        <p>{a}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Feature card for "когда деньги нужны" ─── */
-function UseCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', cursor: 'default' }}>
-      <div style={{ width: '44px', height: '44px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
-        {icon}
-      </div>
-      <div>
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>{title}</h3>
-        <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.65 }}>{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Trust item ─── */
-function TrustItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
-  return (
-    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-      <div style={{ width: '36px', height: '36px', background: 'rgba(46,125,247,0.12)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0, marginTop: '2px' }}>
-        {icon}
-      </div>
-      <div>
-        <p style={{ fontWeight: 600, color: 'rgba(255,255,255,0.92)', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>{title}</p>
-        <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.55 }}>{desc}</p>
-      </div>
-    </div>
+    <svg width="100%" viewBox="0 0 260 72" fill="none" style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#2E7DF7" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#2E7DF7" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M 0 65 C 35 60 55 50 85 40 C 115 30 138 34 175 18 C 205 8 232 5 260 3"
+        stroke="#2E7DF7" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M 0 65 C 35 60 55 50 85 40 C 115 30 138 34 175 18 C 205 8 232 5 260 3 L 260 72 L 0 72 Z"
+        fill="url(#tg)"/>
+      <circle cx="260" cy="3" r="4" fill="#2E7DF7"/>
+      <circle cx="260" cy="3" r="9" fill="#2E7DF7" fillOpacity="0.15"/>
+    </svg>
   );
 }
 
 export default function HomePage() {
   return (
     <>
-      {/* ══════════════════════════════════════
-          HERO — fullscreen dark
-      ══════════════════════════════════════ */}
-      <section style={{ background: '#0D1B2A', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '5rem 32px', position: 'relative', overflow: 'hidden' }}>
-        {/* Background grid decoration */}
-        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(46,125,247,0.07) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(46,125,247,0.05) 0%, transparent 50%)', pointerEvents: 'none' }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none', maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%,#000 40%,transparent 100%)' }} />
+      {/* ══ HERO ══ */}
+      <section style={{ background: '#0D1B2A', minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '6rem 32px 5rem', position: 'relative', overflow: 'hidden' }}>
+        {/* Subtle grid */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 18% 55%, rgba(46,125,247,0.08) 0%, transparent 55%), radial-gradient(circle at 78% 18%, rgba(46,125,247,0.05) 0%, transparent 45%)', pointerEvents: 'none' }} />
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)', backgroundSize: '64px 64px', pointerEvents: 'none', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%,#000 30%,transparent 100%)' }} />
 
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', position: 'relative' }}>
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '6fr 4fr', gap: '5rem', alignItems: 'center' }}>
-
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '55fr 45fr', gap: '4rem', alignItems: 'center' }}>
             {/* Left */}
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(46,125,247,0.1)', border: '1px solid rgba(46,125,247,0.2)', borderRadius: '100px', padding: '5px 14px', marginBottom: '2rem' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2E7DF7', display: 'block' }} />
-                <span style={{ fontSize: '0.75rem', color: '#2E7DF7', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <div className="anim-fade-up">
+              {/* Pill badge */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(46,125,247,0.1)', border: '1px solid rgba(46,125,247,0.22)', borderRadius: '100px', padding: '5px 14px 5px 10px', marginBottom: '2rem' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DF7', display: 'block', boxShadow: '0 0 6px #2E7DF7' }} />
+                <span style={{ fontSize: '0.6875rem', color: '#2E7DF7', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Быстрые займы в Европе
                 </span>
               </div>
 
-              <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', lineHeight: 1.1, marginBottom: '1.5rem', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,4.8vw,4.25rem)', color: '#fff', lineHeight: 1.08, marginBottom: '1.5rem', letterSpacing: '-0.025em' }}>
                 Получите деньги тогда, когда это действительно нужно
               </h1>
 
-              <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, marginBottom: '2.5rem', maxWidth: '46ch' }}>
+              <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.58)', lineHeight: 1.75, marginBottom: '2.5rem', maxWidth: '44ch' }}>
                 Простые и прозрачные займы для частных лиц и бизнеса в Европе — быстрое решение и безопасное оформление.
               </p>
 
@@ -96,47 +65,37 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Trust row */}
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap' }}>
                 {['Без залога', 'Быстрое одобрение', 'На банковский счёт'].map(t => (
                   <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <CheckCircle2 size={14} color="rgba(46,125,247,0.8)" />
-                    <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>{t}</span>
+                    <CheckCircle2 size={13} color="rgba(46,125,247,0.75)" />
+                    <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{t}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Right — Calculator */}
-            <div className="hero-calc card-dark" style={{ padding: '2rem' }}>
+            {/* Right — Calculator in dark card */}
+            <div className="hero-calc anim-fade-up-1 bento-dark" style={{ padding: '2rem' }}>
               <LoanCalculator dark />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          CALCULATOR — standalone section
-      ══════════════════════════════════════ */}
+      {/* ══ STANDALONE CALCULATOR ══ */}
       <section style={{ background: '#F2F5F8', padding: '100px 32px' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '740px', margin: '0 auto' }}>
           <LoanCalculator />
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          CONDITIONS — 4 cards
-      ══════════════════════════════════════ */}
+      {/* ══ CONDITIONS — Bento grid 4 cols ══ */}
       <section style={{ background: '#fff', padding: '100px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>Условия</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '0.75rem' }}>
-              Основные параметры
-            </h2>
-            <p style={{ color: '#4A6580', maxWidth: '44ch', margin: '0 auto', lineHeight: 1.65 }}>
-              Итоговые условия определяются индивидуально после проверки клиента
-            </p>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.625rem' }}>Условия</p>
+            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em' }}>Основные параметры</h2>
           </div>
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[
@@ -144,118 +103,137 @@ export default function HomePage() {
               { label: 'Срок',  value: '7 — 90',      unit: 'дней' },
               { label: 'Ставка', value: 'Индивидуально', unit: '' },
               { label: 'Погашение', value: 'Равными платежами', unit: '' },
-            ].map(({ label, value, unit }) => (
-              <div key={label} className="card" style={{ textAlign: 'center', padding: '2rem 1.5rem', cursor: 'default' }}>
-                <p style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '1rem' }}>{label}</p>
-                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1.125rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em' }}>
-                  {value}
-                  {unit && <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#4A6580', marginLeft: '4px' }}>{unit}</span>}
+            ].map((c, i) => (
+              <div key={c.label} className={`bento-card reveal reveal-${i+1}`} style={{ textAlign: 'center', cursor: 'default' }}>
+                <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.875rem' }}>{c.label}</p>
+                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em' }}>
+                  {c.value}
+                  {c.unit && <span style={{ fontSize: '0.8125rem', fontWeight: 400, color: '#4A6580', marginLeft: '4px' }}>{c.unit}</span>}
                 </p>
               </div>
             ))}
           </div>
+          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8125rem', color: '#4A6580' }}>
+            Итоговые условия определяются индивидуально после проверки клиента
+          </p>
         </div>
+        <HomeClient section="conditions" />
       </section>
 
-      {/* ══════════════════════════════════════
-          USE CASES — when you need money
-      ══════════════════════════════════════ */}
+      {/* ══ USE CASES — Bento asymmetric 2×2 ══ */}
       <section style={{ background: '#F2F5F8', padding: '100px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>Применение</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '0.75rem' }}>
-              Когда деньги нужны сейчас
-            </h2>
-            <p style={{ color: '#4A6580', maxWidth: '50ch', margin: '0 auto', lineHeight: 1.65 }}>
-              Не все финансовые вопросы можно отложить. Иногда важно принять решение быстро — без сложных процедур и ожиданий.
-            </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start', marginBottom: '2.5rem' }} className="grid-2-resp">
+            <div>
+              <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.625rem' }}>Применение</p>
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+                Когда деньги нужны сейчас
+              </h2>
+            </div>
+            <div style={{ paddingTop: '0.5rem' }}>
+              <p style={{ color: '#4A6580', lineHeight: 1.75, fontSize: '0.9375rem' }}>
+                Не все финансовые вопросы можно отложить. Иногда важно принять решение быстро — без сложных процедур и ожиданий.
+              </p>
+            </div>
           </div>
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
-            <UseCard icon={<Zap size={20} />}      title="Срочные расходы"  desc="Неожиданные платежи, которые нельзя перенести" />
-            <UseCard icon={<Clock size={20} />}     title="Задержка дохода"  desc="Когда деньги нужны сейчас, а поступления позже" />
-            <UseCard icon={<Briefcase size={20} />} title="Бизнес-задачи"    desc="Кассовые разрывы или операционные расходы" />
-            <UseCard icon={<TrendingUp size={20} />} title="Возможности"     desc="Ситуации, где важно действовать без промедления" />
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          HOW IT WORKS — 3 steps
-      ══════════════════════════════════════ */}
-      <section style={{ background: '#fff', padding: '100px 32px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>Процесс</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '0.75rem' }}>
-              Как всё происходит
-            </h2>
-            <p style={{ color: '#4A6580', maxWidth: '50ch', margin: '0 auto', lineHeight: 1.65 }}>
-              Оформление займа занимает несколько минут и полностью проходит онлайн
-            </p>
-          </div>
-          <div className="grid-3-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2rem', position: 'relative' }}>
             {[
-              { n: '01', title: 'Регистрация', desc: 'Введите номер телефона и подтвердите его SMS-кодом. Доступ к личному кабинету — сразу после.' },
-              { n: '02', title: 'Заявка', desc: 'Выберите сумму и срок займа, заполните данные и отправьте заявку на рассмотрение.' },
-              { n: '03', title: 'Получение средств', desc: 'После одобрения подпишите договор онлайн. Деньги поступают на ваш банковский счёт.' },
-            ].map(({ n, title, desc }, i) => (
-              <div key={n} style={{ position: 'relative' }}>
-                {/* Connector line */}
-                {i < 2 && (
-                  <div aria-hidden style={{ position: 'absolute', top: '20px', left: 'calc(100% - 1rem)', width: '2rem', height: '1px', background: 'linear-gradient(to right,rgba(46,125,247,0.3),rgba(46,125,247,0.05))', zIndex: 0 }} className="hdr-desktop" />
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(46,125,247,0.08)', border: '1px solid rgba(46,125,247,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-mono)', fontSize: '0.75rem', fontWeight: 700, color: '#2E7DF7', flexShrink: 0 }}>
-                      {n}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.5rem' }}>{title}</h3>
-                    <p style={{ fontSize: '0.9rem', color: '#4A6580', lineHeight: 1.7 }}>{desc}</p>
-                  </div>
+              { icon: <Zap size={20} />,        title: 'Срочные расходы',  desc: 'Неожиданные платежи, которые нельзя перенести' },
+              { icon: <Clock size={20} />,       title: 'Задержка дохода',  desc: 'Когда деньги нужны сейчас, а поступления позже' },
+              { icon: <Briefcase size={20} />,   title: 'Бизнес-задачи',    desc: 'Кассовые разрывы или операционные расходы' },
+              { icon: <TrendingUp size={20} />,  title: 'Возможности',      desc: 'Ситуации, где важно действовать без промедления' },
+            ].map((c, i) => (
+              <div key={c.title} className={`bento-card reveal reveal-${i+1}`} style={{ cursor: 'default' }}>
+                <div style={{ width: '42px', height: '42px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', marginBottom: '1rem' }}>
+                  {c.icon}
                 </div>
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>{c.title}</h3>
+                <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.65 }}>{c.desc}</p>
               </div>
             ))}
           </div>
         </div>
+        <HomeClient section="usecases" />
       </section>
 
-      {/* ══════════════════════════════════════
-          TRANSPARENCY — dark section with trust items
-      ══════════════════════════════════════ */}
-      <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', top: 0, right: 0, width: '600px', height: '600px', background: 'radial-gradient(circle,rgba(46,125,247,0.04) 0%,transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          <div style={{ maxWidth: '520px', marginBottom: '3.5rem' }}>
-            <div className="divider" />
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.01em', marginBottom: '1rem' }}>
-              Вы заранее знаете все условия
+      {/* ══ HOW IT WORKS — numbered steps with connector ══ */}
+      <section style={{ background: '#fff', padding: '100px 32px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.625rem' }}>Процесс</p>
+            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+              Как всё происходит
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, fontSize: '0.9375rem' }}>
-              Никаких сюрпризов после подписания. Полная стоимость займа отображается ещё до оформления.
+            <p style={{ color: '#4A6580', maxWidth: '48ch', margin: '0 auto', lineHeight: 1.7, fontSize: '0.9375rem' }}>
+              Оформление займа занимает несколько минут и полностью проходит онлайн
             </p>
           </div>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1.5rem', maxWidth: '820px' }}>
-            <TrustItem icon={<Shield size={18} />}     title="Никаких скрытых комиссий" desc="Полная стоимость займа известна до оформления" />
-            <TrustItem icon={<Clock size={18} />}      title="Быстрое рассмотрение"      desc="Заявки обрабатываются в течение нескольких минут" />
-            <TrustItem icon={<Lock size={18} />}       title="Безопасность данных"        desc="Ваши данные защищены современными технологиями" />
-            <TrustItem icon={<RefreshCw size={18} />}  title="Гибкое погашение"           desc="Удобный срок, досрочное погашение без штрафов" />
-            <TrustItem icon={<TrendingUp size={18} />} title="Улучшение условий"          desc="При повторных займах доступны более выгодные параметры" />
+          <div className="grid-3-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.5rem' }}>
+            {[
+              { n: '01', title: 'Регистрация',      desc: 'Введите номер телефона и подтвердите его SMS-кодом. Доступ к личному кабинету — сразу после.' },
+              { n: '02', title: 'Заявка',            desc: 'Выберите сумму и срок, заполните данные и отправьте заявку на рассмотрение.' },
+              { n: '03', title: 'Получение средств', desc: 'После одобрения подпишите договор онлайн. Деньги поступают на ваш банковский счёт.' },
+            ].map((s, i) => (
+              <div key={s.n} className={`bento-card reveal reveal-${i+1}`} style={{ cursor: 'default', position: 'relative' }}>
+                <div style={{ fontFamily: 'var(--f-mono)', fontSize: '2.5rem', fontWeight: 700, color: '#2E7DF7', marginBottom: '1rem', letterSpacing: '-0.02em', opacity: 0.8 }}>
+                  {s.n}
+                </div>
+                <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.625rem', letterSpacing: '-0.01em' }}>{s.title}</h3>
+                <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.7 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <HomeClient section="steps" />
+      </section>
+
+      {/* ══ TRANSPARENCY — dark, 2-col asymmetric ══ */}
+      <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'absolute', top: '-80px', right: '-80px', width: '480px', height: '480px', background: 'radial-gradient(circle,rgba(46,125,247,0.05) 0%,transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'start' }} className="grid-2-resp">
+            <div>
+              <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.5rem' }} />
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.15 }}>
+                Вы заранее знаете все условия
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, fontSize: '0.9375rem', marginBottom: '2rem' }}>
+                Никаких сюрпризов после подписания. Полная стоимость займа отображается ещё до оформления.
+              </p>
+              <Link href="/apply" className="btn btn-primary" style={{ gap: '8px' }}>
+                Подать заявку <ArrowRight size={15} />
+              </Link>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {[
+                { icon: <Shield size={16} />,     t: 'Никаких скрытых комиссий', d: 'Полная стоимость займа известна до оформления' },
+                { icon: <Clock size={16} />,      t: 'Быстрое рассмотрение',     d: 'Заявки обрабатываются в течение нескольких минут' },
+                { icon: <Lock size={16} />,       t: 'Безопасность данных',       d: 'Ваши данные защищены современными технологиями' },
+                { icon: <RefreshCw size={16} />,  t: 'Гибкое погашение',          d: 'Удобный срок, досрочное погашение без штрафов' },
+                { icon: <TrendingUp size={16} />, t: 'Улучшение условий',         d: 'При повторных займах доступны более выгодные параметры' },
+              ].map(({ icon, t, d }) => (
+                <div key={t} className="bento-dark" style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start', padding: '1rem 1.125rem' }}>
+                  <div style={{ width: '32px', height: '32px', background: 'rgba(46,125,247,0.12)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
+                    {icon}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 600, color: 'rgba(255,255,255,0.88)', marginBottom: '0.2rem', fontSize: '0.875rem' }}>{t}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.38)', lineHeight: 1.55 }}>{d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          ABOUT
-      ══════════════════════════════════════ */}
+      {/* ══ ABOUT + STATS — Bento asymmetric ══ */}
       <section style={{ background: '#fff', padding: '100px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: '4rem', alignItems: 'center' }} className="grid-2-resp">
             <div>
-              <div className="divider" />
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '1.5rem' }}>
+              <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.5rem' }} />
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.15 }}>
                 О LumenBridge Finance Ltd
               </h2>
               <p style={{ color: '#4A6580', lineHeight: 1.75, marginBottom: '1rem', fontSize: '0.9375rem' }}>
@@ -265,76 +243,70 @@ export default function HomePage() {
                 Мы работаем в соответствии с действующим законодательством и уделяем особое внимание защите данных клиентов и ответственному кредитованию.
               </p>
             </div>
-            {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            {/* Stats Bento */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {[
-                { val: '500€',   label: 'Минимальный займ' },
-                { val: '90',     label: 'Дней — максимальный срок' },
-                { val: '0,8%',   label: 'Ставка в день' },
-                { val: 'GDPR',   label: 'Соответствие стандарту' },
-              ].map(({ val, label }) => (
-                <div key={label} style={{ background: '#F2F5F8', borderRadius: '16px', padding: '1.5rem', border: '1px solid rgba(13,27,42,0.05)' }}>
-                  <div style={{ fontFamily: 'var(--f-mono)', fontSize: '1.75rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>{val}</div>
-                  <div style={{ fontSize: '0.8125rem', color: '#4A6580', lineHeight: 1.5 }}>{label}</div>
+                { val: '500 EUR',  label: 'Минимальный займ' },
+                { val: '90 дн.',   label: 'Максимальный срок' },
+                { val: '0,8%',     label: 'Ставка в день' },
+                { val: 'GDPR',     label: 'Соответствие стандарту' },
+              ].map((s, i) => (
+                <div key={s.label} className={`bento-card reveal reveal-${i+1}`} style={{ cursor: 'default' }}>
+                  <div style={{ fontFamily: 'var(--f-mono)', fontSize: '1.625rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.375rem' }}>{s.val}</div>
+                  <div style={{ fontSize: '0.8125rem', color: '#4A6580', lineHeight: 1.5 }}>{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+        <HomeClient section="about" />
       </section>
 
-      {/* ══════════════════════════════════════
-          CREDIT HISTORY
-      ══════════════════════════════════════ */}
+      {/* ══ CREDIT HISTORY — split with chart ══ */}
       <section style={{ background: '#F2F5F8', padding: '100px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', alignItems: 'center' }} className="grid-2-resp">
             <div>
-              <div className="divider" />
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '1.25rem' }}>
+              <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.5rem' }} />
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.15 }}>
                 Займ — это не только деньги сейчас
               </h2>
               <p style={{ color: '#4A6580', lineHeight: 1.75, marginBottom: '2rem', fontSize: '0.9375rem' }}>
-                Своевременное погашение займа помогает улучшить кредитный рейтинг и открывает доступ к более выгодным условиям в будущем.
+                Своевременное погашение помогает улучшить кредитный рейтинг и открывает доступ к более выгодным условиям.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', marginBottom: '2.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2.5rem' }}>
                 {[
                   'Возможность начать с небольшой суммы',
                   'Формирование положительной кредитной истории',
                   'Улучшение условий при повторных обращениях',
                 ].map(t => (
-                  <div key={t} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(46,125,247,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <CheckCircle2 size={12} color="#2E7DF7" />
-                    </div>
-                    <span style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.5 }}>{t}</span>
+                  <div key={t} style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+                    <CheckCircle2 size={14} color="#2E7DF7" style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: '0.875rem', color: '#4A6580' }}>{t}</span>
                   </div>
                 ))}
               </div>
-              <Link href="/apply" className="btn btn-primary">
-                Начать с небольшого займа <ArrowRight size={16} />
+              <Link href="/apply" className="btn btn-primary" style={{ gap: '8px' }}>
+                Начать с небольшого займа <ArrowRight size={15} />
               </Link>
             </div>
-
-            {/* Trend chart card */}
-            <div style={{ background: '#fff', borderRadius: '24px', padding: '2.5rem', boxShadow: '0 1px 3px rgba(13,27,42,0.05), 0 8px 32px rgba(13,27,42,0.08)', border: '1px solid rgba(13,27,42,0.05)' }}>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Кредитный рейтинг</p>
-                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '2rem', fontWeight: 700, color: '#0D1B2A' }}>+124</p>
+            {/* Chart card */}
+            <div className="bento-card" style={{ background: '#fff', cursor: 'default' }}>
+              <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                  <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4A6580', marginBottom: '4px' }}>
+                    Кредитный рейтинг
+                  </p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontSize: '2.25rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                    +124
+                  </p>
+                </div>
+                <span style={{ background: 'rgba(30,138,94,0.1)', color: '#1E8A5E', fontSize: '0.75rem', fontWeight: 700, padding: '4px 10px', borderRadius: '99px', fontFamily: 'var(--f-mono)' }}>
+                  +18% за месяц
+                </span>
               </div>
-              <svg width="100%" viewBox="0 0 260 80" fill="none" style={{ display: 'block' }}>
-                <defs>
-                  <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#2E7DF7" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#2E7DF7" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path d="M 0 70 C 40 65 60 55 90 45 C 120 35 140 38 180 22 C 210 12 235 8 260 4" stroke="#2E7DF7" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                <path d="M 0 70 C 40 65 60 55 90 45 C 120 35 140 38 180 22 C 210 12 235 8 260 4 L 260 80 L 0 80 Z" fill="url(#grad)" />
-                <circle cx="260" cy="4" r="4" fill="#2E7DF7" />
-                <circle cx="260" cy="4" r="8" fill="#2E7DF7" fillOpacity="0.2" />
-              </svg>
-              <p style={{ fontSize: '0.8125rem', color: '#4A6580', marginTop: '1rem', lineHeight: 1.5 }}>
+              <TrendChart />
+              <p style={{ fontSize: '0.8125rem', color: '#4A6580', marginTop: '1rem', lineHeight: 1.55 }}>
                 Растёт с каждым своевременным платежом
               </p>
             </div>
@@ -342,154 +314,111 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          BUSINESS — gold accent
-      ══════════════════════════════════════ */}
+      {/* ══ BUSINESS — gold accent dark ══ */}
       <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', top: '-100px', right: '-100px', width: '500px', height: '500px', background: 'radial-gradient(circle,rgba(201,146,58,0.06) 0%,transparent 70%)', pointerEvents: 'none' }} />
+        <div aria-hidden style={{ position: 'absolute', top: '-120px', right: '-120px', width: '600px', height: '600px', background: 'radial-gradient(circle,rgba(201,146,58,0.07) 0%,transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
           <div style={{ maxWidth: '600px', marginBottom: '3.5rem' }}>
-            <div className="divider divider-gold" />
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#C9923A', marginBottom: '0.75rem' }}>
+            <div style={{ width: '32px', height: '2px', background: '#C9923A', borderRadius: '99px', marginBottom: '1.5rem' }} />
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9923A', marginBottom: '0.75rem' }}>
               Для бизнеса
             </p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.01em', marginBottom: '1rem' }}>
+            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1rem', lineHeight: 1.15 }}>
               Финансирование для бизнеса
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, fontSize: '0.9375rem' }}>
+            <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, fontSize: '0.9375rem' }}>
               Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
             </p>
           </div>
 
           <div className="grid-3-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.25rem', marginBottom: '2.5rem' }}>
             {[
-              { icon: <TrendingUp size={20} />, title: '30 000 — 500 000 EUR', desc: 'Финансирование под задачи любого масштаба' },
-              { icon: <Clock size={20} />,      title: '1 — 12 месяцев',       desc: 'Гибкие сроки под ваш бизнес-цикл' },
-              { icon: <FileText size={20} />,   title: 'Без залога',            desc: 'В стандартных случаях залог не требуется' },
+              { icon: <TrendingUp size={18} />, title: '30 000 — 500 000 EUR', desc: 'Финансирование под задачи любого масштаба' },
+              { icon: <Clock size={18} />,      title: '1 — 12 месяцев',       desc: 'Гибкие сроки под ваш бизнес-цикл' },
+              { icon: <FileText size={18} />,   title: 'Без залога',            desc: 'В стандартных случаях залог не требуется' },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="card-glass" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1.75rem' }}>
-                <div style={{ width: '40px', height: '40px', background: 'rgba(201,146,58,0.1)', borderRadius: '10px', border: '1px solid rgba(201,146,58,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C9923A' }}>
+              <div key={title} className="bento-dark" style={{ cursor: 'default' }}>
+                <div style={{ width: '38px', height: '38px', background: 'rgba(201,146,58,0.1)', borderRadius: '10px', border: '1px solid rgba(201,146,58,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C9923A', marginBottom: '1rem' }}>
                   {icon}
                 </div>
-                <div>
-                  <h3 style={{ color: '#fff', fontWeight: 700, marginBottom: '0.375rem', fontSize: '0.9375rem' }}>{title}</h3>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', lineHeight: 1.6 }}>{desc}</p>
-                </div>
+                <h3 style={{ color: '#fff', fontWeight: 700, marginBottom: '0.375rem', fontSize: '0.9375rem' }}>{title}</h3>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem', lineHeight: 1.6 }}>{desc}</p>
               </div>
             ))}
           </div>
 
-          <div style={{ background: 'rgba(201,146,58,0.08)', border: '1px solid rgba(201,146,58,0.2)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '2rem', maxWidth: '600px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(201,146,58,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#C9923A' }} />
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', lineHeight: 1.65 }}>
+          <div style={{ background: 'rgba(201,146,58,0.07)', border: '1px solid rgba(201,146,58,0.18)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '2rem', maxWidth: '600px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#C9923A', flexShrink: 0, marginTop: '6px' }} />
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.65 }}>
               На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
             </p>
           </div>
-
           <Link href="/contacts" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
             Оставить заявку <ArrowRight size={16} />
           </Link>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          COMPLIANCE — trust badges
-      ══════════════════════════════════════ */}
+      {/* ══ COMPLIANCE — 4 cards ══ */}
       <section style={{ background: '#fff', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4A6580', marginBottom: '2.5rem' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4A6580', marginBottom: '2.5rem' }}>
             Работаем прозрачно и в рамках закона
           </p>
-          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem' }}>
+          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[
-              { icon: <Shield size={20} />,       title: 'Соответствие GDPR',    desc: 'Европейские стандарты обработки данных' },
-              { icon: <CheckCircle2 size={20} />, title: 'Ответственный подход', desc: 'Тщательная проверка каждой заявки' },
-              { icon: <Lock size={20} />,         title: 'Защита данных',         desc: 'Многоуровневая безопасность' },
-              { icon: <FileText size={20} />,     title: 'Чёткие условия',        desc: 'Никакого мелкого шрифта' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.875rem', padding: '1.5rem', background: '#F2F5F8', borderRadius: '16px', border: '1px solid rgba(13,27,42,0.05)', transition: 'box-shadow 250ms ease', cursor: 'default' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(13,27,42,0.08)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
-              >
-                <div style={{ width: '40px', height: '40px', background: 'rgba(46,125,247,0.08)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7' }}>
+              { icon: <Shield size={18} />,       t: 'Соответствие GDPR',    d: 'Европейские стандарты обработки данных' },
+              { icon: <CheckCircle2 size={18} />, t: 'Ответственный подход', d: 'Тщательная проверка каждой заявки' },
+              { icon: <Lock size={18} />,         t: 'Защита данных',         d: 'Многоуровневая безопасность' },
+              { icon: <FileText size={18} />,     t: 'Чёткие условия',        d: 'Никакого мелкого шрифта' },
+            ].map(({ icon, t, d }, i) => (
+              <div key={t} className={`bento-card reveal reveal-${i+1}`} style={{ cursor: 'default' }}>
+                <div style={{ width: '40px', height: '40px', background: 'rgba(46,125,247,0.07)', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', marginBottom: '1rem' }}>
                   {icon}
                 </div>
-                <div>
-                  <p style={{ fontWeight: 700, color: '#0D1B2A', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>{title}</p>
-                  <p style={{ fontSize: '0.8125rem', color: '#4A6580', lineHeight: 1.5 }}>{desc}</p>
-                </div>
+                <p style={{ fontWeight: 700, color: '#0D1B2A', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>{t}</p>
+                <p style={{ fontSize: '0.8125rem', color: '#4A6580', lineHeight: 1.55 }}>{d}</p>
               </div>
             ))}
           </div>
         </div>
+        <HomeClient section="compliance" />
       </section>
 
-      {/* ══════════════════════════════════════
-          FAQ PREVIEW
-      ══════════════════════════════════════ */}
-      <section style={{ background: '#F2F5F8', padding: '100px 32px' }}>
-        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>FAQ</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em' }}>
-              Часто задаваемые вопросы
-            </h2>
-          </div>
-          <div style={{ background: '#fff', borderRadius: '20px', border: '1px solid rgba(13,27,42,0.06)', overflow: 'hidden', boxShadow: '0 1px 3px rgba(13,27,42,0.04), 0 8px 24px rgba(13,27,42,0.06)', padding: '0 1.5rem' }}>
-            <Faq q="Кто может получить займ?" a="Любой совершеннолетний резидент страны присутствия сервиса с действующим удостоверением личности и зарегистрированным номером телефона." />
-            <Faq q="Как быстро я получу деньги?" a="Заявки рассматриваются в течение нескольких минут. После одобрения деньги переводятся сразу." />
-            <Faq q="Есть ли скрытые комиссии?" a="Нет. Все условия и платежи отображаются до оформления займа." />
-          </div>
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <Link href="/faq" className="btn btn-secondary" style={{ gap: '8px' }}>
-              Смотреть все вопросы <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* ══ FAQ PREVIEW ══ */}
+      <HomeClient section="faq" />
 
-      {/* ══════════════════════════════════════
-          SECURITY
-      ══════════════════════════════════════ */}
+      {/* ══ SECURITY ══ */}
       <section style={{ background: '#0D1B2A', padding: '100px 32px' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ width: '56px', height: '56px', background: 'rgba(46,125,247,0.1)', borderRadius: '16px', border: '1px solid rgba(46,125,247,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Shield size={26} color="#2E7DF7" />
+            <div style={{ width: '52px', height: '52px', background: 'rgba(46,125,247,0.1)', borderRadius: '14px', border: '1px solid rgba(46,125,247,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Shield size={24} color="#2E7DF7" />
             </div>
           </div>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>
+          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', marginBottom: '1.25rem', letterSpacing: '-0.02em' }}>
             Безопасность клиентов
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, marginBottom: '1rem', fontSize: '0.9375rem' }}>
-            Мы уделяем особое внимание защите данных и безопасности наших клиентов. Все операции выполняются через защищённые каналы в соответствии с применимым европейским законодательством.
+          <p style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: '1rem', fontSize: '0.9375rem' }}>
+            Все операции выполняются через защищённые каналы в соответствии с применимым европейским законодательством. Используйте только официальный сайт.
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, marginBottom: '2.5rem', fontSize: '0.9375rem' }}>
-            Используйте только официальный сайт и проверенные контактные данные компании.
-          </p>
-          <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: '14px', padding: '1.25rem 1.5rem', maxWidth: '560px', margin: '0 auto', textAlign: 'left', display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}>
-            <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(192,57,43,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#C0392B' }} />
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', lineHeight: 1.65 }}>
-              <strong style={{ color: 'rgba(255,255,255,0.85)', display: 'block', marginBottom: '4px' }}>Важно</strong>
+          <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.18)', borderRadius: '12px', padding: '1.125rem 1.5rem', maxWidth: '520px', margin: '0 auto', textAlign: 'left', display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}>
+            <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#C0392B', flexShrink: 0, marginTop: '5px' }} />
+            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.65 }}>
+              <strong style={{ color: 'rgba(255,255,255,0.82)', display: 'block', marginBottom: '4px' }}>Важно</strong>
               Мы не требуем предоплату и не запрашиваем конфиденциальные данные (пароли, CVV, PIN-коды) ни через какие каналы.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════
-          CONTACT FORM
-      ══════════════════════════════════════ */}
+      {/* ══ CONTACT FORM ══ */}
       <section style={{ background: '#fff', padding: '100px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem' }} className="grid-2-resp">
             <div>
-              <div className="divider" />
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.01em', marginBottom: '0.75rem' }}>
+              <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.5rem' }} />
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
                 Свяжитесь с нами
               </h2>
               <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '2rem', fontSize: '0.9375rem' }}>
@@ -497,67 +426,41 @@ export default function HomePage() {
               </p>
               <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label className="input-label">Имя</label>
-                    <input className="input" type="text" placeholder="Иван" />
-                  </div>
-                  <div>
-                    <label className="input-label">Email</label>
-                    <input className="input" type="email" placeholder="ivan@example.com" />
-                  </div>
+                  <div><label className="input-label">Имя</label><input className="input" type="text" placeholder="Иван" /></div>
+                  <div><label className="input-label">Email</label><input className="input" type="email" placeholder="ivan@example.com" /></div>
                 </div>
-                <div>
-                  <label className="input-label">Телефон</label>
-                  <input className="input" type="tel" placeholder="+353 1 531 8420" />
-                </div>
-                <div>
-                  <label className="input-label">Сообщение</label>
-                  <textarea className="input" rows={4} placeholder="Ваш вопрос..." style={{ resize: 'vertical' }} />
-                </div>
-                <div>
-                  <label className="input-label">Прикрепить файл</label>
-                  <input type="file" style={{ fontSize: '0.875rem', color: '#4A6580', marginTop: '2px' }} />
-                </div>
+                <div><label className="input-label">Телефон</label><input className="input" type="tel" placeholder="+353 1 531 8420" /></div>
+                <div><label className="input-label">Сообщение</label><textarea className="input" rows={4} placeholder="Ваш вопрос..." style={{ resize: 'vertical' }} /></div>
+                <div><label className="input-label">Прикрепить файл</label><input type="file" style={{ fontSize: '0.875rem', color: '#4A6580', marginTop: '2px' }} /></div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <input type="checkbox" id="consent" style={{ marginTop: '3px', accentColor: '#2E7DF7', width: '16px', height: '16px' }} />
-                  <label htmlFor="consent" style={{ fontSize: '0.8125rem', color: '#4A6580', cursor: 'pointer', lineHeight: 1.6 }}>
+                  <input type="checkbox" id="hconsent" style={{ marginTop: '3px', accentColor: '#2E7DF7', width: '15px', height: '15px' }} />
+                  <label htmlFor="hconsent" style={{ fontSize: '0.8125rem', color: '#4A6580', cursor: 'pointer', lineHeight: 1.6 }}>
                     Согласен с обработкой персональных данных в соответствии с{' '}
                     <a href="/privacy" style={{ color: '#2E7DF7', textDecoration: 'underline', textUnderlineOffset: '2px' }}>политикой конфиденциальности</a>
                   </label>
                 </div>
-                <div>
-                  <button type="submit" className="btn btn-primary" style={{ gap: '8px' }}>
-                    Отправить <ArrowRight size={15} />
-                  </button>
-                </div>
+                <div><button type="submit" className="btn btn-primary" style={{ gap: '8px' }}>Отправить <ArrowRight size={15} /></button></div>
               </form>
             </div>
 
-            {/* Contact details */}
             <div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem', letterSpacing: '-0.01em' }}>
-                Контактная информация
-              </h3>
-              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '2rem', fontSize: '0.9rem' }}>
-                Вы можете связаться с нами по любым вопросам. Служба поддержки работает в рабочие часы. Онлайн-заявки принимаются круглосуточно.
+              <h3 style={{ fontSize: '1.1875rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem', letterSpacing: '-0.01em' }}>Контактная информация</h3>
+              <p style={{ color: '#4A6580', lineHeight: 1.7, marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                Служба поддержки работает в рабочие часы. Онлайн-заявки принимаются круглосуточно.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {[
-                  { icon: <MapPin size={16} />,  label: 'Адрес',  value: '18 Lower Baggot Street, Dublin 2, Ireland', href: null },
-                  { icon: <Mail size={16} />,    label: 'Email',  value: 'support@lumenbridge.example', href: 'mailto:support@lumenbridge.example' },
-                  { icon: <Phone size={16} />,   label: 'Телефон', value: '+353 1 531 8420', href: 'tel:+35315318420' },
-                ].map(({ icon, label, value, href }) => (
-                  <div key={label} style={{ display: 'flex', gap: '1rem', padding: '1.25rem 0', borderBottom: '1px solid rgba(13,27,42,0.06)', alignItems: 'flex-start' }}>
-                    <div style={{ width: '36px', height: '36px', background: '#F2F5F8', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
+                  { icon: <MapPin size={15} />,  label: 'Адрес',   v: '18 Lower Baggot Street, Dublin 2, Ireland' },
+                  { icon: <Mail size={15} />,    label: 'Email',   v: 'support@lumenbridge.example' },
+                  { icon: <Phone size={15} />,   label: 'Телефон', v: '+353 1 531 8420' },
+                ].map(({ icon, label, v }) => (
+                  <div key={label} style={{ display: 'flex', gap: '1rem', padding: '1.125rem 0', borderBottom: '1px solid rgba(13,27,42,0.05)', alignItems: 'flex-start' }}>
+                    <div style={{ width: '36px', height: '36px', background: '#F2F5F8', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
                       {icon}
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4A6580', fontWeight: 600, marginBottom: '2px' }}>{label}</p>
-                      {href
-                        ? <a href={href} style={{ color: '#0D1B2A', fontWeight: 500, fontSize: '0.9375rem', transition: 'color 150ms' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#2E7DF7'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#0D1B2A'; }}>{value}</a>
-                        : <p style={{ color: '#0D1B2A', fontWeight: 500, fontSize: '0.9375rem' }}>{value}</p>}
+                      <p style={{ fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4A6580', fontWeight: 700, marginBottom: '2px' }}>{label}</p>
+                      <p style={{ color: '#0D1B2A', fontWeight: 500, fontSize: '0.9375rem' }}>{v}</p>
                     </div>
                   </div>
                 ))}
