@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lumenbridge-postgres
+    environment:
+      POSTGRES_DB: lumenbridge
+      POSTGRES_USER: lumenuser
+      POSTGRES_PASSWORD: lumenpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
