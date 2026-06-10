@@ -9,7 +9,12 @@ async function request<T>(
     ...options,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message ?? 'Ошибка запроса');
+  if (!res.ok) {
+    // NestJS class-validator returns message as string[] on 400
+    const raw = data.message;
+    const msg = Array.isArray(raw) ? raw[0] : (raw ?? 'Ошибка запроса');
+    throw new Error(String(msg));
+  }
   return data as T;
 }
 
