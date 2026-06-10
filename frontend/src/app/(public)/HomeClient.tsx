@@ -15,7 +15,9 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         </span>
       </button>
       <div className={`accordion-body${open ? ' open' : ''}`}>
-        <p>{a}</p>
+        <div className="accordion-body-inner">
+          <p>{a}</p>
+        </div>
       </div>
     </div>
   );

@@ -9,49 +9,80 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
-   Network illustration — граф финансовой сети, чистая абстракция
+   Liquidity Wave — переплетающиеся синусоиды + изометрическая
+   сетка. Математически выверенная финтех-абстракция глубины.
+   Чистая декорация: без цифр, текста, стрелок.
    ───────────────────────────────────────────────────────────── */
-function NetworkIllustration() {
-  const nodes: Array<{ x: number; y: number; accent: boolean }> = [
-    { x: 50,  y: 75,  accent: false },
-    { x: 130, y: 38,  accent: true  },
-    { x: 218, y: 58,  accent: false },
-    { x: 308, y: 88,  accent: false },
-    { x: 372, y: 48,  accent: true  },
-    { x: 82,  y: 158, accent: false },
-    { x: 184, y: 144, accent: true  },
-    { x: 278, y: 158, accent: false },
-    { x: 354, y: 192, accent: false },
-    { x: 38,  y: 240, accent: false },
-    { x: 144, y: 222, accent: false },
-    { x: 244, y: 238, accent: false },
-    { x: 326, y: 272, accent: true  },
-    { x: 390, y: 232, accent: false },
-    { x: 198, y: 292, accent: false },
-  ];
-  const edges: [number, number][] = [
-    [0,1],[0,5],[1,2],[1,6],[2,3],[2,6],[3,4],[3,7],[4,8],
-    [5,6],[5,9],[5,10],[6,7],[6,10],[6,11],[7,8],[7,11],
-    [8,12],[8,13],[9,10],[10,11],[10,14],[11,12],[11,14],[12,13],[12,14],
-  ];
+function LiquidityWave() {
+  const W = 440;
+  const H = 300;
+
+  // Генерируем семейство синусоид с нарастающей фазой/амплитудой
+  const waves = Array.from({ length: 7 }, (_, i) => {
+    const amp = 26 + i * 4;
+    const yBase = 60 + i * 28;
+    const phase = i * 0.5;
+    const pts: string[] = [];
+    for (let x = 0; x <= W; x += 8) {
+      const y = yBase + Math.sin((x / W) * Math.PI * 2 + phase) * amp;
+      pts.push(`${x},${y.toFixed(1)}`);
+    }
+    return { pts: pts.join(' '), opacity: 0.05 + i * 0.025, accent: i === 3 };
+  });
+
+  // Изометрические направляющие
+  const isoLines = Array.from({ length: 9 }, (_, i) => i * 55);
+
   return (
-    <svg viewBox="0 0 420 310" fill="none" style={{ width: '100%', maxWidth: '420px', display: 'block' }} aria-hidden>
-      {[0,1,2,3,4,5,6,7,8].map(i => <line key={`gv${i}`} x1={i*60} y1="0" x2={i*60} y2="310" stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"/>)}
-      {[0,1,2,3,4,5].map(i => <line key={`gh${i}`} x1="0" y1={i*62} x2="420" y2={i*62} stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"/>)}
-      {edges.map(([a,b],i) => (
-        <line key={`e${i}`} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
-          stroke={(nodes[a].accent||nodes[b].accent) ? 'rgba(46,125,247,0.14)' : 'rgba(13,27,42,0.09)'}
-          strokeWidth="0.75"/>
-      ))}
-      {nodes.filter(n=>!n.accent).map((n,i) => <circle key={`rn${i}`} cx={n.x} cy={n.y} r="2.5" fill="rgba(13,27,42,0.18)"/>)}
-      {nodes.filter(n=>n.accent).map((n,i) => (
-        <g key={`an${i}`}>
-          <circle cx={n.x} cy={n.y} r="12" fill="rgba(46,125,247,0.06)"/>
-          <circle cx={n.x} cy={n.y} r="6"  fill="rgba(46,125,247,0.12)"/>
-          <circle cx={n.x} cy={n.y} r="3"  fill="rgba(46,125,247,0.75)"/>
-          <circle cx={n.x} cy={n.y} r="5"  stroke="rgba(46,125,247,0.25)" strokeWidth="0.75" fill="none"/>
-        </g>
-      ))}
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" style={{ width: '100%', maxWidth: '440px', display: 'block' }} aria-hidden>
+      <defs>
+        <linearGradient id="lw-fade" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#fff" stopOpacity="0" />
+          <stop offset="15%"  stopColor="#fff" stopOpacity="1" />
+          <stop offset="85%"  stopColor="#fff" stopOpacity="1" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <mask id="lw-mask">
+          <rect x="0" y="0" width={W} height={H} fill="url(#lw-fade)" />
+        </mask>
+      </defs>
+
+      <g mask="url(#lw-mask)">
+        {/* Изометрическая сетка — диагонали в двух направлениях */}
+        {isoLines.map((off, i) => (
+          <line key={`iso-a${i}`} x1={off} y1="0" x2={off + 160} y2={H}
+            stroke="rgba(13,27,42,0.05)" strokeWidth="1" />
+        ))}
+        {isoLines.map((off, i) => (
+          <line key={`iso-b${i}`} x1={off} y1="0" x2={off - 160} y2={H}
+            stroke="rgba(13,27,42,0.035)" strokeWidth="1" />
+        ))}
+
+        {/* Семейство переплетающихся волн */}
+        {waves.map((w, i) => (
+          <polyline
+            key={`w${i}`}
+            points={w.pts}
+            fill="none"
+            stroke={w.accent ? 'rgba(46,125,247,0.55)' : 'rgba(13,27,42,0.4)'}
+            strokeOpacity={w.accent ? 0.9 : w.opacity}
+            strokeWidth={w.accent ? '1.5' : '1'}
+            strokeLinecap="round"
+          />
+        ))}
+      </g>
+
+      {/* Точки-узлы на акцентной волне */}
+      {[0.2, 0.5, 0.8].map((t, i) => {
+        const x = t * W;
+        const y = 60 + 3 * 28 + Math.sin(t * Math.PI * 2 + 1.5) * (26 + 3 * 4);
+        return (
+          <g key={`node${i}`}>
+            <circle cx={x} cy={y} r="9" fill="rgba(46,125,247,0.08)" />
+            <circle cx={x} cy={y} r="3.5" fill="rgba(46,125,247,0.8)" />
+          </g>
+        );
+      })}
     </svg>
   );
 }
@@ -122,19 +153,18 @@ export default function HomePage() {
 
             {/* Правая колонка — калькулятор поверх glass_struct */}
             <div className="hero-calc anim-fade-up-1" style={{ position: 'relative' }}>
-              {/* Фоновое изображение */}
-              <div style={{
-                position: 'absolute', inset: '-16px',
-                borderRadius: '28px',
-                overflow: 'hidden',
+              {/* Фоновое изображение — чёткое, contain, без зума */}
+              <div aria-hidden style={{
+                position: 'absolute', inset: '-40px -32px',
                 zIndex: 0,
+                pointerEvents: 'none',
               }}>
                 <Image
                   src="/images/glass_struct.png"
                   alt=""
                   fill
-                  sizes="(max-width:1023px) 0px, 45vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.22 }}
+                  sizes="(max-width:1023px) 0px, 560px"
+                  style={{ objectFit: 'contain', objectPosition: 'center', opacity: 0.35 }}
                   priority
                 />
               </div>
@@ -148,31 +178,18 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════
-          3. ОСНОВНЫЕ УСЛОВИЯ + fintech_photography
+          3. ОСНОВНЫЕ УСЛОВИЯ
       ══════════════════════════════════════════════ */}
       <section style={{ background: '#fff', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          {/* Шапка с изображением */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3.5rem', alignItems: 'center', marginBottom: '3rem' }} className="grid-2-resp">
-            <div>
-              <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>Условия</p>
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
-                Основные условия
-              </h2>
-              <p style={{ color: '#4A6580', lineHeight: 1.7, fontSize: '0.9375rem' }}>
-                Итоговые условия зависят от результатов проверки клиента и предоставленных данных.
-              </p>
-            </div>
-            {/* fintech_photography */}
-            <div style={{ borderRadius: '20px', overflow: 'hidden', position: 'relative', aspectRatio: '16/9', boxShadow: '0 1px 3px rgba(13,27,42,0.06), 0 8px 24px rgba(13,27,42,0.08)', border: '1px solid rgba(13,27,42,0.06)' }}>
-              <Image
-                src="/images/fintech_photography.png"
-                alt=""
-                fill
-                sizes="(max-width:767px) 100vw, 45vw"
-                style={{ objectFit: 'cover', objectPosition: 'center' }}
-              />
-            </div>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>Условия</p>
+            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.75rem' }}>
+              Основные условия
+            </h2>
+            <p style={{ color: '#4A6580', lineHeight: 1.7, fontSize: '0.9375rem', maxWidth: '52ch', margin: '0 auto' }}>
+              Итоговые условия зависят от результатов проверки клиента и предоставленных данных.
+            </p>
           </div>
 
           {/* Карточки условий */}
@@ -196,7 +213,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           4. КОГДА ДЕНЬГИ НУЖНЫ СЕЙЧАС
       ══════════════════════════════════════════════ */}
-      <section style={{ background: '#F2F5F8', padding: '72px 32px' }}>
+      <section style={{ background: '#E8ECF0', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'end', marginBottom: '2.5rem' }} className="grid-2-resp">
             <div>
@@ -343,7 +360,7 @@ export default function HomePage() {
       {/* ══════════════════════════════════════════════
           8. УЛУЧШЕНИЕ КРЕДИТНОЙ ИСТОРИИ
       ══════════════════════════════════════════════ */}
-      <section style={{ background: '#F2F5F8', padding: '72px 32px' }}>
+      <section style={{ background: '#E8ECF0', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }} className="grid-2-resp">
             <div>
@@ -370,9 +387,9 @@ export default function HomePage() {
                 Начать с небольшого займа <ArrowRight size={15} />
               </Link>
             </div>
-            {/* Network illustration */}
+            {/* Liquidity wave illustration */}
             <div className="bento-card" style={{ background: '#fff', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', minHeight: '260px' }}>
-              <NetworkIllustration />
+              <LiquidityWave />
             </div>
           </div>
         </div>
@@ -380,12 +397,23 @@ export default function HomePage() {
 
       {/* ══════════════════════════════════════════════
           9. ДЛЯ БИЗНЕСА — Editorial layout с professional.png
+          fintech_photography — едва заметный фон секции
       ══════════════════════════════════════════════ */}
       <section style={{ background: '#0D1B2A', padding: '72px 32px', position: 'relative', overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', top: '-120px', right: '-120px', width: '600px', height: '600px', background: 'radial-gradient(circle,rgba(201,146,58,0.07) 0%,transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          {/* Журнальный асимметричный layout */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }} className="grid-2-resp">
+        {/* Едва заметный полноэкранный фон */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+          <Image
+            src="/images/fintech_photography.png"
+            alt=""
+            fill
+            sizes="100vw"
+            style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.06, mixBlendMode: 'luminosity' }}
+          />
+        </div>
+        <div aria-hidden style={{ position: 'absolute', top: '-120px', right: '-120px', width: '600px', height: '600px', background: 'radial-gradient(circle,rgba(201,146,58,0.07) 0%,transparent 65%)', pointerEvents: 'none', zIndex: 0 }} />
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Журнальный асимметричный layout: текст доминирует (7fr / 5fr) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '4rem', alignItems: 'center' }} className="grid-2-resp">
             {/* Левая: текст */}
             <div>
               <div style={{ width: '32px', height: '2px', background: '#C9923A', borderRadius: '99px', marginBottom: '1.25rem' }} />
@@ -425,17 +453,28 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Правая: professional.png */}
-            <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', aspectRatio: '4/5', boxShadow: '0 2px 8px rgba(13,27,42,0.3), 0 16px 48px rgba(13,27,42,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <Image
-                src="/images/professional.png"
-                alt=""
-                fill
-                sizes="(max-width:767px) 100vw, 45vw"
-                style={{ objectFit: 'cover', objectPosition: 'center top' }}
-              />
-              {/* Тонкий градиент снизу для плавного перехода */}
-              <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, rgba(13,27,42,0.6) 0%, transparent 100%)' }} />
+            {/* Правая: professional.png — ограничен по размеру */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxWidth: '360px',
+                maxHeight: '420px',
+                aspectRatio: '4/5',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                boxShadow: '0 2px 8px rgba(13,27,42,0.3), 0 16px 48px rgba(13,27,42,0.4)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                <Image
+                  src="/images/professional.png"
+                  alt=""
+                  fill
+                  sizes="(max-width:767px) 100vw, 360px"
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
+                />
+                <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%', background: 'linear-gradient(to top, rgba(13,27,42,0.55) 0%, transparent 100%)' }} />
+              </div>
             </div>
           </div>
         </div>
@@ -552,7 +591,7 @@ export default function HomePage() {
                   { icon: <Phone size={15} />,   label: 'Телефон', v: '+353 1 531 8420' },
                 ].map(({ icon, label, v }) => (
                   <div key={label} style={{ display: 'flex', gap: '1rem', padding: '1rem 0', borderBottom: '1px solid rgba(13,27,42,0.05)', alignItems: 'flex-start' }}>
-                    <div style={{ width: '36px', height: '36px', background: '#F2F5F8', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
+                    <div style={{ width: '36px', height: '36px', background: '#E8ECF0', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
                       {icon}
                     </div>
                     <div>

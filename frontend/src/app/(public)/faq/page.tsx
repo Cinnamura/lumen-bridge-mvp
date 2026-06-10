@@ -38,7 +38,9 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
         </span>
       </button>
       <div className={`accordion-body${open ? ' open' : ''}`}>
-        <p>{a}</p>
+        <div className="accordion-body-inner">
+          <p>{a}</p>
+        </div>
       </div>
     </div>
   );
@@ -50,7 +52,7 @@ export default function FaqPage() {
 
   return (
     <>
-      <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: '#0D1B2A', padding: '120px 32px 72px', position: 'relative', overflow: 'hidden' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 60%, rgba(46,125,247,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', position: 'relative' }}>
           <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '1rem' }}>FAQ</p>
@@ -63,7 +65,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      <section style={{ background: '#fff', padding: '100px 32px' }}>
+      <section style={{ background: '#fff', padding: '72px 32px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           {/* Tabs */}
           <div style={{ display: 'flex', gap: '4px', marginBottom: '2.5rem', background: '#F2F5F8', borderRadius: '12px', padding: '4px' }}>

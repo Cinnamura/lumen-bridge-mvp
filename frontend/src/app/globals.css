@@ -373,12 +373,17 @@ input[type=number] { -moz-appearance: textfield; }
 }
 .accordion-icon.open { transform: rotate(45deg); }
 .accordion-body {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height var(--dur-slow) var(--ease-out),
-              padding var(--dur-base) var(--ease-out);
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-slow) var(--ease-out);
 }
-.accordion-body.open { max-height: 600px; }
+.accordion-body.open {
+  grid-template-rows: 1fr;
+}
+.accordion-body > .accordion-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
 .accordion-body p {
   padding-bottom: 1.25rem;
   color: var(--c-muted);
