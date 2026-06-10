@@ -9,80 +9,97 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
-   Liquidity Wave — переплетающиеся синусоиды + изометрическая
-   сетка. Математически выверенная финтех-абстракция глубины.
-   Чистая декорация: без цифр, текста, стрелок.
+   Ascending Liquidity Curve — «Вектор Ускорения».
+   Плавная восходящая экспоненциальная кривая: градиент
+   accent → серебро, растворение в технический пунктир,
+   светящиеся узлы-транши с пульсацией. Без цифр и текста.
    ───────────────────────────────────────────────────────────── */
-function LiquidityWave() {
+function AscendingCurve() {
   const W = 440;
   const H = 300;
+  const pad = 32;
 
-  // Генерируем семейство синусоид с нарастающей фазой/амплитудой
-  const waves = Array.from({ length: 7 }, (_, i) => {
-    const amp = 26 + i * 4;
-    const yBase = 60 + i * 28;
-    const phase = i * 0.5;
-    const pts: string[] = [];
-    for (let x = 0; x <= W; x += 8) {
-      const y = yBase + Math.sin((x / W) * Math.PI * 2 + phase) * amp;
-      pts.push(`${x},${y.toFixed(1)}`);
-    }
-    return { pts: pts.join(' '), opacity: 0.05 + i * 0.025, accent: i === 3 };
-  });
+  // Экспоненциальная кривая роста: y = baseline - k*(e^(t*g) - 1)
+  const x0 = pad;
+  const x1 = W - pad;
+  const yBottom = H - pad;
+  const yTop = pad + 8;
+  const g = 2.6; // крутизна экспоненты
+  const denom = Math.exp(g) - 1;
 
-  // Изометрические направляющие
-  const isoLines = Array.from({ length: 9 }, (_, i) => i * 55);
+  const px = (t: number) => x0 + t * (x1 - x0);
+  const py = (t: number) => yBottom - ((Math.exp(t * g) - 1) / denom) * (yBottom - yTop);
+
+  // Строим гладкий путь (Catmull-Rom → кубические Безье упрощённо через много точек)
+  const steps = 48;
+  const solidEnd = 0.78; // до этой доли — сплошная линия, дальше пунктир
+  const solidPts: string[] = [];
+  const dashPts: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const point = `${px(t).toFixed(1)},${py(t).toFixed(1)}`;
+    if (t <= solidEnd) solidPts.push(point);
+    if (t >= solidEnd) dashPts.push(point);
+  }
+
+  // Площадь под сплошной частью
+  const areaPath =
+    `M ${px(0)},${yBottom} ` +
+    solidPts.map(p => `L ${p}`).join(' ') +
+    ` L ${px(solidEnd)},${yBottom} Z`;
+
+  // Узлы-транши на ключевых долях
+  const nodeTs = [0.22, 0.5, 0.74];
+
+  // Вертикальные направляющие (едва заметная сетка)
+  const guides = [0.25, 0.5, 0.75];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" style={{ width: '100%', maxWidth: '440px', display: 'block' }} aria-hidden>
       <defs>
-        <linearGradient id="lw-fade" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#fff" stopOpacity="0" />
-          <stop offset="15%"  stopColor="#fff" stopOpacity="1" />
-          <stop offset="85%"  stopColor="#fff" stopOpacity="1" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+        <linearGradient id="ac-line" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#4A6580" stopOpacity="0.35" />
+          <stop offset="55%"  stopColor="#2E7DF7" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#2E7DF7" stopOpacity="1" />
         </linearGradient>
-        <mask id="lw-mask">
-          <rect x="0" y="0" width={W} height={H} fill="url(#lw-fade)" />
-        </mask>
+        <linearGradient id="ac-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#2E7DF7" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#2E7DF7" stopOpacity="0" />
+        </linearGradient>
       </defs>
 
-      <g mask="url(#lw-mask)">
-        {/* Изометрическая сетка — диагонали в двух направлениях */}
-        {isoLines.map((off, i) => (
-          <line key={`iso-a${i}`} x1={off} y1="0" x2={off + 160} y2={H}
-            stroke="rgba(13,27,42,0.05)" strokeWidth="1" />
-        ))}
-        {isoLines.map((off, i) => (
-          <line key={`iso-b${i}`} x1={off} y1="0" x2={off - 160} y2={H}
-            stroke="rgba(13,27,42,0.035)" strokeWidth="1" />
-        ))}
+      {/* Базовая ось */}
+      <line x1={x0} y1={yBottom} x2={x1} y2={yBottom} stroke="rgba(74,101,128,0.18)" strokeWidth="1" />
 
-        {/* Семейство переплетающихся волн */}
-        {waves.map((w, i) => (
-          <polyline
-            key={`w${i}`}
-            points={w.pts}
-            fill="none"
-            stroke={w.accent ? 'rgba(46,125,247,0.55)' : 'rgba(13,27,42,0.4)'}
-            strokeOpacity={w.accent ? 0.9 : w.opacity}
-            strokeWidth={w.accent ? '1.5' : '1'}
-            strokeLinecap="round"
-          />
-        ))}
-      </g>
+      {/* Вертикальные направляющие */}
+      {guides.map((t, i) => (
+        <line key={`g${i}`} x1={px(t)} y1={yBottom} x2={px(t)} y2={py(t)}
+          stroke="rgba(74,101,128,0.10)" strokeWidth="1" strokeDasharray="2 4" />
+      ))}
 
-      {/* Точки-узлы на акцентной волне */}
-      {[0.2, 0.5, 0.8].map((t, i) => {
-        const x = t * W;
-        const y = 60 + 3 * 28 + Math.sin(t * Math.PI * 2 + 1.5) * (26 + 3 * 4);
-        return (
-          <g key={`node${i}`}>
-            <circle cx={x} cy={y} r="9" fill="rgba(46,125,247,0.08)" />
-            <circle cx={x} cy={y} r="3.5" fill="rgba(46,125,247,0.8)" />
-          </g>
-        );
-      })}
+      {/* Площадь под кривой */}
+      <path d={areaPath} fill="url(#ac-area)" />
+
+      {/* Сплошная часть кривой */}
+      <polyline points={solidPts.join(' ')} fill="none"
+        stroke="url(#ac-line)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Пунктирное растворение */}
+      <polyline points={dashPts.join(' ')} fill="none"
+        stroke="#2E7DF7" strokeOpacity="0.6" strokeWidth="1.5"
+        strokeLinecap="round" strokeDasharray="1 6" />
+
+      {/* Финальная стрелка-наконечник растворяется — лёгкий блик */}
+      <circle cx={px(1)} cy={py(1)} r="3" fill="#2E7DF7" fillOpacity="0.5" />
+
+      {/* Узлы-транши с пульсацией */}
+      {nodeTs.map((t, i) => (
+        <g key={`n${i}`}>
+          <circle cx={px(t)} cy={py(t)} r="8" fill="#2E7DF7" fillOpacity="0.12" className="curve-pulse" style={{ animationDelay: `${i * 0.5}s` }} />
+          <circle cx={px(t)} cy={py(t)} r="4" fill="#fff" stroke="#2E7DF7" strokeWidth="1.5" />
+          <circle cx={px(t)} cy={py(t)} r="1.5" fill="#2E7DF7" />
+        </g>
+      ))}
     </svg>
   );
 }
@@ -151,25 +168,27 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Правая колонка — калькулятор поверх glass_struct */}
+            {/* Правая колонка — калькулятор поверх calculator_bg */}
             <div className="hero-calc anim-fade-up-1" style={{ position: 'relative' }}>
-              {/* Фоновое изображение — чёткое, contain, без зума */}
+              {/* Фоновая текстура (вертикальная 3:4), мягкая глубина под слайдерами */}
               <div aria-hidden style={{
-                position: 'absolute', inset: '-40px -32px',
+                position: 'absolute', inset: 0,
                 zIndex: 0,
                 pointerEvents: 'none',
+                borderRadius: '20px',
+                overflow: 'hidden',
               }}>
                 <Image
-                  src="/images/glass_struct.png"
+                  src="/images/calculator_bg.png"
                   alt=""
                   fill
-                  sizes="(max-width:1023px) 0px, 560px"
-                  style={{ objectFit: 'contain', objectPosition: 'center', opacity: 0.35 }}
+                  sizes="(max-width:1023px) 0px, 520px"
+                  style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.4, mixBlendMode: 'screen' }}
                   priority
                 />
               </div>
               {/* Карточка калькулятора */}
-              <div className="bento-dark" style={{ position: 'relative', zIndex: 1, padding: '2rem' }}>
+              <div className="bento-dark" style={{ position: 'relative', zIndex: 1, padding: '2rem', background: 'rgba(13,27,42,0.55)' }}>
                 <LoanCalculator dark />
               </div>
             </div>
@@ -192,19 +211,38 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Карточки условий */}
-          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
-            {[
-              { label: 'Сумма',             value: 'от 500 до 50 000 EUR' },
-              { label: 'Срок',              value: 'от 7 до 90 дней' },
-              { label: 'Процентная ставка', value: 'определяется индивидуально' },
-              { label: 'Погашение',         value: 'равными платежами' },
-            ].map((c, i) => (
-              <div key={c.label} className={`bento-card reveal reveal-${i+1}`} style={{ textAlign: 'center', cursor: 'default' }}>
-                <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>{c.label}</p>
-                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em', lineHeight: 1.4 }}>{c.value}</p>
+          {/* Bento-сетка условий: асимметрия + контрастные акценты */}
+          <div className="bento-conditions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: '1.25rem' }}>
+            {/* Сумма — крупная карточка на тёмном фоне, 2 колонки */}
+            <div className="bento-card reveal reveal-1 bento-span-2" style={{ gridColumn: 'span 2', cursor: 'default', background: '#0D1B2A', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.75rem' }}>Сумма</p>
+              <p style={{ fontFamily: 'var(--f-mono)', fontSize: 'clamp(1.375rem,2.5vw,1.875rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                от 500 до 50 000 <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.7em' }}>EUR</span>
+              </p>
+            </div>
+
+            {/* Срок — стандартная белая */}
+            <div className="bento-card reveal reveal-2" style={{ cursor: 'default', background: '#fff', border: '1px solid rgba(232,236,240,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.625rem' }}>Срок</p>
+              <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em', lineHeight: 1.4 }}>от 7 до 90 дней</p>
+            </div>
+
+            {/* Погашение — стандартная белая */}
+            <div className="bento-card reveal reveal-3" style={{ cursor: 'default', background: '#fff', border: '1px solid rgba(232,236,240,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.625rem' }}>Погашение</p>
+              <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em', lineHeight: 1.4 }}>равными платежами</p>
+            </div>
+
+            {/* Процентная ставка — вытянутая на сером фоне, 4 колонки */}
+            <div className="bento-card reveal reveal-4 bento-span-4" style={{ gridColumn: 'span 4', cursor: 'default', background: '#E8ECF0', border: '1px solid rgba(13,27,42,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div>
+                <p style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.375rem' }}>Процентная ставка</p>
+                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em' }}>определяется индивидуально</p>
               </div>
-            ))}
+              <p style={{ fontSize: '0.8125rem', color: '#4A6580', maxWidth: '40ch', lineHeight: 1.55 }}>
+                Точные условия формируются после анализа заявки и зависят от профиля клиента.
+              </p>
+            </div>
           </div>
         </div>
         <HomeClient section="conditions" />
@@ -226,21 +264,46 @@ export default function HomePage() {
               Не все финансовые вопросы можно отложить. Иногда важно принять решение быстро — без сложных процедур и ожиданий.
             </p>
           </div>
-          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
-            {[
-              { icon: <Zap size={20} />,       title: 'Срочные расходы', desc: 'Неожиданные платежи, которые нельзя перенести' },
-              { icon: <Clock size={20} />,      title: 'Задержка дохода', desc: 'Когда деньги нужны сейчас, а поступления позже' },
-              { icon: <FileText size={20} />,   title: 'Бизнес-задачи',   desc: 'Кассовые разрывы или операционные расходы' },
-              { icon: <TrendingUp size={20} />, title: 'Возможности',     desc: 'Ситуации, где важно действовать без промедления' },
-            ].map((c, i) => (
-              <div key={c.title} className={`bento-card reveal reveal-${i+1}`} style={{ cursor: 'default' }}>
-                <div style={{ width: '42px', height: '42px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', marginBottom: '1rem' }}>
-                  {c.icon}
-                </div>
-                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>{c.title}</h3>
-                <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.65 }}>{c.desc}</p>
+          <div className="bento-usecases" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: '1.25rem' }}>
+            {/* Срочные расходы — большая акцентная тёмная, 2 колонки + 2 ряда */}
+            <div className="bento-card reveal reveal-1 bento-feature" style={{ gridColumn: 'span 2', gridRow: 'span 2', cursor: 'default', background: '#0D1B2A', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '240px' }}>
+              <div style={{ width: '48px', height: '48px', background: 'rgba(46,125,247,0.15)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7' }}>
+                <Zap size={24} />
               </div>
-            ))}
+              <div>
+                <h3 style={{ fontFamily: 'var(--f-display)', fontSize: '1.5rem', fontWeight: 400, color: '#fff', marginBottom: '0.5rem', letterSpacing: '-0.01em' }}>Срочные расходы</h3>
+                <p style={{ fontSize: '0.9375rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, maxWidth: '32ch' }}>Неожиданные платежи, которые нельзя перенести</p>
+              </div>
+            </div>
+
+            {/* Задержка дохода — стандартная белая */}
+            <div className="bento-card reveal reveal-2" style={{ cursor: 'default', background: '#fff', border: '1px solid rgba(232,236,240,0.7)' }}>
+              <div style={{ width: '42px', height: '42px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', marginBottom: '1rem' }}>
+                <Clock size={20} />
+              </div>
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>Задержка дохода</h3>
+              <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.65 }}>Когда деньги нужны сейчас, а поступления позже</p>
+            </div>
+
+            {/* Бизнес-задачи — стандартная белая */}
+            <div className="bento-card reveal reveal-3" style={{ cursor: 'default', background: '#fff', border: '1px solid rgba(232,236,240,0.7)' }}>
+              <div style={{ width: '42px', height: '42px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', marginBottom: '1rem' }}>
+                <FileText size={20} />
+              </div>
+              <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>Бизнес-задачи</h3>
+              <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.65 }}>Кассовые разрывы или операционные расходы</p>
+            </div>
+
+            {/* Возможности — серая вытянутая на 2 колонки */}
+            <div className="bento-card reveal reveal-4 bento-span-2" style={{ gridColumn: 'span 2', cursor: 'default', background: '#E8ECF0', border: '1px solid rgba(13,27,42,0.06)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ width: '42px', height: '42px', background: 'rgba(46,125,247,0.08)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2E7DF7', flexShrink: 0 }}>
+                <TrendingUp size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.25rem' }}>Возможности</h3>
+                <p style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.6 }}>Ситуации, где важно действовать без промедления</p>
+              </div>
+            </div>
           </div>
         </div>
         <HomeClient section="usecases" />
@@ -387,16 +450,16 @@ export default function HomePage() {
                 Начать с небольшого займа <ArrowRight size={15} />
               </Link>
             </div>
-            {/* Liquidity wave illustration */}
+            {/* Ascending liquidity curve — вектор ускорения */}
             <div className="bento-card" style={{ background: '#fff', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', minHeight: '260px' }}>
-              <LiquidityWave />
+              <AscendingCurve />
             </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════
-          9. ДЛЯ БИЗНЕСА — Editorial layout с professional.png
+          9. ДЛЯ БИЗНЕСА — Editorial layout
           fintech_photography — едва заметный фон секции
       ══════════════════════════════════════════════ */}
       <section style={{ background: '#0D1B2A', padding: '72px 32px', position: 'relative', overflow: 'hidden' }}>
@@ -453,27 +516,25 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Правая: professional.png — ограничен по размеру */}
+            {/* Правая: business_handshake */}
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div style={{
                 position: 'relative',
                 width: '100%',
-                maxWidth: '360px',
-                maxHeight: '420px',
-                aspectRatio: '4/5',
-                borderRadius: '20px',
+                maxHeight: '360px',
+                aspectRatio: '16/10',
+                borderRadius: '16px',
                 overflow: 'hidden',
                 boxShadow: '0 2px 8px rgba(13,27,42,0.3), 0 16px 48px rgba(13,27,42,0.4)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(232,236,240,0.3)',
               }}>
                 <Image
-                  src="/images/professional.png"
+                  src="/images/business_handshake.png"
                   alt=""
                   fill
-                  sizes="(max-width:767px) 100vw, 360px"
+                  sizes="(max-width:767px) 100vw, 500px"
                   style={{ objectFit: 'cover', objectPosition: 'center' }}
                 />
-                <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%', background: 'linear-gradient(to top, rgba(13,27,42,0.55) 0%, transparent 100%)' }} />
               </div>
             </div>
           </div>
