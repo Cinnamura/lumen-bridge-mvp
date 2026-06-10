@@ -243,7 +243,7 @@ function CalcInner({ amount, days, payment, total, setAmount, setDays }: {
           Расчёт носит ознакомительный характер. Итоговые условия зависят от результатов проверки клиента.
         </p>
 
-        <Link href="/apply" className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '8px' }}>
+        <Link href={`/apply?amount=${amount}&termDays=${days}`} className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '8px' }}>
           Подать заявку <ArrowRight size={15} />
         </Link>
       </div>
