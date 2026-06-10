@@ -73,6 +73,9 @@ export function HomeClient({ section }: { section: string }) {
               Смотреть все вопросы <ArrowRight size={15} />
             </Link>
           </div>
+          <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8125rem', color: '#4A6580' }}>
+            Если вы не нашли нужную информацию, вы можете связаться с нами через форму обратной связи.
+          </p>
         </div>
       </section>
     );
