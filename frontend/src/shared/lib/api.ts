@@ -4,9 +4,14 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  // Destructure headers out so the ...rest spread never overwrites Content-Type
+  const { headers: extraHeaders, ...rest } = options;
   const res = await fetch(`${BASE_URL}/api${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
+    ...rest,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(extraHeaders as Record<string, string> | undefined ?? {}),
+    },
   });
   const data = await res.json();
   if (!res.ok) {
@@ -20,13 +25,13 @@ async function request<T>(
 
 export const api = {
   post: <T>(path: string, body: unknown, headers?: Record<string, string>) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body), headers }),
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), ...(headers ? { headers } : {}) }),
 
   get: <T>(path: string, headers?: Record<string, string>) =>
-    request<T>(path, { method: 'GET', headers }),
+    request<T>(path, { method: 'GET', ...(headers ? { headers } : {}) }),
 
   patch: <T>(path: string, body: unknown, headers?: Record<string, string>) =>
-    request<T>(path, { method: 'PATCH', body: JSON.stringify(body), headers }),
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body), ...(headers ? { headers } : {}) }),
 };
 
 export function authHeader(token: string) {
