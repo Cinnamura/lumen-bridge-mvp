@@ -5,7 +5,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Header />
-      <main style={{ paddingTop: '64px' }}>{children}</main>
+      <main style={{ paddingTop: '0' }}>{children}</main>
       <Footer />
     </>
   );

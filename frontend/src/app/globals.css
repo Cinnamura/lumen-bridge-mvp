@@ -446,18 +446,18 @@ input[type=number] { -moz-appearance: textfield; }
    RESPONSIVE
    ════════════════════════════════════════════════════ */
 @media (max-width: 1023px) {
-  .hero-grid { grid-template-columns: 1fr !important; }
-  .hero-calc { display: none !important; }
-  .section, .section-lg { padding-top: 80px; padding-bottom: 80px; }
+  /* Hero: single column — calculator shows BELOW text */
+  .hero-grid { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+  /* Remove display:none — calc renders under text on mobile */
+  .hero-calc { display: block !important; }
 }
 @media (max-width: 767px) {
   .wrap, .wrap-sm, .wrap-md { padding: 0 20px; }
-  .section, .section-sm, .section-lg { padding-left: 20px; padding-right: 20px; }
   .grid-4-resp  { grid-template-columns: repeat(2, 1fr) !important; }
   .grid-3-resp  { grid-template-columns: 1fr !important; }
   .grid-2-resp  { grid-template-columns: 1fr !important; }
   .hdr-desktop  { display: none !important; }
-  .hdr-burger   { display: flex  !important; }
+  .hdr-burger   { display: flex !important; }
   .footer-grid  { grid-template-columns: repeat(2, 1fr) !important; }
 }
 @media (max-width: 480px) {

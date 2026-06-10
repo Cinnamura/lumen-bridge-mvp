@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
 import { HomeClient } from './HomeClient';
 import {
@@ -8,103 +9,47 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
-   Network Illustration — тонкая сеть узлов и линий.
-   Визуальная метафора «моста» и движения капитала.
-   Никаких данных, цифр, стрелок — чистая абстракция.
+   Network illustration — граф финансовой сети, чистая абстракция
    ───────────────────────────────────────────────────────────── */
 function NetworkIllustration() {
-  // Узлы сети
   const nodes: Array<{ x: number; y: number; accent: boolean }> = [
     { x: 50,  y: 75,  accent: false },
-    { x: 130, y: 38,  accent: true  },  // акцент
+    { x: 130, y: 38,  accent: true  },
     { x: 218, y: 58,  accent: false },
     { x: 308, y: 88,  accent: false },
-    { x: 372, y: 48,  accent: true  },  // акцент
+    { x: 372, y: 48,  accent: true  },
     { x: 82,  y: 158, accent: false },
-    { x: 184, y: 144, accent: true  },  // главный хаб
+    { x: 184, y: 144, accent: true  },
     { x: 278, y: 158, accent: false },
     { x: 354, y: 192, accent: false },
     { x: 38,  y: 240, accent: false },
     { x: 144, y: 222, accent: false },
     { x: 244, y: 238, accent: false },
-    { x: 326, y: 272, accent: true  },  // акцент
+    { x: 326, y: 272, accent: true  },
     { x: 390, y: 232, accent: false },
     { x: 198, y: 292, accent: false },
   ];
-
-  // Рёбра графа (индексы узлов)
   const edges: [number, number][] = [
-    [0,1],[0,5],
-    [1,2],[1,6],
-    [2,3],[2,6],
-    [3,4],[3,7],
-    [4,8],
-    [5,6],[5,9],[5,10],
-    [6,7],[6,10],[6,11],
-    [7,8],[7,11],
-    [8,12],[8,13],
-    [9,10],
-    [10,11],[10,14],
-    [11,12],[11,14],
-    [12,13],[12,14],
+    [0,1],[0,5],[1,2],[1,6],[2,3],[2,6],[3,4],[3,7],[4,8],
+    [5,6],[5,9],[5,10],[6,7],[6,10],[6,11],[7,8],[7,11],
+    [8,12],[8,13],[9,10],[10,11],[10,14],[11,12],[11,14],[12,13],[12,14],
   ];
-
   return (
-    <svg
-      viewBox="0 0 420 310"
-      fill="none"
-      style={{ width: '100%', maxWidth: '420px', display: 'block' }}
-      aria-hidden
-    >
-      {/* Фоновая сетка — ультратонкая */}
-      {[0,1,2,3,4,5,6,7,8].map(i => (
-        <line key={`gv${i}`}
-          x1={i * 60} y1="0" x2={i * 60} y2="310"
-          stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"
-        />
+    <svg viewBox="0 0 420 310" fill="none" style={{ width: '100%', maxWidth: '420px', display: 'block' }} aria-hidden>
+      {[0,1,2,3,4,5,6,7,8].map(i => <line key={`gv${i}`} x1={i*60} y1="0" x2={i*60} y2="310" stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"/>)}
+      {[0,1,2,3,4,5].map(i => <line key={`gh${i}`} x1="0" y1={i*62} x2="420" y2={i*62} stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"/>)}
+      {edges.map(([a,b],i) => (
+        <line key={`e${i}`} x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
+          stroke={(nodes[a].accent||nodes[b].accent) ? 'rgba(46,125,247,0.14)' : 'rgba(13,27,42,0.09)'}
+          strokeWidth="0.75"/>
       ))}
-      {[0,1,2,3,4,5].map(i => (
-        <line key={`gh${i}`}
-          x1="0" y1={i * 62} x2="420" y2={i * 62}
-          stroke="rgba(13,27,42,0.04)" strokeWidth="0.5"
-        />
-      ))}
-
-      {/* Рёбра сети */}
-      {edges.map(([a, b], i) => (
-        <line key={`e${i}`}
-          x1={nodes[a].x} y1={nodes[a].y}
-          x2={nodes[b].x} y2={nodes[b].y}
-          stroke={
-            (nodes[a].accent || nodes[b].accent)
-              ? 'rgba(46,125,247,0.14)'
-              : 'rgba(13,27,42,0.09)'
-          }
-          strokeWidth="0.75"
-        />
-      ))}
-
-      {/* Узлы — обычные */}
-      {nodes.filter(n => !n.accent).map((n, i) => (
-        <circle key={`rn${i}`}
-          cx={n.x} cy={n.y} r="2.5"
-          fill="rgba(13,27,42,0.18)"
-        />
-      ))}
-
-      {/* Узлы — акцентные с мягким свечением */}
-      {nodes.filter(n => n.accent).map((n, i) => (
+      {nodes.filter(n=>!n.accent).map((n,i) => <circle key={`rn${i}`} cx={n.x} cy={n.y} r="2.5" fill="rgba(13,27,42,0.18)"/>)}
+      {nodes.filter(n=>n.accent).map((n,i) => (
         <g key={`an${i}`}>
-          {/* Внешнее свечение */}
-          <circle cx={n.x} cy={n.y} r="12" fill="rgba(46,125,247,0.06)" />
-          {/* Среднее кольцо */}
-          <circle cx={n.x} cy={n.y} r="6"  fill="rgba(46,125,247,0.12)" />
-          {/* Ядро */}
-          <circle cx={n.x} cy={n.y} r="3"  fill="rgba(46,125,247,0.75)" />
-          {/* Мини-кольцо */}
-          <circle cx={n.x} cy={n.y} r="5"
-            stroke="rgba(46,125,247,0.25)" strokeWidth="0.75" fill="none"
-          />
+          <circle cx={n.x} cy={n.y} r="12" fill="rgba(46,125,247,0.06)"/>
+          <circle cx={n.x} cy={n.y} r="6"  fill="rgba(46,125,247,0.12)"/>
+          <circle cx={n.x} cy={n.y} r="3"  fill="rgba(46,125,247,0.75)"/>
+          <circle cx={n.x} cy={n.y} r="5"  stroke="rgba(46,125,247,0.25)" strokeWidth="0.75" fill="none"/>
         </g>
       ))}
     </svg>
@@ -115,54 +60,48 @@ export default function HomePage() {
   return (
     <>
       {/* ══════════════════════════════════════════════
-          1. HERO — SPLIT (текст слева, калькулятор справа)
-          Калькулятор присутствует ТОЛЬКО здесь, без дублирования
+          1. HERO — SPLIT
+          Текст слева, калькулятор справа.
+          На мобильном: текст → калькулятор (одна колонка).
       ══════════════════════════════════════════════ */}
       <section style={{
         background: '#0D1B2A',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        padding: '6rem 32px 5rem',
+        padding: 'clamp(5.5rem,10vw,7rem) 32px 4rem',
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Декоративный фон */}
-        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 18% 55%, rgba(46,125,247,0.08) 0%, transparent 55%), radial-gradient(circle at 78% 18%, rgba(46,125,247,0.05) 0%, transparent 45%)', pointerEvents: 'none' }} />
-        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)', backgroundSize: '64px 64px', pointerEvents: 'none', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%,#000 30%,transparent 100%)' }} />
+        {/* Атмосферный фон */}
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 20% 55%, rgba(46,125,247,0.09) 0%, transparent 50%), radial-gradient(circle at 78% 20%, rgba(46,125,247,0.06) 0%, transparent 45%)', pointerEvents: 'none' }} />
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.022) 1px,transparent 1px)', backgroundSize: '64px 64px', pointerEvents: 'none', maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%,#000 30%,transparent 100%)' }} />
 
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', position: 'relative' }}>
-          {/* Split grid */}
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '55fr 45fr', gap: '4rem', alignItems: 'center' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: '55fr 45fr', gap: '3.5rem', alignItems: 'center' }}>
 
-            {/* Левая колонка — весь текст */}
+            {/* Левая колонка */}
             <div className="anim-fade-up">
-              {/* Pill-badge */}
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(46,125,247,0.1)', border: '1px solid rgba(46,125,247,0.22)', borderRadius: '100px', padding: '5px 14px 5px 10px', marginBottom: '2rem' }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DF7', display: 'block', boxShadow: '0 0 6px #2E7DF7' }} />
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', background: 'rgba(46,125,247,0.1)', border: '1px solid rgba(46,125,247,0.22)', borderRadius: '9999px', padding: '5px 14px 5px 10px', marginBottom: '1.75rem' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DF7', display: 'block', boxShadow: '0 0 8px rgba(46,125,247,0.8)' }} />
                 <span style={{ fontSize: '0.6875rem', color: '#2E7DF7', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Быстрые займы в Европе
                 </span>
               </div>
 
-              {/* Заголовок из ТЗ */}
-              <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,4.8vw,4.25rem)', color: '#fff', lineHeight: 1.08, marginBottom: '1.25rem', letterSpacing: '-0.025em' }}>
+              <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.25rem,4.5vw,4rem)', color: '#fff', lineHeight: 1.08, marginBottom: '1.125rem', letterSpacing: '-0.025em' }}>
                 Получите деньги тогда, когда это действительно нужно
               </h1>
 
-              {/* Подзаголовок из ТЗ */}
-              <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75, marginBottom: '0.75rem', maxWidth: '48ch' }}>
+              <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75, marginBottom: '0.625rem', maxWidth: '48ch' }}>
                 Простые и прозрачные займы для частных лиц и бизнеса в Европе — быстрое решение и безопасное оформление
               </p>
-
-              {/* Основной текст из ТЗ */}
-              <p style={{ fontSize: '0.9375rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, marginBottom: '2rem', maxWidth: '48ch' }}>
+              <p style={{ fontSize: '0.9375rem', color: 'rgba(255,255,255,0.42)', lineHeight: 1.7, marginBottom: '1.875rem', maxWidth: '48ch' }}>
                 Неожиданные расходы или срочные возможности не должны вас останавливать.
                 Сервис помогает быстро получить финансирование — без сложных процедур и скрытых условий.
               </p>
 
-              {/* CTA */}
-              <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
                 <Link href="/apply" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
                   Получить займ <ArrowRight size={16} />
                 </Link>
@@ -171,36 +110,72 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Микротекст из ТЗ */}
               <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                 {['Без залога', 'Быстрое одобрение', 'Выплата на банковский счёт'].map(t => (
                   <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CheckCircle2 size={13} color="rgba(46,125,247,0.75)" />
-                    <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{t}</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.38)', fontWeight: 500 }}>{t}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Правая колонка — Bento-карточка с калькулятором */}
-            <div className="hero-calc anim-fade-up-1 bento-dark" style={{ padding: '2rem' }}>
-              <LoanCalculator dark />
+            {/* Правая колонка — калькулятор поверх glass_struct */}
+            <div className="hero-calc anim-fade-up-1" style={{ position: 'relative' }}>
+              {/* Фоновое изображение */}
+              <div style={{
+                position: 'absolute', inset: '-16px',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                zIndex: 0,
+              }}>
+                <Image
+                  src="/images/glass_struct.png"
+                  alt=""
+                  fill
+                  sizes="(max-width:1023px) 0px, 45vw"
+                  style={{ objectFit: 'cover', objectPosition: 'center', opacity: 0.22 }}
+                  priority
+                />
+              </div>
+              {/* Карточка калькулятора */}
+              <div className="bento-dark" style={{ position: 'relative', zIndex: 1, padding: '2rem' }}>
+                <LoanCalculator dark />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════
-          3. ОСНОВНЫЕ УСЛОВИЯ
+          3. ОСНОВНЫЕ УСЛОВИЯ + fintech_photography
       ══════════════════════════════════════════════ */}
       <section style={{ background: '#fff', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>Условия</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em' }}>
-              Основные условия
-            </h2>
+          {/* Шапка с изображением */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3.5rem', alignItems: 'center', marginBottom: '3rem' }} className="grid-2-resp">
+            <div>
+              <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>Условия</p>
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
+                Основные условия
+              </h2>
+              <p style={{ color: '#4A6580', lineHeight: 1.7, fontSize: '0.9375rem' }}>
+                Итоговые условия зависят от результатов проверки клиента и предоставленных данных.
+              </p>
+            </div>
+            {/* fintech_photography */}
+            <div style={{ borderRadius: '20px', overflow: 'hidden', position: 'relative', aspectRatio: '16/9', boxShadow: '0 1px 3px rgba(13,27,42,0.06), 0 8px 24px rgba(13,27,42,0.08)', border: '1px solid rgba(13,27,42,0.06)' }}>
+              <Image
+                src="/images/fintech_photography.png"
+                alt=""
+                fill
+                sizes="(max-width:767px) 100vw, 45vw"
+                style={{ objectFit: 'cover', objectPosition: 'center' }}
+              />
+            </div>
           </div>
+
+          {/* Карточки условий */}
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.25rem' }}>
             {[
               { label: 'Сумма',             value: 'от 500 до 50 000 EUR' },
@@ -214,9 +189,6 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.8125rem', color: '#4A6580' }}>
-            Итоговые условия зависят от результатов проверки клиента и предоставленных данных.
-          </p>
         </div>
         <HomeClient section="conditions" />
       </section>
@@ -398,17 +370,8 @@ export default function HomePage() {
                 Начать с небольшого займа <ArrowRight size={15} />
               </Link>
             </div>
-
-            {/* Network illustration — декоративная сеть узлов, без аналитики */}
-            <div className="bento-card" style={{
-              background: '#fff',
-              cursor: 'default',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '2rem',
-              minHeight: '260px',
-            }}>
+            {/* Network illustration */}
+            <div className="bento-card" style={{ background: '#fff', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', minHeight: '260px' }}>
               <NetworkIllustration />
             </div>
           </div>
@@ -416,48 +379,65 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════
-          9. ДЛЯ БИЗНЕСА
+          9. ДЛЯ БИЗНЕСА — Editorial layout с professional.png
       ══════════════════════════════════════════════ */}
       <section style={{ background: '#0D1B2A', padding: '72px 32px', position: 'relative', overflow: 'hidden' }}>
         <div aria-hidden style={{ position: 'absolute', top: '-120px', right: '-120px', width: '600px', height: '600px', background: 'radial-gradient(circle,rgba(201,146,58,0.07) 0%,transparent 65%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          <div style={{ maxWidth: '600px', marginBottom: '2.5rem' }}>
-            <div style={{ width: '32px', height: '2px', background: '#C9923A', borderRadius: '99px', marginBottom: '1.25rem' }} />
-            <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9923A', marginBottom: '0.625rem' }}>
-              Для бизнеса
-            </p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.875rem', lineHeight: 1.15 }}>
-              Финансирование для бизнеса
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, fontSize: '0.9375rem' }}>
-              Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
-            </p>
-          </div>
+          {/* Журнальный асимметричный layout */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }} className="grid-2-resp">
+            {/* Левая: текст */}
+            <div>
+              <div style={{ width: '32px', height: '2px', background: '#C9923A', borderRadius: '99px', marginBottom: '1.25rem' }} />
+              <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C9923A', marginBottom: '0.625rem' }}>
+                Для бизнеса
+              </p>
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.875rem', lineHeight: 1.15 }}>
+                Финансирование для бизнеса
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, fontSize: '0.9375rem', marginBottom: '1.75rem' }}>
+                Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
+              </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '1.75rem' }} className="grid-3-resp">
-            {[
-              'Займы от 30 000 до 500 000 EUR',
-              'Срок: от 1 до 12 месяцев',
-              'Без залога',
-              'Быстрое рассмотрение',
-              'Подходит для малого и среднего бизнеса',
-            ].map(val => (
-              <div key={val} className="bento-dark" style={{ padding: '1rem 1.125rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <CheckCircle2 size={14} color="#C9923A" style={{ flexShrink: 0 }} />
-                <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', fontWeight: 500 }}>{val}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.75rem' }}>
+                {[
+                  'Займы от 30 000 до 500 000 EUR',
+                  'Срок: от 1 до 12 месяцев',
+                  'Без залога',
+                  'Быстрое рассмотрение',
+                  'Подходит для малого и среднего бизнеса',
+                ].map(val => (
+                  <div key={val} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <CheckCircle2 size={14} color="#C9923A" style={{ flexShrink: 0 }} />
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', fontWeight: 500 }}>{val}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div style={{ background: 'rgba(201,146,58,0.07)', border: '1px solid rgba(201,146,58,0.18)', borderRadius: '12px', padding: '0.875rem 1.125rem', marginBottom: '1.75rem', maxWidth: '600px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#C9923A', flexShrink: 0, marginTop: '6px' }} />
-            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.65 }}>
-              На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
-            </p>
+              <div style={{ background: 'rgba(201,146,58,0.07)', border: '1px solid rgba(201,146,58,0.18)', borderRadius: '12px', padding: '0.875rem 1.125rem', marginBottom: '1.75rem', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#C9923A', flexShrink: 0, marginTop: '6px' }} />
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', lineHeight: 1.65 }}>
+                  На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
+                </p>
+              </div>
+              <Link href="/contacts" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
+                Оставить заявку <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            {/* Правая: professional.png */}
+            <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', aspectRatio: '4/5', boxShadow: '0 2px 8px rgba(13,27,42,0.3), 0 16px 48px rgba(13,27,42,0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <Image
+                src="/images/professional.png"
+                alt=""
+                fill
+                sizes="(max-width:767px) 100vw, 45vw"
+                style={{ objectFit: 'cover', objectPosition: 'center top' }}
+              />
+              {/* Тонкий градиент снизу для плавного перехода */}
+              <div aria-hidden style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(to top, rgba(13,27,42,0.6) 0%, transparent 100%)' }} />
+            </div>
           </div>
-          <Link href="/contacts" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
-            Оставить заявку <ArrowRight size={16} />
-          </Link>
         </div>
       </section>
 
@@ -525,7 +505,6 @@ export default function HomePage() {
       <section style={{ background: '#fff', padding: '72px 32px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem' }} className="grid-2-resp">
-            {/* Форма */}
             <div>
               <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.25rem' }} />
               <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#0D1B2A', letterSpacing: '-0.02em', marginBottom: '0.625rem' }}>
@@ -555,7 +534,6 @@ export default function HomePage() {
               </form>
             </div>
 
-            {/* Контактная информация */}
             <div>
               <div style={{ width: '32px', height: '2px', background: '#2E7DF7', borderRadius: '99px', marginBottom: '1.25rem' }} />
               <h3 style={{ fontSize: '1.1875rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.875rem', letterSpacing: '-0.01em' }}>
