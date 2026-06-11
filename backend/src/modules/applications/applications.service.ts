@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { calcAnnuity } from '../../common/utils/loan-calculator';
@@ -28,9 +29,15 @@ export class ApplicationsService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private jwt: JwtService,
   ) {}
 
-  /** Публичная подача заявки. Создаёт/привязывает пользователя по телефону. */
+  /**
+   * Public application submission.
+   * Finds or creates a user by phone, then creates the application.
+   * Returns the application id and a fresh JWT for that user so the
+   * frontend can overwrite any stale token in localStorage.
+   */
   async create(dto: any) {
     let user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
     if (!user) {
@@ -64,7 +71,12 @@ export class ApplicationsService {
       },
     });
 
-    return { id: application.id, status: application.status };
+    const accessToken = this.jwt.sign(
+      { sub: user.id, type: 'user' },
+      { expiresIn: '24h' },
+    );
+
+    return { id: application.id, status: application.status, accessToken };
   }
 
   async listForUser(userId: string) {
