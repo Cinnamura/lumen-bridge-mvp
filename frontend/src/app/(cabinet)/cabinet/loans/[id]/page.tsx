@@ -7,7 +7,7 @@ import { getToken } from '@/shared/lib/auth';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 
 interface ScheduleItem { id: string; seq: number; dueDate: string; amount: number; status: 'pending'|'paid'|'overdue'; paidAt?: string }
-interface PaymentReq { id: string; amount: number; reference: string; status: string; createdAt: string }
+interface PaymentReq { id: string; loanId: string; amount: number; reference: string; status: string; createdAt: string }
 interface LoanDetail {
   id: string; amount: number; termDays: number;
   dailyRate: number; dailyPayment: number; totalRepayment: number;
@@ -55,15 +55,25 @@ export default function LoanDetailPage() {
   const [payError, setPayError] = useState('');
   const [payRequests, setPayRequests] = useState<PaymentReq[]>([]);
 
-  function reload() {
+  const router = useRouter();
+
+  /** Перезагружает займ и заявки на оплату из API. Возвращает Promise,
+   *  чтобы вызывающий мог дождаться обновления состояния. */
+  async function reload() {
     const token = getToken();
     if (!token) return;
-    api.get<LoanDetail>(`/cabinet/loans/${id}`, authHeader(token))
-      .then(setLoan)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-    api.get<PaymentReq[]>('/cabinet/payment-requests', authHeader(token))
-      .then((all) => setPayRequests(all.filter(p => p.id === id || true)));
+    try {
+      const [detail, reqs] = await Promise.all([
+        api.get<LoanDetail>(`/cabinet/loans/${id}`, authHeader(token)),
+        api.get<PaymentReq[]>('/cabinet/payment-requests', authHeader(token)),
+      ]);
+      setLoan(detail);
+      setPayRequests(reqs);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,6 +99,8 @@ export default function LoanDetailPage() {
       const updated = await api.post<LoanDetail>(`/cabinet/loans/${id}/sign`, { code }, authHeader(token));
       setLoan(updated);
       setSignStep('done');
+      await reload();          // подтянуть график и заявки
+      router.refresh();        // обновить серверные данные
     } catch (e: any) { setSignError(e.message); }
     finally { setSignLoading(false); }
   }
@@ -99,7 +111,8 @@ export default function LoanDetailPage() {
     try {
       await api.post('/cabinet/payment-requests', { loanId: id, amount: Number(payAmount), reference: payRef }, authHeader(token));
       setShowPayForm(false); setPayAmount(''); setPayRef('');
-      reload();
+      await reload();          // принудительный рефетч — баланс и заявки сразу свежие
+      router.refresh();
     } catch (e: any) { setPayError(e.message); }
     finally { setPayLoading(false); }
   }
@@ -238,37 +251,74 @@ export default function LoanDetailPage() {
           </div>
         )}
 
-        {/* ═══ График платежей ═══ */}
-        {loan.schedule.length > 0 && (
+        {/* ═══ График платежей (таймлайн) ═══ */}
+        {loan.schedule.length > 0 && (() => {
+          const paidCount = loan.schedule.filter(s => s.status === 'paid').length;
+          // первый неоплаченный — ближайший обязательный платёж
+          const nextSeq = loan.schedule.find(s => s.status !== 'paid')?.seq;
+          return (
           <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem' }}>График платежей</h2>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #E8ECF0' }}>
-                    {['№','Дата','Сумма','Статус'].map(h => (
-                      <th key={h} style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: '#4A6580', fontWeight: 600, fontSize: '0.8125rem' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {loan.schedule.map((row) => (
-                    <tr key={row.id} style={{ borderBottom: '1px solid #F0F3F6' }}>
-                      <td style={{ padding: '0.5rem 0.75rem', color: '#4A6580', fontFamily: 'var(--f-mono)', fontSize: '0.8125rem' }}>{row.seq}</td>
-                      <td style={{ padding: '0.5rem 0.75rem', color: '#0D1B2A', fontFamily: 'var(--f-mono)' }}>{formatDate(row.dueDate)}</td>
-                      <td style={{ padding: '0.5rem 0.75rem', color: '#0D1B2A', fontFamily: 'var(--f-mono)', fontWeight: 600 }}>{formatCurrency(row.amount)}</td>
-                      <td style={{ padding: '0.5rem 0.75rem' }}>
-                        {row.status === 'paid' && <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#1E8A5E', fontSize: '0.8125rem', fontWeight: 600 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>Оплачен</span>}
-                        {row.status === 'pending' && <span style={{ color: '#4A6580', fontSize: '0.8125rem' }}>Предстоит</span>}
-                        {row.status === 'overdue' && <span style={{ color: '#C0392B', fontSize: '0.8125rem', fontWeight: 600 }}>Просрочен</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+              <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A' }}>График платежей</h2>
+              <span style={{ fontSize: '0.8125rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>
+                {paidCount} / {loan.schedule.length} оплачено
+              </span>
+            </div>
+
+            <div style={{ position: 'relative' }}>
+              {loan.schedule.map((row, idx) => {
+                const isPaid = row.status === 'paid';
+                const isOverdue = row.status === 'overdue';
+                const isNext = row.seq === nextSeq;
+                const last = idx === loan.schedule.length - 1;
+                const dot = isPaid ? '#1E8A5E' : isOverdue ? '#C0392B' : isNext ? '#2E7DF7' : '#C8D0DA';
+                return (
+                  <div key={row.id} style={{ display: 'flex', gap: '0.875rem', position: 'relative' }}>
+                    {/* Линия + маркер */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                      <div style={{
+                        width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
+                        background: isPaid ? '#1E8A5E' : '#fff',
+                        border: `2px solid ${dot}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 1,
+                      }}>
+                        {isPaid && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12" /></svg>}
+                        {isNext && !isPaid && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DF7' }} />}
+                      </div>
+                      {!last && <div style={{ width: '2px', flex: 1, minHeight: '20px', background: isPaid ? '#1E8A5E' : '#E8ECF0' }} />}
+                    </div>
+
+                    {/* Содержимое строки */}
+                    <div style={{
+                      flex: 1, paddingBottom: last ? 0 : '0.875rem',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                      gap: '1rem',
+                    }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8125rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>Платёж №{row.seq}</span>
+                          {isNext && !isPaid && (
+                            <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: '#2E7DF7', background: '#EBF1FE', padding: '1px 8px', borderRadius: '999px' }}>Ближайший</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#0D1B2A', fontFamily: 'var(--f-mono)', marginTop: '2px' }}>{formatDate(row.dueDate)}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#0D1B2A' }}>{formatCurrency(row.amount)}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px',
+                          color: isPaid ? '#1E8A5E' : isOverdue ? '#C0392B' : '#4A6580' }}>
+                          {isPaid ? 'Оплачен' : isOverdue ? 'Просрочен' : 'Ожидает оплаты'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ═══ Действия ═══ */}
         {(loan.status === 'active' || loan.status === 'overdue') && (
@@ -331,10 +381,10 @@ export default function LoanDetailPage() {
             })()}
 
             {/* Payment requests status */}
-            {payRequests.filter(p => (p as any).loanId === id).length > 0 && (
+            {payRequests.filter(p => p.loanId === id).length > 0 && (
               <div style={{ marginTop: '1rem' }}>
                 <p style={{ fontWeight: 600, color: '#0D1B2A', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Заявки на оплату</p>
-                {payRequests.filter(p => (p as any).loanId === id).map(p => (
+                {payRequests.filter(p => p.loanId === id).map(p => (
                   <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #F0F3F6', fontSize: '0.875rem' }}>
                     <span style={{ fontFamily: 'var(--f-mono)', color: '#0D1B2A' }}>{formatCurrency(p.amount)}</span>
                     <span style={{ color: '#4A6580' }}>{formatDate(p.createdAt)}</span>

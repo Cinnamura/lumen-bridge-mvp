@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
@@ -159,6 +159,23 @@ export class ApplicationsService {
   async updateStatus(id: string, status: string, comment?: string) {
     const app = await this.prisma.application.findUnique({ where: { id } });
     if (!app) throw new NotFoundException('Заявка не найдена');
+
+    // Конечный автомат статусов заявки. approved/rejected — терминальные:
+    // одобренную заявку (по которой уже создан займ) нельзя отклонить.
+    const ALLOWED: Record<string, string[]> = {
+      new:       ['in_review', 'approved', 'rejected'],
+      in_review: ['approved', 'rejected'],
+      approved:  [],
+      rejected:  [],
+    };
+    if (app.status !== status) {
+      const allowed = ALLOWED[app.status] ?? [];
+      if (!allowed.includes(status)) {
+        throw new BadRequestException(
+          `Недопустимый переход статуса заявки: «${app.status}» → «${status}»`,
+        );
+      }
+    }
 
     const updated = await this.prisma.application.update({
       where: { id },

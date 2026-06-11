@@ -146,6 +146,24 @@ export class AdminController {
   async updateLoanStatus(@Param('id') id: string, @Body() dto: UpdateLoanStatusDto) {
     const loan = await this.prisma.loan.findUnique({ where: { id } });
     if (!loan) throw new NotFoundException('Займ не найден');
+
+    // Конечный автомат статусов займа. Закрытый займ — терминальный;
+    // нельзя реактивировать или «отклонить» выданный/погашенный займ.
+    const ALLOWED: Record<string, string[]> = {
+      pending_signing: [],                  // меняется только подписанием клиента
+      active:          ['overdue', 'closed'],
+      overdue:         ['active', 'closed'],
+      closed:          [],
+    };
+    if (loan.status !== dto.status) {
+      const allowed = ALLOWED[loan.status] ?? [];
+      if (!allowed.includes(dto.status)) {
+        throw new BadRequestException(
+          `Недопустимый переход статуса займа: «${loan.status}» → «${dto.status}»`,
+        );
+      }
+    }
+
     const updated = await this.prisma.loan.update({
       where: { id },
       data: {
@@ -201,7 +219,7 @@ export class AdminController {
     });
 
     // Отмечаем строки графика и пересчитываем баланс (единый источник истины)
-    await this.schedule.applyPayment(id, amount);
+    await this.schedule.applyPayment(id);
     const balance = await this.schedule.recalcBalance(id);
 
     await this.notifications.create({

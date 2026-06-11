@@ -39,41 +39,45 @@ export class PaymentScheduleService {
   }
 
   /**
-   * Пересчёт графика после зафиксированного платежа.
-   * Гасит ближайшие pending-платежи; при переплате переходит к следующим;
-   * при частичной оплате уменьшает сумму ближайшего платежа.
-   * Возвращает true, если займ полностью погашен.
+   * Авансовое погашение графика.
+   * Источник истины — совокупная сумма успешных платежей по займу.
+   * Хронологически помечает как «оплачено» все платежи, которые
+   * полностью покрыты внесёнными деньгами (платёж по 1000, внесли 3000 →
+   * первые три платежа становятся «ОПЛАЧЕНО»). Суммы строк графика не
+   * дробятся — частичный остаток остаётся авансом и уменьшает общий долг.
+   * Возвращает true, если все платежи графика оплачены.
    */
-  async applyPayment(loanId: string, amount: number): Promise<boolean> {
-    let remaining = amount;
+  async applyPayment(loanId: string): Promise<boolean> {
+    const agg = await this.prisma.payment.aggregate({
+      where: { loanId, status: 'success' },
+      _sum: { amount: true },
+    });
+    const totalPaid = Number(agg._sum.amount ?? 0);
 
-    while (remaining > 0) {
-      const next = await this.prisma.paymentSchedule.findFirst({
-        where: { loanId, status: 'pending' },
-        orderBy: { seq: 'asc' },
-      });
-      if (!next) break;
+    const rows = await this.prisma.paymentSchedule.findMany({
+      where: { loanId },
+      orderBy: { seq: 'asc' },
+    });
 
-      const due = Number(next.amount);
-      if (remaining >= due) {
+    const now = new Date();
+    let cumulative = 0;
+    let allPaid = true;
+
+    for (const row of rows) {
+      cumulative = Math.round((cumulative + Number(row.amount)) * 100) / 100;
+      // Платёж считается оплаченным, когда внесённого хватает на него целиком
+      const covered = totalPaid + 0.001 >= cumulative;
+      if (covered && row.status !== 'paid') {
         await this.prisma.paymentSchedule.update({
-          where: { id: next.id },
-          data: { status: 'paid', paidAt: new Date() },
+          where: { id: row.id },
+          data: { status: 'paid', paidAt: now },
         });
-        remaining -= due;
-      } else {
-        await this.prisma.paymentSchedule.update({
-          where: { id: next.id },
-          data: { amount: new Prisma.Decimal(due - remaining) },
-        });
-        remaining = 0;
+      } else if (!covered) {
+        allPaid = false;
       }
     }
 
-    const left = await this.prisma.paymentSchedule.count({
-      where: { loanId, status: 'pending' },
-    });
-    return left === 0;
+    return allPaid;
   }
 
   /**

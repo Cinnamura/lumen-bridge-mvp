@@ -185,17 +185,27 @@ export default function AdminApplicationsPage() {
                       <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{termLabel}</td>
                       <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
                       <td className="col-actions">
-                        <select
-                          disabled={updatingId === a.id}
-                          value={a.status}
-                          onChange={(e) => changeStatus(a.id, e.target.value as AppRow['status'])}
-                          style={{ padding: '6px 10px', border: '1.5px solid #C8D0DA', borderRadius: '6px', fontSize: '0.8125rem', background: '#fff', color: '#0D1B2A', cursor: 'pointer', minWidth: '140px' }}
-                        >
-                          <option value="new">Новая</option>
-                          <option value="in_review">На проверке</option>
-                          <option value="approved">Одобрить</option>
-                          <option value="rejected">Отклонить</option>
-                        </select>
+                        {(a.status === 'approved' || a.status === 'rejected') ? (
+                          // Терминальный статус — менять нельзя
+                          <span style={{ fontSize: '0.75rem', color: '#4A6580', fontStyle: 'italic' }}>
+                            {a.status === 'approved' ? 'Займ создан' : 'Решение принято'}
+                          </span>
+                        ) : (
+                          <select
+                            disabled={updatingId === a.id}
+                            value={a.status}
+                            onChange={(e) => changeStatus(a.id, e.target.value as AppRow['status'])}
+                            style={{ padding: '6px 10px', border: '1.5px solid #C8D0DA', borderRadius: '6px', fontSize: '0.8125rem', background: '#fff', color: '#0D1B2A', cursor: 'pointer', minWidth: '140px' }}
+                          >
+                            {/* текущий статус + только допустимые переходы по FSM */}
+                            <option value={a.status} disabled>
+                              {a.status === 'new' ? 'Новая' : 'На проверке'}
+                            </option>
+                            {a.status === 'new' && <option value="in_review">Взять на проверку</option>}
+                            <option value="approved">Одобрить</option>
+                            <option value="rejected">Отклонить</option>
+                          </select>
+                        )}
                       </td>
                     </tr>
                   );
