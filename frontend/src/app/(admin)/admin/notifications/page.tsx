@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
+import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
 import { formatDate } from '@/shared/lib/format';
 import { Bell, AlertTriangle, FileText, Wallet } from 'lucide-react';
 
@@ -33,12 +34,13 @@ export default function AdminNotificationsPage() {
   const [data, setData]       = useState<DashData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const handleError = useAdminErrorHandler(setError);
 
   useEffect(() => {
     const token = getAdminToken(); if (!token) return;
     api.get<DashData>('/admin/notifications', authHeader(token))
       .then(setData)
-      .catch((e) => setError(e.message))
+      .catch(handleError)
       .finally(() => setLoading(false));
   }, []);
 

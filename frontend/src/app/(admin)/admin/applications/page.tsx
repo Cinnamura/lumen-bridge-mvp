@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TableSkeleton } from '@/shared/ui/Skeleton';
+import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
 
 function getAdminToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -58,6 +60,7 @@ export default function AdminApplicationsPage() {
   const [loading, setLoading]       = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError]           = useState('');
+  const handleError = useAdminErrorHandler(setError);
 
   const LIMIT = 20;
 
@@ -69,7 +72,7 @@ export default function AdminApplicationsPage() {
     if (search) params.set('search', search);
     api.get<{ data: AppRow[]; total: number }>(`/admin/applications?${params}`, authHeader(token))
       .then((d) => { setRows(d.data); setTotal(d.total); })
-      .catch((e) => setError(e.message))
+      .catch(handleError)
       .finally(() => setLoading(false));
   }
 
@@ -82,7 +85,7 @@ export default function AdminApplicationsPage() {
       const updated = await api.patch<AppRow>(`/admin/applications/${id}/status`, { status: newStatus }, authHeader(token));
       setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: updated.status, comment: updated.comment } : r)));
     } catch (e: any) {
-      setError(e.message);
+      handleError(e);
     } finally { setUpdatingId(null); }
   }
 
@@ -149,9 +152,17 @@ export default function AdminApplicationsPage() {
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>
-                    <Loader2 size={20} className="spin" style={{ display: 'inline-block', marginRight: 8 }} /> Загрузка…
-                  </td></tr>
+                  <>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <tr key={`s-${i}`}>
+                        {Array.from({ length: 8 }).map((__, j) => (
+                          <td key={j} style={{ padding: '0.875rem 1rem', borderBottom: '1px solid #F0F3F6' }}>
+                            <div style={{ height: 14, borderRadius: 6, background: 'linear-gradient(90deg,#E8ECF0,#D0D5DD,#E8ECF0)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite', width: `${50 + ((j * 11 + i * 7) % 40)}%` }} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </>
                 )}
                 {!loading && rows.length === 0 && (
                   <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Заявок не найдено</td></tr>

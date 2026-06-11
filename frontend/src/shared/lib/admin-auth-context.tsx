@@ -78,3 +78,21 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 export function useAdminAuth() {
   return useContext(AdminAuthContext);
 }
+
+/**
+ * Returns a handler for catch blocks in admin pages.
+ * On 401 (expired/invalid token) it logs the admin out and sends them
+ * to the login screen; otherwise it forwards the message to setError.
+ */
+export function useAdminErrorHandler(setError: (msg: string) => void) {
+  const { logout } = useAdminAuth();
+  return useCallback((e: any) => {
+    if (e?.status === 401) {
+      logout();
+      if (typeof window !== 'undefined') window.location.href = '/admin/login';
+      return;
+    }
+    setError(e?.message ?? 'Ошибка запроса');
+  }, [logout, setError]);
+}
+

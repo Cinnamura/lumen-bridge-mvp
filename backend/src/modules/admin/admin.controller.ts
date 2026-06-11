@@ -1,14 +1,19 @@
 import {
   Controller, Get, Patch, Param, Body, Query, Req, UseGuards, Post,
+  ForbiddenException, NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Request } from 'express';
 import { JwtAdminGuard } from '../../common/guards/jwt-admin.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PrismaService } from '../../database/prisma.service';
 import { ApplicationsService } from '../applications/applications.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PaymentScheduleService } from '../loans/payment-schedule.service';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto';
 import { UpdatePaymentRequestDto } from './dto/update-payment-request.dto';
+import { UpdateLoanStatusDto } from './dto/update-loan-status.dto';
+import { RecordPaymentDto } from './dto/record-payment.dto';
 
 interface AdminPayload { id: string; login: string; role: 'admin' | 'operator' }
 
@@ -19,6 +24,7 @@ export class AdminController {
     private prisma: PrismaService,
     private applications: ApplicationsService,
     private notifications: NotificationsService,
+    private schedule: PaymentScheduleService,
   ) {}
 
   /** Профиль текущего админа/оператора (нужен фронту для отображения роли). */
@@ -131,6 +137,85 @@ export class AdminController {
         createdAt: l.createdAt.toISOString(),
       })),
       total, page: pg, limit: lm,
+    };
+  }
+
+  /** Смена статуса займа оператором/админом (active / overdue / closed). */
+  @Patch('loans/:id/status')
+  async updateLoanStatus(@Param('id') id: string, @Body() dto: UpdateLoanStatusDto) {
+    const loan = await this.prisma.loan.findUnique({ where: { id } });
+    if (!loan) throw new NotFoundException('Займ не найден');
+    const updated = await this.prisma.loan.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        closedAt: dto.status === 'closed' ? new Date() : loan.closedAt,
+      },
+    });
+    if (dto.status === 'closed') {
+      await this.notifications.create({
+        userId: loan.userId, type: 'loan_closed',
+        title: 'Займ закрыт', body: 'Ваш займ полностью погашен и закрыт.',
+        relatedId: loan.id,
+      });
+    }
+    return { id: updated.id, status: updated.status, closedAt: updated.closedAt?.toISOString() ?? null };
+  }
+
+  /**
+   * Фиксация реального платежа (только admin). Создаёт запись в payments,
+   * пересчитывает график и закрывает займ при полном погашении.
+   */
+  @Post('loans/:id/payments')
+  async recordPayment(
+    @Param('id') id: string,
+    @Body() dto: RecordPaymentDto,
+    @CurrentUser() user: AdminPayload,
+  ) {
+    if (user.role !== 'admin') {
+      throw new ForbiddenException('Фиксировать платёж может только администратор');
+    }
+    const loan = await this.prisma.loan.findUnique({ where: { id } });
+    if (!loan) throw new NotFoundException('Займ не найден');
+
+    await this.prisma.payment.create({
+      data: {
+        loanId: id,
+        amount: new Prisma.Decimal(dto.amount),
+        recordedAt: new Date(),
+        recordedBy: user.id,
+        note: dto.note ?? null,
+      },
+    });
+
+    const fullyPaid = await this.schedule.applyPayment(id, dto.amount);
+
+    await this.notifications.create({
+      userId: loan.userId, type: 'payment_confirmed',
+      title: 'Платёж зафиксирован',
+      body: `Платёж на сумму ${dto.amount} EUR зачтён.`,
+      relatedId: loan.id,
+    });
+
+    let status = loan.status;
+    if (fullyPaid) {
+      status = 'closed';
+      await this.prisma.loan.update({ where: { id }, data: { status: 'closed', closedAt: new Date() } });
+      await this.notifications.create({
+        userId: loan.userId, type: 'loan_closed',
+        title: 'Займ закрыт', body: 'Ваш займ полностью погашен и закрыт.',
+        relatedId: loan.id,
+      });
+    }
+
+    const schedule = await this.prisma.paymentSchedule.findMany({
+      where: { loanId: id }, orderBy: { seq: 'asc' },
+    });
+    return {
+      id, status, closed: fullyPaid,
+      schedule: schedule.map((s) => ({
+        seq: s.seq, dueDate: s.dueDate.toISOString(), amount: Number(s.amount), status: s.status,
+      })),
     };
   }
 

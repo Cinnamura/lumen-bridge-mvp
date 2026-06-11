@@ -2,8 +2,10 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
+import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { TableSkeleton } from '@/shared/ui/Skeleton';
 
 function getAdminToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -38,6 +40,7 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError]     = useState('');
+  const handleError = useAdminErrorHandler(setError);
 
   function load() {
     const token = getAdminToken(); if (!token) return;
@@ -46,7 +49,7 @@ export default function AdminPaymentsPage() {
     if (status !== 'all') params.set('status', status);
     api.get<{ data: PRRow[]; total: number }>(`/admin/payment-requests?${params}`, authHeader(token))
       .then((d) => { setRows(d.data); setTotal(d.total); })
-      .catch((e) => setError(e.message))
+      .catch(handleError)
       .finally(() => setLoading(false));
   }
   useEffect(load, [page, status]);
@@ -57,7 +60,7 @@ export default function AdminPaymentsPage() {
     try {
       const updated = await api.patch<{ id: string; status: 'confirmed' | 'rejected' }>(`/admin/payment-requests/${id}`, { status: decision }, authHeader(token));
       setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: updated.status, reviewedAt: new Date().toISOString() } : r)));
-    } catch (e: any) { setError(e.message); }
+    } catch (e: any) { handleError(e); }
     finally { setUpdatingId(null); }
   }
 
@@ -85,6 +88,9 @@ export default function AdminPaymentsPage() {
 
         {error && <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1rem', color: '#6B1A14' }}>{error}</div>}
 
+        {loading && <TableSkeleton rows={8} columns={6} />}
+
+        {!loading && (
         <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table className="admin-table">
@@ -99,10 +105,8 @@ export default function AdminPaymentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>
-                  <Loader2 size={20} style={{ display: 'inline-block', marginRight: 8 }} /> Загрузка…</td></tr>}
-                {!loading && rows.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Заявок не найдено</td></tr>}
-                {!loading && rows.map((p) => {
+                {rows.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Заявок не найдено</td></tr>}
+                {rows.map((p) => {
                   const s = BADGE[p.status] ?? { label: p.status, cls: 'badge-closed' };
                   return (
                     <tr key={p.id}>
@@ -137,6 +141,7 @@ export default function AdminPaymentsPage() {
             </table>
           </div>
         </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#4A6580' }}>
           <span>Всего: <strong style={{ color: '#0D1B2A' }}>{total}</strong></span>

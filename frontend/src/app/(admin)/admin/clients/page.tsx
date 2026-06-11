@@ -2,8 +2,10 @@
 import { useEffect, useState } from 'react';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
+import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
 import { formatDate } from '@/shared/lib/format';
-import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TableSkeleton } from '@/shared/ui/Skeleton';
 
 function getAdminToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -23,6 +25,7 @@ export default function AdminClientsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const handleError = useAdminErrorHandler(setError);
 
   function load() {
     const token = getAdminToken(); if (!token) return;
@@ -31,7 +34,7 @@ export default function AdminClientsPage() {
     if (search) params.set('search', search);
     api.get<{ data: ClientRow[]; total: number }>(`/admin/clients?${params}`, authHeader(token))
       .then((d) => { setRows(d.data); setTotal(d.total); })
-      .catch((e) => setError(e.message))
+      .catch(handleError)
       .finally(() => setLoading(false));
   }
   useEffect(load, [page, search]);
@@ -60,6 +63,9 @@ export default function AdminClientsPage() {
           <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1rem', color: '#6B1A14' }}>{error}</div>
         )}
 
+        {loading && <TableSkeleton rows={8} columns={6} />}
+
+        {!loading && (
         <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table className="admin-table">
@@ -74,10 +80,8 @@ export default function AdminClientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>
-                  <Loader2 size={20} style={{ display: 'inline-block', marginRight: 8 }} /> Загрузка…</td></tr>}
-                {!loading && rows.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Клиентов не найдено</td></tr>}
-                {!loading && rows.map((c) => (
+                {rows.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Клиентов не найдено</td></tr>}
+                {rows.map((c) => (
                   <tr key={c.id}>
                     <td style={{ fontWeight: 600 }}>{[c.firstName, c.lastName].filter(Boolean).join(' ') || '—'}</td>
                     <td style={{ fontFamily: 'var(--f-mono)' }}>{c.phone}</td>
@@ -91,6 +95,7 @@ export default function AdminClientsPage() {
             </table>
           </div>
         </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#4A6580' }}>
           <span>Всего: <strong style={{ color: '#0D1B2A' }}>{total}</strong></span>
