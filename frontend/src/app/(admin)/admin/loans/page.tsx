@@ -15,6 +15,7 @@ function getAdminToken(): string | null {
 interface LoanRow {
   id: string; amount: number; termDays: number;
   dailyPayment: number; totalRepayment: number;
+  paidAmount: number; remainingAmount: number;
   status: 'pending_signing' | 'active' | 'overdue' | 'closed';
   issuedAt?: string; closedAt?: string; createdAt: string;
   user?: { phone: string; firstName?: string; lastName?: string };
@@ -91,7 +92,7 @@ export default function AdminLoansPage() {
                   <th>Клиент</th>
                   <th>Сумма</th>
                   <th>Срок</th>
-                  <th>Ежедневный платёж</th>
+                  <th style={{ minWidth: '200px' }}>Баланс выплат</th>
                   <th>Статус</th>
                   <th>Выдан</th>
                 </tr>
@@ -109,7 +110,28 @@ export default function AdminLoansPage() {
                       </td>
                       <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
                       <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.termDays} дн.</td>
-                      <td style={{ fontFamily: 'var(--f-mono)' }}>{formatCurrency(l.dailyPayment)}</td>
+                      <td>
+                        {l.status === 'pending_signing' ? (
+                          <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>—</span>
+                        ) : (() => {
+                          const pct = l.totalRepayment > 0 ? Math.min(100, (l.paidAmount / l.totalRepayment) * 100) : 0;
+                          const done = l.remainingAmount === 0;
+                          return (
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontFamily: 'var(--f-mono)' }}>
+                                <span style={{ color: done ? '#1E8A5E' : '#0D1B2A', fontWeight: 600 }}>{formatCurrency(l.paidAmount)}</span>
+                                <span style={{ color: '#4A6580' }}>из {formatCurrency(l.totalRepayment)}</span>
+                              </div>
+                              <div style={{ height: '6px', background: '#E8ECF0', borderRadius: '999px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${pct}%`, background: done ? '#1E8A5E' : '#2E7DF7', borderRadius: '999px', transition: 'width 300ms ease' }} />
+                              </div>
+                              <p style={{ fontSize: '0.6875rem', color: done ? '#1E8A5E' : '#4A6580', marginTop: '3px' }}>
+                                {done ? 'Погашен полностью' : `Остаток ${formatCurrency(l.remainingAmount)}`}
+                              </p>
+                            </div>
+                          );
+                        })()}
+                      </td>
                       <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
                       <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.issuedAt ? formatDate(l.issuedAt) : '—'}</td>
                     </tr>

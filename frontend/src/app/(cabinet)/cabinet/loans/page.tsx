@@ -9,6 +9,7 @@ import { formatCurrency, formatDate } from '@/shared/lib/format';
 interface LoanDto {
   id: string; amount: number; termDays: number;
   dailyPayment: number; totalRepayment: number;
+  paidAmount: number; remainingAmount: number;
   status: 'pending_signing' | 'active' | 'overdue' | 'closed';
   issuedAt?: string; closedAt?: string;
   nextPaymentDate?: string; nextPaymentAmount?: number;
@@ -44,7 +45,21 @@ function LoanCard({ loan, compact = false }: { loan: LoanDto; compact?: boolean 
 
       {!compact && (
         <>
-          {loan.nextPaymentDate && (
+          {/* Остаток задолженности */}
+          {loan.status !== 'pending_signing' && (
+            <div style={{ background: '#F8F9FA', border: '1px solid #E8ECF0', borderRadius: '8px', padding: '0.625rem 0.875rem', marginBottom: '0.625rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>Осталось выплатить</span>
+                <span style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: loan.remainingAmount === 0 ? '#1E8A5E' : '#0D1B2A', fontSize: '0.875rem' }}>
+                  {formatCurrency(loan.remainingAmount)}
+                </span>
+              </div>
+              <div style={{ height: '5px', background: '#E8ECF0', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0}%`, background: loan.remainingAmount === 0 ? '#1E8A5E' : '#2E7DF7', borderRadius: '999px' }} />
+              </div>
+            </div>
+          )}
+          {loan.nextPaymentDate && loan.remainingAmount > 0 && (
             <div style={{ background: isNearDue ? '#FEF3CD' : '#F8F9FA', border: `1px solid ${isNearDue ? '#E6D200' : '#E8ECF0'}`, borderRadius: '8px', padding: '0.625rem 0.875rem', marginBottom: '0.875rem', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>Следующий платёж</span>
               <span style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: isNearDue ? '#7A5200' : '#0D1B2A', fontSize: '0.875rem' }}>

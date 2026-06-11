@@ -28,6 +28,8 @@ function toLoanDto(loan: any, schedule: any[] = []) {
     dailyRate: Number(loan.dailyRate),
     dailyPayment: Number(loan.dailyPayment),
     totalRepayment: Number(loan.totalRepayment),
+    paidAmount: Number(loan.paidAmount ?? 0),
+    remainingAmount: Number(loan.remainingAmount ?? 0),
     status: loan.status,
     issuedAt: loan.issuedAt?.toISOString(),
     closedAt: loan.closedAt?.toISOString(),
@@ -147,6 +149,9 @@ export class LoansService {
         signedIp: ip ?? null,
         signedUserAgent: userAgent ?? null,
         issuedAt,
+        // При активации весь долг ещё не выплачен
+        paidAmount: 0,
+        remainingAmount: loan.totalRepayment,
       },
     });
 

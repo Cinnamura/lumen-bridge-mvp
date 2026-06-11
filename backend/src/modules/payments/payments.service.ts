@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
@@ -26,6 +27,16 @@ export class PaymentsService {
     const loan = await this.prisma.loan.findUnique({ where: { id: dto.loanId } });
     if (!loan) throw new NotFoundException('Займ не найден');
     if (loan.userId !== userId) throw new ForbiddenException('Нет доступа к займу');
+
+    if (loan.status === 'closed') {
+      throw new BadRequestException('Займ уже закрыт — задолженность отсутствует');
+    }
+
+    const amount = Number(dto.amount);
+    const remaining = Number(loan.remainingAmount);
+    if (amount > remaining) {
+      throw new BadRequestException('Сумма платежа превышает остаток задолженности');
+    }
 
     const created = await this.prisma.paymentRequest.create({
       data: {

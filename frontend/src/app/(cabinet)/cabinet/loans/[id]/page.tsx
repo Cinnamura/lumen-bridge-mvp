@@ -11,6 +11,7 @@ interface PaymentReq { id: string; amount: number; reference: string; status: st
 interface LoanDetail {
   id: string; amount: number; termDays: number;
   dailyRate: number; dailyPayment: number; totalRepayment: number;
+  paidAmount: number; remainingAmount: number;
   status: 'pending_signing'|'active'|'overdue'|'closed';
   issuedAt?: string; closedAt?: string; signedAt?: string;
   nextPaymentDate?: string; nextPaymentAmount?: number;
@@ -152,6 +153,41 @@ export default function LoanDetailPage() {
           ))}
         </div>
 
+        {/* ═══ Баланс выплат ═══ */}
+        {loan.status !== 'pending_signing' && (
+          <div style={{ background: '#0D1B2A', borderRadius: '12px', padding: '1.25rem 1.5rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Взято изначально</p>
+                <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#fff', fontSize: '1.0625rem' }}>{formatCurrency(loan.totalRepayment)}</p>
+              </div>
+              <div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Уже выплачено</p>
+                <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#1E8A5E', fontSize: '1.0625rem' }}>{formatCurrency(loan.paidAmount)}</p>
+              </div>
+              <div>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Осталось выплатить</p>
+                <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: loan.remainingAmount === 0 ? '#1E8A5E' : '#2E7DF7', fontSize: '1.0625rem' }}>{formatCurrency(loan.remainingAmount)}</p>
+              </div>
+            </div>
+            {/* Прогресс-бар погашения */}
+            <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '999px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0}%`,
+                background: loan.remainingAmount === 0 ? '#1E8A5E' : '#2E7DF7',
+                borderRadius: '999px',
+                transition: 'width 300ms ease',
+              }} />
+            </div>
+            {loan.remainingAmount === 0 && (
+              <p style={{ marginTop: '0.75rem', fontSize: '0.8125rem', color: '#1E8A5E', fontWeight: 600 }}>
+                Задолженность полностью погашена.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* ═══ Pending signing flow ═══ */}
         {loan.status === 'pending_signing' && (
           <div style={{ background: '#EBF1FE', border: '1px solid #B3CEFB', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem' }}>
@@ -254,28 +290,45 @@ export default function LoanDetailPage() {
             </div>
 
             {/* Payment form */}
-            {showPayForm && (
+            {showPayForm && (() => {
+              const amountNum = Number(payAmount);
+              const overLimit = amountNum > loan.remainingAmount;
+              const invalid = !payAmount || amountNum <= 0 || overLimit || !payRef.trim();
+              return (
               <div style={{ marginTop: '1rem', padding: '1rem', background: '#F8F9FA', borderRadius: '10px', border: '1px solid #E8ECF0' }}>
                 <h3 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.875rem' }}>Заявка на оплату</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem', marginBottom: '0.5rem' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Сумма (EUR)</label>
-                    <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} placeholder={String(loan.nextPaymentAmount ?? '')} style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '9px 12px', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }} />
+                    <input
+                      type="number" min={0.01} max={loan.remainingAmount} step="0.01"
+                      value={payAmount} onChange={e => setPayAmount(e.target.value)}
+                      placeholder={String(loan.remainingAmount)}
+                      style={{ width: '100%', border: `1.5px solid ${overLimit ? '#C0392B' : '#C8D0DA'}`, borderRadius: '8px', padding: '9px 12px', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }}
+                    />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Reference / реквизиты</label>
                     <input type="text" value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="REF-..." style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '9px 12px', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }} />
                   </div>
                 </div>
+                <p style={{ fontSize: '0.75rem', color: overLimit ? '#C0392B' : '#4A6580', marginBottom: '0.75rem' }}>
+                  {overLimit
+                    ? `Сумма не может превышать остаток задолженности — ${formatCurrency(loan.remainingAmount)}`
+                    : `Максимум к оплате: ${formatCurrency(loan.remainingAmount)}`}
+                </p>
                 {payError && <p style={{ color: '#C0392B', fontSize: '0.8125rem', marginBottom: '0.5rem' }}>{payError}</p>}
                 <div style={{ display: 'flex', gap: '0.625rem' }}>
                   <button onClick={() => setShowPayForm(false)} style={{ background: '#fff', border: '1.5px solid #C8D0DA', color: '#4A6580', borderRadius: '8px', padding: '9px 18px', fontWeight: 600, cursor: 'pointer' }}>Отмена</button>
-                  <button onClick={submitPayment} disabled={payLoading} style={{ background: payLoading ? '#7AABF7' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontWeight: 600, cursor: payLoading ? 'not-allowed' : 'pointer' }}>
+                  <button onClick={submitPayment} disabled={payLoading || invalid}
+                    title={overLimit ? 'Сумма превышает остаток задолженности' : (invalid ? 'Заполните сумму и реквизиты' : undefined)}
+                    style={{ background: (payLoading || invalid) ? '#A9C4F0' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontWeight: 600, cursor: (payLoading || invalid) ? 'not-allowed' : 'pointer' }}>
                     {payLoading ? 'Отправка...' : 'Отправить заявку'}
                   </button>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Payment requests status */}
             {payRequests.filter(p => (p as any).loanId === id).length > 0 && (

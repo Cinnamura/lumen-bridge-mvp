@@ -1,6 +1,6 @@
 import {
   Controller, Get, Patch, Param, Body, Query, Req, UseGuards, Post,
-  ForbiddenException, NotFoundException,
+  ForbiddenException, NotFoundException, BadRequestException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Request } from 'express';
@@ -131,6 +131,7 @@ export class AdminController {
         amount: Number(l.amount), termDays: l.termDays,
         dailyRate: Number(l.dailyRate), dailyPayment: Number(l.dailyPayment),
         totalRepayment: Number(l.totalRepayment),
+        paidAmount: Number(l.paidAmount), remainingAmount: Number(l.remainingAmount),
         status: l.status,
         issuedAt: l.issuedAt?.toISOString(),
         closedAt: l.closedAt?.toISOString(),
@@ -178,41 +179,47 @@ export class AdminController {
     const loan = await this.prisma.loan.findUnique({ where: { id } });
     if (!loan) throw new NotFoundException('Займ не найден');
 
+    if (loan.status === 'closed') {
+      throw new BadRequestException('Займ уже закрыт — задолженность отсутствует');
+    }
+
+    const amount = dto.amount;
+    const remaining = Number(loan.remainingAmount);
+    if (amount > remaining) {
+      throw new BadRequestException('Сумма платежа превышает остаток задолженности');
+    }
+
     await this.prisma.payment.create({
       data: {
         loanId: id,
-        amount: new Prisma.Decimal(dto.amount),
+        amount: new Prisma.Decimal(amount),
+        status: 'success',
         recordedAt: new Date(),
         recordedBy: user.id,
         note: dto.note ?? null,
       },
     });
 
-    const fullyPaid = await this.schedule.applyPayment(id, dto.amount);
+    // Отмечаем строки графика и пересчитываем баланс (единый источник истины)
+    await this.schedule.applyPayment(id, amount);
+    const balance = await this.schedule.recalcBalance(id);
 
     await this.notifications.create({
       userId: loan.userId, type: 'payment_confirmed',
       title: 'Платёж зафиксирован',
-      body: `Платёж на сумму ${dto.amount} EUR зачтён.`,
+      body: `Платёж на сумму ${amount.toFixed(2)} EUR зачтён. Остаток: ${balance.remainingAmount.toFixed(2)} EUR.`,
       relatedId: loan.id,
     });
-
-    let status = loan.status;
-    if (fullyPaid) {
-      status = 'closed';
-      await this.prisma.loan.update({ where: { id }, data: { status: 'closed', closedAt: new Date() } });
-      await this.notifications.create({
-        userId: loan.userId, type: 'loan_closed',
-        title: 'Займ закрыт', body: 'Ваш займ полностью погашен и закрыт.',
-        relatedId: loan.id,
-      });
-    }
 
     const schedule = await this.prisma.paymentSchedule.findMany({
       where: { loanId: id }, orderBy: { seq: 'asc' },
     });
     return {
-      id, status, closed: fullyPaid,
+      id,
+      status: balance.closed ? 'closed' : loan.status,
+      closed: balance.closed,
+      paidAmount: balance.paidAmount,
+      remainingAmount: balance.remainingAmount,
       schedule: schedule.map((s) => ({
         seq: s.seq, dueDate: s.dueDate.toISOString(), amount: Number(s.amount), status: s.status,
       })),
