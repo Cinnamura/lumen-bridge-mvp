@@ -1,6 +1,6 @@
 export function LegalPage({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'var(--color-white)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--color-white)', minHeight: '100vh', paddingTop: '6rem' }}>
       <div style={{ background: 'var(--color-midnight)', padding: 'var(--space-16) var(--space-6)' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem,4vw,var(--text-5xl))', color: 'var(--color-white)' }}>

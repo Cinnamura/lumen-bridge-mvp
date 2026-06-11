@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/shared/lib/auth-context';
 
 const NAV = [
   { href: '/how-it-works', label: 'Как это работает' },
@@ -13,6 +14,7 @@ const NAV = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open,     setOpen]     = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 32);
@@ -84,9 +86,16 @@ export function Header() {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <Link href="/login" className="btn btn-outline-light btn-sm hdr-desktop" style={{ padding: '7px 16px', fontSize: '0.8125rem', borderRadius: '9999px' }}>
-              Войти
-            </Link>
+            {user ? (
+              <Link href="/cabinet/applications" className="btn btn-outline-light btn-sm hdr-desktop" style={{ padding: '7px 16px', fontSize: '0.8125rem', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <LayoutDashboard size={14} />
+                Личный кабинет
+              </Link>
+            ) : (
+              <Link href="/login" className="btn btn-outline-light btn-sm hdr-desktop" style={{ padding: '7px 16px', fontSize: '0.8125rem', borderRadius: '9999px' }}>
+                Войти
+              </Link>
+            )}
             <Link href="/apply" className="btn btn-primary btn-sm" style={{ padding: '7px 16px', fontSize: '0.8125rem', borderRadius: '9999px' }}>
               Получить займ
             </Link>
@@ -124,7 +133,11 @@ export function Header() {
           </Link>
         ))}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '2rem' }}>
-          <Link href="/login"  className="btn btn-outline-light btn-lg" onClick={() => setOpen(false)} style={{ justifyContent: 'center' }}>Войти</Link>
+          {user ? (
+            <Link href="/cabinet/applications" className="btn btn-outline-light btn-lg" onClick={() => setOpen(false)} style={{ justifyContent: 'center' }}>Личный кабинет</Link>
+          ) : (
+            <Link href="/login"  className="btn btn-outline-light btn-lg" onClick={() => setOpen(false)} style={{ justifyContent: 'center' }}>Войти</Link>
+          )}
           <Link href="/apply"  className="btn btn-primary btn-lg"       onClick={() => setOpen(false)} style={{ justifyContent: 'center' }}>Получить займ</Link>
         </div>
       </div>
