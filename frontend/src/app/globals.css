@@ -603,3 +603,74 @@ input[type=number] { -moz-appearance: textfield; }
     padding: 1rem;
   }
 }
+
+/* ─── Admin layout adaptive ─── */
+.admin-sidebar-wrap {
+  display: flex;
+  flex-shrink: 0;
+}
+.admin-topbar {
+  display: none;
+}
+.admin-page {
+  padding: 1.5rem 2rem;
+}
+
+@media (max-width: 1023px) {
+  .admin-sidebar-wrap {
+    display: none;
+  }
+  .admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid #E8ECF0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(13,27,42,0.06);
+  }
+  .admin-page {
+    padding: 1rem;
+  }
+}
+
+/* Admin Data Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.admin-table thead th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: #F8F9FA;
+  border-bottom: 1px solid #E8ECF0;
+  color: #4A6580;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.admin-table tbody td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #F0F3F6;
+  color: #0D1B2A;
+  vertical-align: middle;
+}
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.admin-table tbody tr:hover {
+  background: #F8F9FA;
+}
+.admin-table .col-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }

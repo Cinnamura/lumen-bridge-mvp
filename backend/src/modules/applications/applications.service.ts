@@ -94,6 +94,63 @@ export class ApplicationsService {
     return toApplicationDto(app);
   }
 
+  /** Список всех заявок для админ-панели с пагинацией и фильтром по статусу. */
+  async listAll(opts: { page?: number; limit?: number; status?: string; search?: string } = {}) {
+    const page  = Math.max(1, opts.page  ?? 1);
+    const limit = Math.min(100, Math.max(1, opts.limit ?? 20));
+    const skip  = (page - 1) * limit;
+
+    const where: any = {};
+    if (opts.status) where.status = opts.status;
+    if (opts.search) {
+      where.OR = [
+        { firstName:  { contains: opts.search, mode: 'insensitive' } },
+        { lastName:   { contains: opts.search, mode: 'insensitive' } },
+        { phone:      { contains: opts.search, mode: 'insensitive' } },
+        { email:      { contains: opts.search, mode: 'insensitive' } },
+        { companyName:{ contains: opts.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.application.count({ where }),
+      this.prisma.application.findMany({
+        where, orderBy: { createdAt: 'desc' }, skip, take: limit,
+        include: { user: { select: { id: true, phone: true, firstName: true, lastName: true } } },
+      }),
+    ]);
+
+    return {
+      data: items.map((a) => ({
+        ...toApplicationDto(a),
+        user: a.user ? {
+          id: a.user.id,
+          phone: a.user.phone,
+          firstName: a.user.firstName ?? undefined,
+          lastName: a.user.lastName ?? undefined,
+        } : undefined,
+      })),
+      total, page, limit,
+    };
+  }
+
+  async getOneForAdmin(id: string) {
+    const app = await this.prisma.application.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, phone: true, firstName: true, lastName: true, email: true } } },
+    });
+    if (!app) throw new NotFoundException('Заявка не найдена');
+    return {
+      ...toApplicationDto(app),
+      user: app.user ? {
+        id: app.user.id, phone: app.user.phone,
+        firstName: app.user.firstName ?? undefined,
+        lastName:  app.user.lastName  ?? undefined,
+        email:     app.user.email     ?? undefined,
+      } : undefined,
+    };
+  }
+
   /**
    * Смена статуса заявки оператором/админом.
    * При approved для personal-заявки создаётся займ (pending_signing)
