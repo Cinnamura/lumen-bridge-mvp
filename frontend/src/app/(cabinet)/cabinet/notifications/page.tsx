@@ -39,7 +39,7 @@ export default function NotificationsPage() {
 
   return (
     <CabinetShell>
-      <div style={{ padding: '2rem', maxWidth: '680px' }}>
+      <div className="cabinet-page" style={{ maxWidth: '680px' }}>
         <div style={{ marginBottom: '1.75rem' }}>
           <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Личный кабинет</p>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>Уведомления</h1>

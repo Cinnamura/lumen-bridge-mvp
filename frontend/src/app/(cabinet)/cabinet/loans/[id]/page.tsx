@@ -109,10 +109,10 @@ export default function LoanDetailPage() {
     if (digit && i < 5) otpRefs.current[i+1]?.focus();
   }
 
-  if (loading) return <CabinetShell><div style={{ padding: '2rem' }}><Skeleton /></div></CabinetShell>;
+  if (loading) return <CabinetShell><div className="cabinet-page"><Skeleton /></div></CabinetShell>;
   if (error || !loan) return (
     <CabinetShell>
-      <div style={{ padding: '2rem' }}>
+      <div className="cabinet-page">
         <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '1rem' }}>
           <p style={{ color: '#6B1A14' }}>Не удалось загрузить займ: {error}</p>
         </div>
@@ -124,7 +124,7 @@ export default function LoanDetailPage() {
 
   return (
     <CabinetShell>
-      <div style={{ padding: '2rem', maxWidth: '760px' }}>
+      <div className="cabinet-page" style={{ maxWidth: '760px' }}>
         {/* Header */}
         <div style={{ marginBottom: '1.75rem' }}>
           <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Личный кабинет / Мои займы</p>

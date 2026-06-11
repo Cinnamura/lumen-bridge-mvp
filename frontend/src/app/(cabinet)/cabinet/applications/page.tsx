@@ -54,7 +54,7 @@ export default function ApplicationsPage() {
 
   return (
     <CabinetShell>
-      <div style={{ padding: '2rem' }}>
+      <div className="cabinet-page" style={{ maxWidth: '900px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
           <div>
             <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Личный кабинет</p>

@@ -10,7 +10,7 @@ const NAV = [
   { href: '/cabinet/notifications', icon: Bell,      label: 'Уведомления' },
 ];
 
-export default function CabinetSidebar({ phone }: { phone?: string }) {
+export default function CabinetSidebar({ phone, onClose }: { phone?: string; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -53,7 +53,7 @@ export default function CabinetSidebar({ phone }: { phone?: string }) {
         {NAV.map(({ href, icon: Icon, label }) => {
           const active = pathname.startsWith(href);
           return (
-            <Link key={href} href={href} style={{
+            <Link key={href} href={href} onClick={onClose} style={{
               display: 'flex', alignItems: 'center', gap: '0.75rem',
               padding: '0.625rem 1.25rem',
               color: active ? '#fff' : 'rgba(255,255,255,0.55)',

@@ -203,7 +203,7 @@ function ApplyInner() {
         <p style={{ color: '#4A6580', fontSize: '0.9375rem', marginBottom: '2rem' }}>
           Мы уведомим вас о статусе по указанному номеру телефона.
         </p>
-        <Link href="/login" style={{ display: 'inline-block', background: '#2E7DF7', color: '#fff', borderRadius: '8px', padding: '12px 32px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
+        <Link href="/cabinet/applications" style={{ display: 'inline-block', background: '#2E7DF7', color: '#fff', borderRadius: '8px', padding: '12px 32px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
           Перейти в личный кабинет
         </Link>
       </div>
