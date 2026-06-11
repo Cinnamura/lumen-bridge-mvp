@@ -4,11 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/shared/lib/api';
 import { saveToken } from '@/shared/lib/auth';
+import { useAuth } from '@/shared/lib/auth-context';
 
 function LoginInner() {
   const router = useRouter();
   const params = useSearchParams();
   const from = params.get('from') || '/cabinet/applications';
+  const { login } = useAuth();
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [phone, setPhone] = useState('');
@@ -52,10 +54,10 @@ function LoginInner() {
     setLoading(true);
     try {
       const res = await api.post<{ accessToken: string; user: any }>('/auth/otp/verify', { phone, code });
+      // Persist token; profile is fetched from /auth/me and stored in-memory
       saveToken(res.accessToken);
-      localStorage.setItem('lb_phone', phone);
-      // Set presence cookie for middleware
-      document.cookie = `lb_session=1; path=/; max-age=${60 * 60 * 24}`;
+      document.cookie = `lb_session=1; path=/; max-age=${60 * 60 * 24 * 7}`;
+      await login(res.accessToken);
       router.push(from);
     } catch (e: any) {
       setError(e.message || 'Неверный или просроченный код');

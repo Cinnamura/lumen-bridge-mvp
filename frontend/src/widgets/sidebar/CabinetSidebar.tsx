@@ -2,21 +2,21 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { FileText, CreditCard, Bell, LogOut } from 'lucide-react';
-import { clearToken } from '@/shared/lib/auth';
+import { useAuth } from '@/shared/lib/auth-context';
 
 const NAV = [
-  { href: '/cabinet/applications', icon: FileText, label: 'Заявки' },
-  { href: '/cabinet/loans',        icon: CreditCard, label: 'Мои займы' },
-  { href: '/cabinet/notifications', icon: Bell,      label: 'Уведомления' },
+  { href: '/cabinet/applications',  icon: FileText,   label: 'Заявки' },
+  { href: '/cabinet/loans',         icon: CreditCard, label: 'Мои займы' },
+  { href: '/cabinet/notifications', icon: Bell,       label: 'Уведомления' },
 ];
 
 export default function CabinetSidebar({ phone, onClose }: { phone?: string; onClose?: () => void }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const router   = useRouter();
+  const { logout } = useAuth();
 
   function handleLogout() {
-    clearToken();
-    document.cookie = 'lb_session=; path=/; max-age=0';
+    logout();
     router.push('/login');
   }
 
