@@ -47,16 +47,13 @@ export function HomeClient({ section }: { section: string }) {
 
   if (section === 'faq') {
     return (
-      <section style={{ padding: '56px 24px 24px', position: 'relative' }}>
+      <section style={{ padding: '40px 24px 20px', position: 'relative' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          <div className="reveal reveal-1" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div className="reveal reveal-1" style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>FAQ</p>
             <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.75rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>
               Часто задаваемые вопросы
             </h2>
-            <p style={{ color: 'rgba(154,164,182,0.92)', lineHeight: 1.75, maxWidth: '42ch', margin: '0 auto' }}>
-              Отвечаем кратко и по делу, без лишних экранов и отвлекающих элементов.
-            </p>
           </div>
 
           <div className="card aurora-blue reveal reveal-2" style={{ padding: '0 1.5rem' }}>
@@ -65,13 +62,10 @@ export function HomeClient({ section }: { section: string }) {
             <FaqItem q="Есть ли скрытые комиссии?" a="Нет. Все условия и платежи отображаются до оформления займа." />
           </div>
 
-          <div className="reveal reveal-3" style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <div className="reveal reveal-3" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
             <Link href="/faq" className="btn btn-secondary" style={{ gap: '8px' }}>
               Смотреть все вопросы <ArrowRight size={15} />
             </Link>
-            <p style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'rgba(154,164,182,0.84)' }}>
-              Если вы не нашли нужную информацию, вы можете связаться с нами через форму обратной связи.
-            </p>
           </div>
         </div>
       </section>

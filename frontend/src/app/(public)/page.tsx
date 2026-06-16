@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
 import { HomeClient } from './HomeClient';
 import {
@@ -20,30 +19,44 @@ import {
 } from 'lucide-react';
 
 const conditions = [
-  { label: 'Сумма', value: 'от 500 до 50 000 EUR', tone: 'blue' },
+  { label: 'Сумма', value: 'от 500 до 50,000 EUR', tone: 'blue' },
   { label: 'Срок', value: 'от 7 до 90 дней', tone: 'violet' },
+  { label: 'Процентная ставка', value: 'определяется индивидуально', tone: 'amber' },
   { label: 'Погашение', value: 'равными платежами', tone: 'emerald' },
-  { label: 'Ставка', value: 'определяется индивидуально', tone: 'amber' },
 ];
 
 const useCases = [
-  { icon: Zap, title: 'Срочные расходы', description: 'Неожиданные платежи, которые нельзя перенести.', tone: 'blue' },
-  { icon: Clock, title: 'Задержка дохода', description: 'Когда деньги нужны сейчас, а поступления позже.', tone: 'amber' },
-  { icon: Building2, title: 'Бизнес-задачи', description: 'Финансирование для операционных и кассовых задач.', tone: 'violet' },
-  { icon: RefreshCw, title: 'Новые возможности', description: 'Быстрый доступ к средствам, когда важна скорость решения.', tone: 'emerald' },
+  { icon: Zap, title: 'Срочные расходы', description: 'Неожиданные платежи, которые нельзя перенести', tone: 'blue' },
+  { icon: Clock, title: 'Задержка дохода', description: 'Когда деньги нужны сейчас, а поступления позже', tone: 'amber' },
+  { icon: Building2, title: 'Бизнес-задачи', description: 'Кассовые разрывы или операционные расходы', tone: 'violet' },
+  { icon: RefreshCw, title: 'Возможности', description: 'Ситуации, где важно действовать без промедления', tone: 'emerald' },
 ];
 
 const trustPoints = [
-  { icon: Shield, title: 'Соответствие требованиям GDPR', text: 'Европейские стандарты обработки данных.' },
-  { icon: CheckCircle2, title: 'Ответственный подход к проверке заявок', text: 'Тщательный анализ каждого обращения.' },
-  { icon: Lock, title: 'Защита персональных данных', text: 'Многоуровневая безопасность.' },
-  { icon: FileText, title: 'Чёткие и понятные условия', text: 'Никакого мелкого шрифта.' },
+  { icon: Shield, title: 'Соответствие требованиям GDPR' },
+  { icon: CheckCircle2, title: 'Ответственный подход к проверке заявок' },
+  { icon: Lock, title: 'Защита персональных данных' },
+  { icon: FileText, title: 'Чёткие и понятные условия' },
 ];
 
 const processSteps = [
-  { step: '01', title: 'Регистрация', text: 'Создайте профиль и подтвердите номер телефона.' },
-  { step: '02', title: 'Заявка', text: 'Выберите сумму и срок, затем отправьте заявку на рассмотрение.' },
-  { step: '03', title: 'Получение средств', text: 'После одобрения деньги переводятся на банковский счёт.' },
+  { step: '01', title: 'Регистрация', text: 'Введите номер телефона и подтвердите его с помощью SMS-кода.' },
+  { step: '02', title: 'Заявка', text: 'Выберите сумму и срок займа и отправьте заявку на рассмотрение.' },
+  { step: '03', title: 'Получение средств', text: 'После одобрения деньги поступают на ваш банковский счёт.' },
+];
+
+const transparencyPoints = [
+  { title: 'Никаких скрытых комиссий', text: 'Полная стоимость займа известна до оформления' },
+  { title: 'Быстрое рассмотрение', text: 'Заявки обрабатываются в течение нескольких минут' },
+  { title: 'Безопасность данных', text: 'Ваши данные защищены современными технологиями' },
+  { title: 'Гибкое погашение', text: 'Выбирайте удобный срок и погашайте без лишнего давления' },
+  { title: 'Улучшение условий со временем', text: 'При повторных займах могут быть доступны более выгодные параметры и увеличенный лимит' },
+];
+
+const companyParagraphs = [
+  'LumenBridge Finance Ltd — финансовая организация, предоставляющая быстрые и доступные решения в сфере кредитования в Европе.',
+  'Наша цель — упростить доступ к финансированию за счёт прозрачных условий и современных технологий.',
+  'Мы работаем в соответствии с действующим законодательством и уделяем особое внимание защите данных клиентов и ответственному кредитованию.',
 ];
 
 const StitchTokenScene = dynamic(() => import('@/shared/ui/animations/StitchTokenScene'), { ssr: false });
@@ -53,30 +66,6 @@ function toneGlow(tone: string): string {
   if (tone === 'amber') return 'radial-gradient(circle at top right, rgba(245,158,11,0.18), transparent 58%)';
   if (tone === 'violet') return 'radial-gradient(circle at top right, rgba(139,92,246,0.18), transparent 58%)';
   return 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 58%)';
-}
-
-function LightLinesVisual({ style }: { style?: CSSProperties }) {
-  return (
-    <div
-      className="light-lines"
-      style={{
-        minHeight: '320px',
-        borderRadius: '24px',
-        border: '1px solid rgba(140,144,159,0.18)',
-        background: 'linear-gradient(180deg, rgba(30,41,59,0.62) 0%, rgba(18,18,20,0.84) 100%)',
-        position: 'relative',
-        ...style,
-      }}
-    >
-      <span style={{ width: '72%', top: '22%', left: '8%', animationDelay: '0s' }} />
-      <span style={{ width: '58%', top: '34%', left: '18%', animationDelay: '1.1s' }} />
-      <span style={{ width: '82%', top: '48%', left: '5%', animationDelay: '0.4s' }} />
-      <span style={{ width: '48%', top: '62%', left: '30%', animationDelay: '1.8s' }} />
-      <span style={{ width: '66%', top: '76%', left: '14%', animationDelay: '0.9s' }} />
-      <div style={{ position: 'absolute', inset: 'auto', width: '220px', height: '220px', right: '-30px', top: '-30px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.22), transparent 70%)' }} />
-      <div style={{ position: 'absolute', inset: 'auto', width: '180px', height: '180px', left: '-20px', bottom: '-20px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.18), transparent 70%)' }} />
-    </div>
-  );
 }
 
 export default function HomePage() {
@@ -183,11 +172,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section style={{ padding: '40px 24px 36px' }}>
+      <section style={{ padding: '40px 24px 40px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>Процесс</p>
-            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Как это работает</h2>
+            <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Как всё происходит</h2>
+            <p style={{ color: 'rgba(154,164,182,0.92)', lineHeight: 1.75, maxWidth: '60ch', margin: '0 auto' }}>
+              Оформление займа занимает всего несколько минут и полностью проходит онлайн, без визитов в офис и сложных процедур.
+            </p>
           </div>
           <div className="grid-3-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem' }}>
             {processSteps.map((item, index) => (
@@ -206,22 +198,19 @@ export default function HomePage() {
           <div className="card aurora-blue" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '2rem' }}>
             <div>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>Прозрачность</p>
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.6rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Прозрачные условия</h2>
+              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.6rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Вы заранее знаете все условия</h2>
               <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75 }}>
-                Все условия займа отображаются до подачи заявки и подтверждаются на каждом этапе оформления.
+                Полная стоимость займа видна до оформления, а ключевые условия не прячутся в дополнительных шагах.
               </p>
             </div>
             <div style={{ display: 'grid', gap: '0.9rem' }}>
-              {[
-                'Все платежи видны до оформления займа.',
-                'Нет скрытых комиссий и непонятных списаний.',
-                'Параметры займа фиксируются в личном кабинете.',
-                'Уведомления помогают не пропустить важные статусы.',
-                'Поддержка доступна по понятным каналам связи.',
-              ].map((item) => (
-                <div key={item} style={{ display: 'flex', gap: '0.7rem', alignItems: 'start' }}>
+              {transparencyPoints.map((item) => (
+                <div key={item.title} style={{ display: 'flex', gap: '0.7rem', alignItems: 'start' }}>
                   <CheckCircle2 size={16} color="#6EE7B7" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <span style={{ color: '#E2E8F0', fontSize: '0.9rem', lineHeight: 1.65 }}>{item}</span>
+                  <div>
+                    <p style={{ color: '#F8FAFC', fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.45, marginBottom: '0.2rem' }}>{item.title}</p>
+                    <p style={{ color: 'rgba(154,164,182,0.88)', fontSize: '0.875rem', lineHeight: 1.6 }}>{item.text}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -244,7 +233,7 @@ export default function HomePage() {
                 {[
                   'Возможность начать с небольшой суммы',
                   'Формирование положительной кредитной истории',
-                  'Переход к более выгодным условиям при дисциплинированных платежах',
+                  'Формирование положительной кредитной истории',
                 ].map((item) => (
                   <div key={item} style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
                     <CheckCircle2 size={14} color="#6EE7B7" />
@@ -258,37 +247,44 @@ export default function HomePage() {
             </div>
             <div className="surface-card aurora-violet">
               <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C4B5FD', marginBottom: '0.65rem' }}>О компании</p>
-              <h3 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.6rem,2.4vw,2.3rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>Надёжный финансовый партнёр с ясной логикой продукта</h3>
-              <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75, marginBottom: '1rem' }}>
-                Компания работает как спокойный и понятный финансовый сервис: без визуального шума, без агрессивных обещаний и без непрозрачных условий.
-              </p>
-              <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75, marginBottom: '1rem' }}>
-                Мы уделяем внимание скорости обработки заявок, ясности шагов и качеству клиентского интерфейса — от публичной страницы до личного кабинета.
-              </p>
-              <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75 }}>
-                Все решения по займам и уведомлениям сопровождаются понятной информацией, чтобы пользователь всегда видел реальную картину обязательств.
-              </p>
+              <h3 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.6rem,2.4vw,2.3rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>О LumenBridge Finance Ltd</h3>
+              <div style={{ display: 'grid', gap: '0.9rem' }}>
+                {companyParagraphs.map((paragraph) => (
+                  <p key={paragraph} style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75 }}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section style={{ padding: '56px 24px', position: 'relative' }}>
+      <section style={{ padding: '44px 24px 48px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div
-            className="surface-card aurora-violet"
+            className="surface-card aurora-violet relative"
             style={{
               overflow: 'hidden',
-              minHeight: '360px',
+              minHeight: '320px',
               padding: 'clamp(1.5rem,3vw,2.25rem)',
               display: 'flex',
               alignItems: 'center',
             }}
           >
-            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.72 }}>
-              <LightLinesVisual style={{ minHeight: '100%', height: '100%', border: 'none', borderRadius: '0', background: 'linear-gradient(180deg, rgba(49,27,90,0.34) 0%, rgba(18,18,20,0.12) 100%)' }} />
+            <div aria-hidden className="absolute inset-0 z-0 w-full h-full pointer-events-none" style={{ opacity: 0.72 }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(49,27,90,0.34) 0%, rgba(18,18,20,0.12) 100%)' }} />
+              <div className="light-lines" style={{ position: 'absolute', inset: 0 }}>
+                <span style={{ width: '72%', top: '18%', left: '8%', animationDelay: '0s' }} />
+                <span style={{ width: '58%', top: '32%', left: '18%', animationDelay: '1.1s' }} />
+                <span style={{ width: '82%', top: '46%', left: '5%', animationDelay: '0.4s' }} />
+                <span style={{ width: '48%', top: '60%', left: '30%', animationDelay: '1.8s' }} />
+                <span style={{ width: '66%', top: '74%', left: '14%', animationDelay: '0.9s' }} />
+              </div>
+              <div style={{ position: 'absolute', width: '220px', height: '220px', right: '-30px', top: '-30px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.22), transparent 70%)' }} />
+              <div style={{ position: 'absolute', width: '180px', height: '180px', left: '-20px', bottom: '-20px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.18), transparent 70%)' }} />
             </div>
-            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.28, mixBlendMode: 'screen' }}>
+            <div aria-hidden className="absolute inset-0 z-0 w-full h-full pointer-events-none" style={{ opacity: 0.28, mixBlendMode: 'screen' }}>
               <StitchTokenScene />
             </div>
             <div className="relative z-10" style={{ maxWidth: '640px' }}>
@@ -301,7 +297,7 @@ export default function HomePage() {
               </p>
               <div style={{ display: 'grid', gap: '0.65rem', marginBottom: '1.25rem' }}>
                 {[
-                  'Займы от 30 000 до 500 000 EUR',
+                  'Займы от 30,000 до 500,000 EUR',
                   'Срок: от 1 до 12 месяцев',
                   'Без залога',
                   'Быстрое рассмотрение',
@@ -332,7 +328,7 @@ export default function HomePage() {
             Работаем прозрачно и в рамках закона
           </h2>
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.75rem' }}>
-            {trustPoints.map(({ icon: Icon, title, text }, index) => {
+            {trustPoints.map(({ icon: Icon, title }, index) => {
               const isSecurityCard = index === 0;
               return (
                 <div
@@ -350,7 +346,6 @@ export default function HomePage() {
                       <Icon size={18} color="#93C5FD" />
                     </div>
                     <p style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: '0.35rem', fontSize: '0.95rem' }}>{title}</p>
-                    <p style={{ fontSize: '0.84rem', color: 'rgba(154,164,182,0.88)', lineHeight: 1.6, maxWidth: isSecurityCard ? '22ch' : undefined }}>{text}</p>
                   </div>
                 </div>
               );

@@ -182,15 +182,13 @@ export function LoanCalculator({ dark = false }: { dark?: boolean }) {
 
       <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
         <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.55rem' }}>
-          {dark ? 'Калькулятор' : 'Кредитный калькулятор'}
+          Кредитный калькулятор
         </p>
-        {!dark && (
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.65rem' }}>
-            Рассчитайте условия займа
-          </h2>
-        )}
+        <h2 style={{ fontFamily: 'var(--f-display)', fontSize: dark ? 'clamp(1.4rem,2.6vw,1.9rem)' : 'clamp(1.75rem,3vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.65rem' }}>
+          Рассчитайте условия займа
+        </h2>
         <p style={{ fontSize: '0.9375rem', color: 'rgba(154,164,182,0.9)', lineHeight: 1.7, maxWidth: '42ch' }}>
-          Ползунки и итоговая сумма обновляются мгновенно, без графиков и лишнего визуального шума.
+          Рассчитайте условия займа за несколько секунд — выберите сумму и срок, чтобы сразу увидеть итоговую сумму к возврату. Все условия отображаются до оформления займа.
         </p>
       </div>
 
