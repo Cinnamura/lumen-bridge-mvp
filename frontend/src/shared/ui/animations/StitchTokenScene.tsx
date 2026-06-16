@@ -15,20 +15,32 @@ export default function StitchTokenScene({ className, style }: StitchTokenSceneP
     const container = containerRef.current;
     if (!container) return;
 
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
+    // Use getBoundingClientRect for reliable size — not clientHeight which can be 0
+    const rect = container.getBoundingClientRect();
+    const width  = rect.width  > 0 ? rect.width  : container.offsetWidth  || 300;
+    const height = rect.height > 0 ? rect.height : container.offsetHeight || 200;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(width, height);
-    container.appendChild(renderer.domElement);
+    // Pass false so Three.js does NOT set explicit CSS pixel dims on the canvas.
+    // We size the canvas via CSS (position: absolute; inset: 0) so it fills the
+    // container without ever creating a layout-breaking block.
+    renderer.setSize(width, height, false);
+
+    const canvas = renderer.domElement;
+    canvas.style.position = 'absolute';
+    canvas.style.top      = '0';
+    canvas.style.left     = '0';
+    canvas.style.width    = '100%';
+    canvas.style.height   = '100%';
+    container.appendChild(canvas);
 
     const group = new THREE.Group();
 
     const cylinderGeom = new THREE.CylinderGeometry(1.2, 1.2, 0.2, 32);
-    const cylinderMat = new THREE.MeshPhongMaterial({
+    const cylinderMat  = new THREE.MeshPhongMaterial({
       color: 0x4f46e5,
       transparent: true,
       opacity: 0.3,
@@ -39,8 +51,8 @@ export default function StitchTokenScene({ className, style }: StitchTokenSceneP
     group.add(tokenBody);
 
     const ringGeom = new THREE.TorusGeometry(0.8, 0.1, 16, 100);
-    const ringMat = new THREE.MeshPhongMaterial({ color: 0x10b981 });
-    const ring = new THREE.Mesh(ringGeom, ringMat);
+    const ringMat  = new THREE.MeshPhongMaterial({ color: 0x10b981 });
+    const ring     = new THREE.Mesh(ringGeom, ringMat);
     group.add(ring);
 
     scene.add(group);
@@ -61,30 +73,30 @@ export default function StitchTokenScene({ className, style }: StitchTokenSceneP
       group.rotation.x += 0.005;
       renderer.render(scene, camera);
     };
-
     animate();
 
     const onResize = () => {
-      const nextWidth = container.clientWidth || window.innerWidth;
-      const nextHeight = container.clientHeight || window.innerHeight;
-      camera.aspect = nextWidth / nextHeight;
+      const r      = container.getBoundingClientRect();
+      const nextW  = r.width  > 0 ? r.width  : container.offsetWidth  || 300;
+      const nextH  = r.height > 0 ? r.height : container.offsetHeight || 200;
+      camera.aspect = nextW / nextH;
       camera.updateProjectionMatrix();
-      renderer.setSize(nextWidth, nextHeight);
+      renderer.setSize(nextW, nextH, false);
     };
 
-    window.addEventListener('resize', onResize);
+    // ResizeObserver keeps the render buffer in sync with the CSS-sized canvas.
+    const ro = new ResizeObserver(onResize);
+    ro.observe(container);
 
     return () => {
-      window.cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', onResize);
+      cancelAnimationFrame(rafId);
+      ro.disconnect();
       renderer.dispose();
       cylinderGeom.dispose();
       cylinderMat.dispose();
       ringGeom.dispose();
       ringMat.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
+      if (container.contains(canvas)) container.removeChild(canvas);
     };
   }, []);
 
@@ -93,8 +105,10 @@ export default function StitchTokenScene({ className, style }: StitchTokenSceneP
       ref={containerRef}
       className={className}
       style={{
-        width: '100%',
-        height: '100%',
+        position: 'relative',
+        width:    '100%',
+        height:   '100%',
+        overflow: 'hidden',
         ...style,
       }}
     />
