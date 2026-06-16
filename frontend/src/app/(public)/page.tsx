@@ -170,6 +170,8 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+        {/* Observer for .reveal cards in this section */}
+        <HomeClient section="usecases" />
       </section>
 
       <section style={{ padding: '40px 24px 40px' }}>
@@ -191,6 +193,8 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+        {/* Observer for .reveal cards in this section */}
+        <HomeClient section="process" />
       </section>
 
       <section style={{ padding: '56px 24px', background: 'linear-gradient(180deg, rgba(18,18,20,0.3) 0%, rgba(11,15,25,0.16) 100%)' }}>
@@ -262,61 +266,57 @@ export default function HomePage() {
 
       <section style={{ padding: '44px 24px 48px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div
-            className="surface-card aurora-violet relative"
-            style={{
-              overflow: 'hidden',
-              minHeight: '320px',
-              padding: 'clamp(1.5rem,3vw,2.25rem)',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <div aria-hidden className="absolute inset-0 z-0 w-full h-full pointer-events-none" style={{ opacity: 0.72 }}>
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(49,27,90,0.34) 0%, rgba(18,18,20,0.12) 100%)' }} />
-              <div className="light-lines" style={{ position: 'absolute', inset: 0 }}>
-                <span style={{ width: '72%', top: '18%', left: '8%', animationDelay: '0s' }} />
-                <span style={{ width: '58%', top: '32%', left: '18%', animationDelay: '1.1s' }} />
-                <span style={{ width: '82%', top: '46%', left: '5%', animationDelay: '0.4s' }} />
-                <span style={{ width: '48%', top: '60%', left: '30%', animationDelay: '1.8s' }} />
-                <span style={{ width: '66%', top: '74%', left: '14%', animationDelay: '0.9s' }} />
-              </div>
-              <div style={{ position: 'absolute', width: '220px', height: '220px', right: '-30px', top: '-30px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.22), transparent 70%)' }} />
-              <div style={{ position: 'absolute', width: '180px', height: '180px', left: '-20px', bottom: '-20px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.18), transparent 70%)' }} />
-            </div>
-            <div aria-hidden className="absolute inset-0 z-0 w-full h-full pointer-events-none" style={{ opacity: 0.28, mixBlendMode: 'screen' }}>
-              <StitchTokenScene />
-            </div>
-            <div className="relative z-10" style={{ maxWidth: '640px' }}>
-              <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C4B5FD', marginBottom: '0.65rem' }}>Для бизнеса</p>
-              <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>
-                Финансирование для бизнеса
-              </h2>
-              <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75, marginBottom: '1.25rem' }}>
-                Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
-              </p>
-              <div style={{ display: 'grid', gap: '0.65rem', marginBottom: '1.25rem' }}>
-                {[
-                  'Займы от 30,000 до 500,000 EUR',
-                  'Срок: от 1 до 12 месяцев',
-                  'Без залога',
-                  'Быстрое рассмотрение',
-                  'Подходит для малого и среднего бизнеса',
-                ].map((item) => (
-                  <div key={item} style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                    <CheckCircle2 size={14} color="#C4B5FD" />
-                    <span style={{ color: '#E2E8F0', fontSize: '0.875rem' }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ padding: '0.95rem 1rem', borderRadius: '16px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.22)', marginBottom: '1.25rem' }}>
-                <p style={{ color: 'rgba(216,227,251,0.9)', lineHeight: 1.65, fontSize: '0.875rem' }}>
-                  На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
+          <div className="surface-card aurora-violet" style={{ padding: 'clamp(1.5rem,3vw,2.25rem)' }}>
+            <div
+              className="grid-2-resp"
+              style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: '2rem', alignItems: 'center' }}
+            >
+              {/* Left column — content */}
+              <div>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C4B5FD', marginBottom: '0.65rem' }}>Для бизнеса</p>
+                <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>
+                  Финансирование для бизнеса
+                </h2>
+                <p style={{ color: 'rgba(154,164,182,0.88)', lineHeight: 1.75, marginBottom: '1.25rem' }}>
+                  Решения для компаний и предпринимателей, которым важна скорость и предсказуемость.
                 </p>
+                <div style={{ display: 'grid', gap: '0.65rem', marginBottom: '1.25rem' }}>
+                  {[
+                    'Займы от 30,000 до 500,000 EUR',
+                    'Срок: от 1 до 12 месяцев',
+                    'Без залога',
+                    'Быстрое рассмотрение',
+                    'Подходит для малого и среднего бизнеса',
+                  ].map((item) => (
+                    <div key={item} style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                      <CheckCircle2 size={14} color="#C4B5FD" />
+                      <span style={{ color: '#E2E8F0', fontSize: '0.875rem' }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ padding: '0.95rem 1rem', borderRadius: '16px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.22)', marginBottom: '1.25rem' }}>
+                  <p style={{ color: 'rgba(216,227,251,0.9)', lineHeight: 1.65, fontSize: '0.875rem' }}>
+                    На данный момент заявки принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
+                  </p>
+                </div>
+                <Link href="/contacts" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
+                  Оставить заявку <ArrowRight size={16} />
+                </Link>
               </div>
-              <Link href="/contacts" className="btn btn-primary btn-lg" style={{ gap: '8px' }}>
-                Оставить заявку <ArrowRight size={16} />
-              </Link>
+
+              {/* Right column — Three.js animation */}
+              <div
+                style={{
+                  position: 'relative',
+                  height: '380px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  background: 'rgba(139,92,246,0.06)',
+                  border: '1px solid rgba(139,92,246,0.2)',
+                }}
+              >
+                <StitchTokenScene />
+              </div>
             </div>
           </div>
         </div>
@@ -328,28 +328,14 @@ export default function HomePage() {
             Работаем прозрачно и в рамках закона
           </h2>
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.75rem' }}>
-            {trustPoints.map(({ icon: Icon, title }, index) => {
-              const isSecurityCard = index === 0;
-              return (
-                <div
-                  key={title}
-                  className={`surface-card reveal reveal-${(index % 4) + 1}`}
-                  style={isSecurityCard ? { position: 'relative', overflow: 'hidden', minHeight: '192px' } : undefined}
-                >
-                  {isSecurityCard && (
-                    <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.4, mixBlendMode: 'screen', pointerEvents: 'none' }}>
-                      <StitchTokenScene />
-                    </div>
-                  )}
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ width: '42px', height: '42px', background: 'rgba(30,41,59,0.72)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem' }}>
-                      <Icon size={18} color="#93C5FD" />
-                    </div>
-                    <p style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: '0.35rem', fontSize: '0.95rem' }}>{title}</p>
-                  </div>
+            {trustPoints.map(({ icon: Icon, title }, index) => (
+              <div key={title} className={`surface-card reveal reveal-${(index % 4) + 1}`}>
+                <div style={{ width: '42px', height: '42px', background: 'rgba(30,41,59,0.72)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                  <Icon size={18} color="#93C5FD" />
                 </div>
-              );
-            })}
+                <p style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: '0.35rem', fontSize: '0.95rem' }}>{title}</p>
+              </div>
+            ))}
           </div>
         </div>
         <HomeClient section="compliance" />

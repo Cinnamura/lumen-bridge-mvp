@@ -48,6 +48,8 @@ export function HomeClient({ section }: { section: string }) {
   if (section === 'faq') {
     return (
       <section style={{ padding: '40px 24px 20px', position: 'relative' }}>
+        {/* Hidden ref-div lets the shared observer find .reveal elements in this section */}
+        <div ref={ref} aria-hidden style={{ display: 'none' }} />
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           <div className="reveal reveal-1" style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>FAQ</p>
