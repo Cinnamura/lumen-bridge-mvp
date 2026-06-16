@@ -10,14 +10,11 @@ export default function CabinetShell({ children }: { children: React.ReactNode }
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#E8ECF0' }}>
-
-      {/* ── Desktop sidebar ── */}
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(180deg, #F5F7FA 0%, #E8ECF0 100%)' }}>
       <div className="cabinet-sidebar-wrap">
         <CabinetSidebar phone={user?.phone} />
       </div>
 
-      {/* ── Mobile drawer ── */}
       {drawerOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300 }}>
           <div
@@ -30,10 +27,7 @@ export default function CabinetShell({ children }: { children: React.ReactNode }
         </div>
       )}
 
-      {/* ── Main content ── */}
       <main style={{ flex: 1, overflow: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-
-        {/* Mobile top bar */}
         <div className="cabinet-topbar">
           <button
             onClick={() => setDrawerOpen(true)}
@@ -42,7 +36,7 @@ export default function CabinetShell({ children }: { children: React.ReactNode }
           >
             <Menu size={22} />
           </button>
-          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.0625rem', color: '#0D1B2A', textDecoration: 'none' }}>
+          <Link href="/cabinet" style={{ fontFamily: 'var(--f-display)', fontSize: '1.0625rem', color: '#0D1B2A', textDecoration: 'none' }}>
             LumenBridge
           </Link>
           <div style={{ width: '30px' }} />

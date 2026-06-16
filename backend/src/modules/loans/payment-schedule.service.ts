@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { normalizeScheduleRows, roundMoney, splitAmount } from './payment-schedule.utils';
 
 function addDays(base: Date, days: number): Date {
   const d = new Date(base);
@@ -22,62 +23,64 @@ export class PaymentScheduleService {
     if (!loan) return;
 
     const issued = loan.issuedAt ?? new Date();
-    const dailyPayment = loan.dailyPayment;
+    const amounts = splitAmount(Number(loan.totalRepayment), loan.termDays);
 
-    const rows: Prisma.PaymentScheduleCreateManyInput[] = [];
-    for (let seq = 1; seq <= loan.termDays; seq++) {
-      rows.push({
-        loanId,
-        seq,
-        dueDate: addDays(issued, seq),
-        amount: dailyPayment,
-        status: 'pending',
-      });
-    }
+    const rows: Prisma.PaymentScheduleCreateManyInput[] = amounts.map((amount, index) => ({
+      loanId,
+      seq: index + 1,
+      dueDate: addDays(issued, index + 1),
+      amount: new Prisma.Decimal(amount),
+      status: 'pending',
+    }));
 
     await this.prisma.paymentSchedule.createMany({ data: rows });
   }
 
   /**
-   * Авансовое погашение графика.
-   * Источник истины — совокупная сумма успешных платежей по займу.
-   * Хронологически помечает как «оплачено» все платежи, которые
-   * полностью покрыты внесёнными деньгами (платёж по 1000, внесли 3000 →
-   * первые три платежа становятся «ОПЛАЧЕНО»). Суммы строк графика не
-   * дробятся — частичный остаток остаётся авансом и уменьшает общий долг.
-   * Возвращает true, если все платежи графика оплачены.
+   * Полностью синхронизирует график с фактически уплаченными деньгами.
+   * После пересчёта сумма всех непогашенных строк всегда равна remainingAmount.
    */
   async applyPayment(loanId: string): Promise<boolean> {
+    const loan = await this.prisma.loan.findUnique({
+      where: { id: loanId },
+      include: { schedule: { orderBy: { seq: 'asc' } } },
+    });
+    if (!loan) return false;
+
     const agg = await this.prisma.payment.aggregate({
       where: { loanId, status: 'success' },
       _sum: { amount: true },
     });
     const totalPaid = Number(agg._sum.amount ?? 0);
 
-    const rows = await this.prisma.paymentSchedule.findMany({
-      where: { loanId },
-      orderBy: { seq: 'asc' },
+    const normalized = normalizeScheduleRows({
+      rows: loan.schedule.map((row) => ({
+        id: row.id,
+        seq: row.seq,
+        dueDate: row.dueDate,
+        amount: Number(row.amount),
+        status: row.status as 'pending' | 'paid' | 'overdue',
+        paidAt: row.paidAt,
+      })),
+      totalRepayment: Number(loan.totalRepayment),
+      totalPaid,
+      now: new Date(),
     });
 
-    const now = new Date();
-    let cumulative = 0;
-    let allPaid = true;
-
-    for (const row of rows) {
-      cumulative = Math.round((cumulative + Number(row.amount)) * 100) / 100;
-      // Платёж считается оплаченным, когда внесённого хватает на него целиком
-      const covered = totalPaid + 0.001 >= cumulative;
-      if (covered && row.status !== 'paid') {
-        await this.prisma.paymentSchedule.update({
+    await this.prisma.$transaction(
+      normalized.rows.map((row) =>
+        this.prisma.paymentSchedule.update({
           where: { id: row.id },
-          data: { status: 'paid', paidAt: now },
-        });
-      } else if (!covered) {
-        allPaid = false;
-      }
-    }
+          data: {
+            amount: new Prisma.Decimal(row.amount),
+            status: row.status,
+            paidAt: row.paidAt,
+          },
+        }),
+      ),
+    );
 
-    return allPaid;
+    return normalized.allPaid;
   }
 
   /**
@@ -97,8 +100,8 @@ export class PaymentScheduleService {
     });
 
     const total = Number(loan.totalRepayment);
-    const paid = Number(agg._sum.amount ?? 0);
-    const remaining = Math.max(0, Math.round((total - paid) * 100) / 100);
+    const paid = roundMoney(Number(agg._sum.amount ?? 0));
+    const remaining = roundMoney(Math.max(0, total - paid));
     const shouldClose = remaining === 0 && loan.status !== 'closed' && loan.status !== 'pending_signing';
 
     await this.prisma.loan.update({
