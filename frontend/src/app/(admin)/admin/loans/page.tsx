@@ -71,29 +71,29 @@ export default function AdminLoansPage() {
   const tabStyle = (key: (typeof STATUSES)[number]['key']): React.CSSProperties => ({
     padding: '7px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer',
     fontWeight: 600, fontSize: '0.875rem',
-    background: status === key ? '#0D1B2A' : 'transparent',
-    color: status === key ? '#fff' : '#4A6580',
+    background: status === key ? 'var(--text-primary)' : 'transparent',
+    color: status === key ? '#fff' : 'var(--text-secondary)',
   });
 
   return (
     <AdminShell>
       <div className="admin-page">
         <div style={{ marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Админ-панель</p>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>Займы</h1>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Админ-панель</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Займы</h1>
         </div>
 
-        <div style={{ display: 'inline-flex', background: '#fff', border: '1px solid #E8ECF0', borderRadius: '8px', padding: '3px', marginBottom: '1.25rem', gap: '2px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'inline-flex', background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '8px', padding: '3px', marginBottom: '1.25rem', gap: '2px', flexWrap: 'wrap' }}>
           {STATUSES.map(({ key, label }) => (
             <button key={key} style={tabStyle(key)} onClick={() => { setStatus(key); setPage(1); }}>{label}</button>
           ))}
         </div>
 
-        {error && <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1rem', color: '#6B1A14' }}>{error}</div>}
+        {error && <div style={{ borderLeft: '4px solid var(--accent-crimson)', background: 'rgba(239, 71, 111, 0.16)', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1rem', color: '#fecdd3' }}>{error}</div>}
         {loading && <TableSkeleton rows={8} columns={8} />}
 
         {!loading && (
-          <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
             <div style={{ overflowX: 'auto' }}>
               <table className="admin-table">
                 <thead>
@@ -109,41 +109,41 @@ export default function AdminLoansPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Займов не найдено</td></tr>}
+                  {rows.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-secondary)' }}>Займов не найдено</td></tr>}
                   {rows.map((l) => {
                     const s = BADGE[l.status] ?? { label: l.status, cls: 'badge-closed' };
                     const pct = l.totalRepayment > 0 ? Math.min(100, (l.paidAmount / l.totalRepayment) * 100) : 0;
                     const done = l.remainingAmount === 0;
                     return (
                       <tr key={l.id}>
-                        <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580' }}>{l.id.slice(0, 8)}…</td>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{l.id.slice(0, 8)}…</td>
                         <td>
                           <div style={{ fontWeight: 600 }}>{[l.user?.firstName, l.user?.lastName].filter(Boolean).join(' ') || '—'}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>{l.user?.phone ?? '—'}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--f-mono)' }}>{l.user?.phone ?? '—'}</div>
                         </td>
                         <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
-                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.termDays} дн.</td>
+                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{l.termDays} дн.</td>
                         <td>
                           {l.status === 'pending_signing' ? (
-                            <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>Ожидает подписания клиентом</span>
+                            <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>Ожидает подписания клиентом</span>
                           ) : (
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontFamily: 'var(--f-mono)' }}>
-                                <span style={{ color: done ? '#1E8A5E' : '#0D1B2A', fontWeight: 600 }}>{formatCurrency(l.paidAmount)}</span>
-                                <span style={{ color: '#4A6580' }}>из {formatCurrency(l.totalRepayment)}</span>
+                                <span style={{ color: done ? 'var(--accent-mint)' : 'var(--text-primary)', fontWeight: 600 }}>{formatCurrency(l.paidAmount)}</span>
+                                <span style={{ color: 'var(--text-secondary)' }}>из {formatCurrency(l.totalRepayment)}</span>
                               </div>
-                              <div style={{ height: '6px', background: '#E8ECF0', borderRadius: '999px', overflow: 'hidden' }}>
-                                <div style={{ height: '100%', width: `${pct}%`, background: done ? '#1E8A5E' : '#2E7DF7', borderRadius: '999px', transition: 'width 300ms ease' }} />
+                              <div style={{ height: '6px', background: 'var(--surface-0)', borderRadius: '999px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${pct}%`, background: done ? 'var(--accent-mint)' : 'var(--accent-indigo)', borderRadius: '999px', transition: 'width 300ms ease' }} />
                               </div>
-                              <p style={{ fontSize: '0.6875rem', color: done ? '#1E8A5E' : '#4A6580', marginTop: '3px' }}>
+                              <p style={{ fontSize: '0.6875rem', color: done ? 'var(--accent-mint)' : 'var(--text-secondary)', marginTop: '3px' }}>
                                 {done ? 'Погашен полностью' : `Остаток ${formatCurrency(l.remainingAmount)}`}
                               </p>
                             </div>
                           )}
                         </td>
                         <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
-                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.issuedAt ? formatDate(l.issuedAt) : '—'}</td>
-                        <td><Link href={`/admin/loans/${l.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
+                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{l.issuedAt ? formatDate(l.issuedAt) : '—'}</td>
+                        <td><Link href={`/admin/loans/${l.id}`} style={{ fontSize: '0.8125rem', color: 'var(--accent-indigo)', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
                       </tr>
                     );
                   })}
@@ -153,12 +153,12 @@ export default function AdminLoansPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#4A6580' }}>
-          <span>Всего: <strong style={{ color: '#0D1B2A' }}>{total}</strong></span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <span>Всего: <strong style={{ color: 'var(--text-primary)' }}>{total}</strong></span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} style={{ background: '#fff', border: '1.5px solid #C8D0DA', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', opacity: page <= 1 ? 0.5 : 1 }}><ChevronLeft size={16} /></button>
-            <span style={{ fontFamily: 'var(--f-mono)', color: '#0D1B2A' }}>{page} / {totalPages}</span>
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} style={{ background: '#fff', border: '1.5px solid #C8D0DA', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', opacity: page >= totalPages ? 0.5 : 1 }}><ChevronRight size={16} /></button>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} style={{ background: 'var(--surface-1)', border: '1px solid var(--line-strong)', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', opacity: page <= 1 ? 0.5 : 1 }}><ChevronLeft size={16} /></button>
+            <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--text-primary)' }}>{page} / {totalPages}</span>
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} style={{ background: 'var(--surface-1)', border: '1px solid var(--line-strong)', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', opacity: page >= totalPages ? 0.5 : 1 }}><ChevronRight size={16} /></button>
           </div>
         </div>
       </div>

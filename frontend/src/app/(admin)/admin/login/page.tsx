@@ -33,59 +33,59 @@ function LoginInner() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#E8ECF0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface-0)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.5rem', color: '#0D1B2A', textDecoration: 'none' }}>
+          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.5rem', color: 'var(--text-primary)', textDecoration: 'none' }}>
             LumenBridge
           </Link>
-          <p style={{ fontSize: '0.75rem', color: '#4A6580', marginTop: '0.25rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
             Admin Panel
           </p>
         </div>
 
-        <form onSubmit={submit} style={{ background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 8px rgba(13,27,42,0.06), 0 1px 2px rgba(13,27,42,0.04)', border: '1px solid #E8ECF0' }}>
-          <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>
+        <form onSubmit={submit} style={{ background: 'var(--surface-1)', borderRadius: '10px', padding: '2rem', boxShadow: '0 2px 8px rgba(13,27,42,0.06), 0 1px 2px rgba(13,27,42,0.04)', border: '1px solid var(--line-soft)' }}>
+          <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
             Вход в админ-панель
           </h1>
-          <p style={{ color: '#4A6580', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
             Введите учётные данные сотрудника
           </p>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#4A6580', marginBottom: '4px' }}>Логин</label>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>Логин</label>
             <input
               type="text" autoFocus value={login_}
               onChange={(e) => setLogin(e.target.value)}
               autoComplete="username"
-              style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 14px', fontSize: '1rem', color: '#0D1B2A', background: '#fff', boxSizing: 'border-box', outline: 'none' }}
+              style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 14px', fontSize: '1rem', color: 'var(--text-primary)', background: 'var(--surface-1)', boxSizing: 'border-box', outline: 'none' }}
             />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#4A6580', marginBottom: '4px' }}>Пароль</label>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>Пароль</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPw ? 'text' : 'password'} value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 44px 10px 14px', fontSize: '1rem', color: '#0D1B2A', background: '#fff', boxSizing: 'border-box', outline: 'none' }}
+                style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 44px 10px 14px', fontSize: '1rem', color: 'var(--text-primary)', background: 'var(--surface-1)', boxSizing: 'border-box', outline: 'none' }}
               />
               <button type="button" onClick={() => setShowPw((s) => !s)} aria-label="Показать пароль"
-                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#4A6580', padding: 6 }}>
+                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: 6 }}>
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {error && <p style={{ color: '#C0392B', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>{error}</p>}
+          {error && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>{error}</p>}
 
           <button type="submit" disabled={loading}
-            style={{ width: '100%', background: loading ? '#7AABF7' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
+            style={{ width: '100%', background: loading ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
             {loading ? 'Вход...' : 'Войти'}
           </button>
 
-          <p style={{ marginTop: '1rem', padding: '0.625rem 0.875rem', background: '#FFFBCC', border: '1px solid #E6D200', borderRadius: '6px', fontSize: '0.75rem', color: '#5A4800', lineHeight: 1.5 }}>
+          <p style={{ marginTop: '1rem', padding: '0.625rem 0.875rem', background: 'rgba(245, 158, 11, 0.14)', border: '1px solid rgba(245, 158, 11, 0.24)', borderRadius: '6px', fontSize: '0.75rem', color: '#fde68a', lineHeight: 1.5 }}>
             Учебный режим. Тестовые креды:<br />
             <code style={{ fontFamily: 'var(--f-mono)' }}>admin / admin123</code> (роль admin),<br />
             <code style={{ fontFamily: 'var(--f-mono)' }}>operator / operator123</code> (роль operator)
@@ -98,7 +98,7 @@ function LoginInner() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#E8ECF0' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--surface-0)' }} />}>
       <LoginInner />
     </Suspense>
   );

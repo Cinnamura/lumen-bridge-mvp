@@ -34,7 +34,7 @@ const APP_STATUS: Record<string, string> = {
   new: 'Новая', in_review: 'На проверке', approved: 'Одобрена', rejected: 'Отклонена',
 };
 const APP_COLORS: Record<string, string> = {
-  new: '#2E7DF7', in_review: '#C08020', approved: '#1E8A5E', rejected: '#C0392B',
+  new: 'var(--accent-indigo)', in_review: '#C08020', approved: 'var(--accent-mint)', rejected: 'var(--accent-crimson)',
 };
 const LOAN_STATUS: Record<string, string> = {
   pending_signing: 'Ожидает подписания', active: 'Активен', overdue: 'Просрочен', closed: 'Закрыт',
@@ -72,34 +72,34 @@ export default function AdminClientDetailPage() {
   const tabStyle = (t: Tab): React.CSSProperties => ({
     padding: '7px 18px', border: 'none', borderRadius: '6px', cursor: 'pointer',
     fontWeight: 600, fontSize: '0.875rem',
-    background: tab === t ? '#0D1B2A' : 'transparent',
-    color: tab === t ? '#fff' : '#4A6580',
+    background: tab === t ? 'var(--text-primary)' : 'transparent',
+    color: tab === t ? '#fff' : 'var(--text-secondary)',
   });
 
   return (
     <AdminShell>
       <div className="admin-page">
         <button onClick={() => router.back()}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#4A6580', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1.25rem', padding: 0 }}>
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1.25rem', padding: 0 }}>
           <ChevronLeft size={16} /> Назад к клиентам
         </button>
 
         {loading && <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{[200,140,100,180].map(w=><Skeleton key={w} h={20} w={w}/>)}</div>}
-        {!loading && error && <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '1rem', color: '#6B1A14' }}>{error}</div>}
+        {!loading && error && <div style={{ borderLeft: '4px solid var(--accent-crimson)', background: 'rgba(239, 71, 111, 0.16)', borderRadius: '8px', padding: '1rem', color: '#fecdd3' }}>{error}</div>}
 
         {!loading && client && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Header */}
             <div>
-              <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Клиент</p>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Клиент</p>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {[client.firstName, client.lastName].filter(Boolean).join(' ') || 'Без имени'}
               </h1>
             </div>
 
             {/* Contacts */}
-            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
-              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Контактные данные</h2>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
+              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Контактные данные</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                 {[
                   { label: 'Телефон',        value: client.phone },
@@ -110,15 +110,15 @@ export default function AdminClientDetailPage() {
                   { label: 'Активных займов', value: String(client.loans.filter(l => l.status === 'active' || l.status === 'overdue').length) },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: '#0D1B2A' }}>{value}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>{value}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'inline-flex', background: '#fff', border: '1px solid #E8ECF0', borderRadius: '8px', padding: '3px', gap: '2px' }}>
+            <div style={{ display: 'inline-flex', background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '8px', padding: '3px', gap: '2px' }}>
               <button style={tabStyle('applications')} onClick={() => setTab('applications')}>
                 Заявки ({client.applications.length})
               </button>
@@ -132,21 +132,21 @@ export default function AdminClientDetailPage() {
 
             {/* Applications tab */}
             {tab === 'applications' && (
-              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
                 {client.applications.length === 0 ? (
-                  <p style={{ padding: '2rem', textAlign: 'center', color: '#4A6580' }}>Заявок нет</p>
+                  <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Заявок нет</p>
                 ) : (
                   <table className="admin-table" style={{ width: '100%' }}>
                     <thead><tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Срок</th><th>Статус</th><th></th></tr></thead>
                     <tbody>
                       {client.applications.map((a) => (
                         <tr key={a.id}>
-                          <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(a.createdAt)}</td>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{formatDate(a.createdAt)}</td>
                           <td style={{ fontSize: '0.8125rem' }}>{a.type === 'personal' ? 'Физлицо' : 'Бизнес'}</td>
                           <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(a.amount)}</td>
-                          <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{a.termDays ? `${a.termDays} дн.` : a.termMonths ? `${a.termMonths} мес.` : '—'}</td>
-                          <td><span style={{ fontSize: '0.75rem', fontWeight: 600, color: APP_COLORS[a.status] ?? '#4A6580' }}>{APP_STATUS[a.status] ?? a.status}</span></td>
-                          <td><Link href={`/admin/applications/${a.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{a.termDays ? `${a.termDays} дн.` : a.termMonths ? `${a.termMonths} мес.` : '—'}</td>
+                          <td><span style={{ fontSize: '0.75rem', fontWeight: 600, color: APP_COLORS[a.status] ?? 'var(--text-secondary)' }}>{APP_STATUS[a.status] ?? a.status}</span></td>
+                          <td><Link href={`/admin/applications/${a.id}`} style={{ fontSize: '0.8125rem', color: 'var(--accent-indigo)', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
                         </tr>
                       ))}
                     </tbody>
@@ -157,9 +157,9 @@ export default function AdminClientDetailPage() {
 
             {/* Loans tab */}
             {tab === 'loans' && (
-              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
                 {client.loans.length === 0 ? (
-                  <p style={{ padding: '2rem', textAlign: 'center', color: '#4A6580' }}>Займов нет</p>
+                  <p style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Займов нет</p>
                 ) : (
                   <table className="admin-table" style={{ width: '100%' }}>
                     <thead><tr><th>Сумма</th><th>Срок</th><th>Выплачено</th><th>Остаток</th><th>Статус</th><th></th></tr></thead>
@@ -167,13 +167,13 @@ export default function AdminClientDetailPage() {
                       {client.loans.map((l) => (
                         <tr key={l.id}>
                           <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
-                          <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.termDays} дн.</td>
-                          <td style={{ fontFamily: 'var(--f-mono)', color: '#1E8A5E' }}>{formatCurrency(l.paidAmount)}</td>
-                          <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: l.remainingAmount === 0 ? '#1E8A5E' : '#0D1B2A' }}>{formatCurrency(l.remainingAmount)}</td>
-                          <td style={{ fontSize: '0.8125rem', color: l.status === 'overdue' ? '#C0392B' : l.status === 'closed' ? '#1E8A5E' : '#4A6580' }}>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{l.termDays} дн.</td>
+                          <td style={{ fontFamily: 'var(--f-mono)', color: 'var(--accent-mint)' }}>{formatCurrency(l.paidAmount)}</td>
+                          <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: l.remainingAmount === 0 ? 'var(--accent-mint)' : 'var(--text-primary)' }}>{formatCurrency(l.remainingAmount)}</td>
+                          <td style={{ fontSize: '0.8125rem', color: l.status === 'overdue' ? 'var(--accent-crimson)' : l.status === 'closed' ? 'var(--accent-mint)' : 'var(--text-secondary)' }}>
                             {LOAN_STATUS[l.status] ?? l.status}
                           </td>
-                          <td><Link href={`/admin/loans/${l.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
+                          <td><Link href={`/admin/loans/${l.id}`} style={{ fontSize: '0.8125rem', color: 'var(--accent-indigo)', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
                         </tr>
                       ))}
                     </tbody>
@@ -185,22 +185,22 @@ export default function AdminClientDetailPage() {
             {/* Payments tab */}
             {tab === 'payments' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F0F3F6' }}>
-                    <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '0.9375rem' }}>Заявки на оплату</p>
+                <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ padding: '0.875rem 1rem', borderBottom: '1px solid #F0F3F6' }}>
+                    <p style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9375rem' }}>Заявки на оплату</p>
                   </div>
                   {allPayReqs.length === 0 ? (
-                    <p style={{ padding: '1.5rem', textAlign: 'center', color: '#4A6580', fontSize: '0.875rem' }}>Нет заявок на оплату</p>
+                    <p style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Нет заявок на оплату</p>
                   ) : (
                     <table className="admin-table" style={{ width: '100%' }}>
                       <thead><tr><th>Дата</th><th>Сумма</th><th>Reference</th><th>Статус</th></tr></thead>
                       <tbody>
                         {allPayReqs.map((pr) => (
                           <tr key={pr.id}>
-                            <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(pr.createdAt)}</td>
+                            <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{formatDate(pr.createdAt)}</td>
                             <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(pr.amount)}</td>
-                            <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580' }}>{pr.reference}</td>
-                            <td style={{ fontSize: '0.8125rem', fontWeight: 600, color: pr.status === 'confirmed' ? '#1E8A5E' : pr.status === 'rejected' ? '#C0392B' : '#C08020' }}>
+                            <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{pr.reference}</td>
+                            <td style={{ fontSize: '0.8125rem', fontWeight: 600, color: pr.status === 'confirmed' ? 'var(--accent-mint)' : pr.status === 'rejected' ? 'var(--accent-crimson)' : '#C08020' }}>
                               {PR_STATUS[pr.status] ?? pr.status}
                             </td>
                           </tr>
@@ -210,21 +210,21 @@ export default function AdminClientDetailPage() {
                   )}
                 </div>
 
-                <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F0F3F6' }}>
-                    <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '0.9375rem' }}>Зачисленные платежи</p>
+                <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ padding: '0.875rem 1rem', borderBottom: '1px solid #F0F3F6' }}>
+                    <p style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9375rem' }}>Зачисленные платежи</p>
                   </div>
                   {allPayments.length === 0 ? (
-                    <p style={{ padding: '1.5rem', textAlign: 'center', color: '#4A6580', fontSize: '0.875rem' }}>Платежей нет</p>
+                    <p style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Платежей нет</p>
                   ) : (
                     <table className="admin-table" style={{ width: '100%' }}>
                       <thead><tr><th>Дата</th><th>Сумма</th><th>Примечание</th></tr></thead>
                       <tbody>
                         {allPayments.map((p) => (
                           <tr key={p.id}>
-                            <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(p.recordedAt)}</td>
-                            <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#1E8A5E' }}>{formatCurrency(p.amount)}</td>
-                            <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{p.note || '—'}</td>
+                            <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{formatDate(p.recordedAt)}</td>
+                            <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--accent-mint)' }}>{formatCurrency(p.amount)}</td>
+                            <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{p.note || '—'}</td>
                           </tr>
                         ))}
                       </tbody>

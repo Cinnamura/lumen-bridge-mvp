@@ -35,10 +35,10 @@ interface AppDetail {
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  new: { label: 'Новая', color: '#2E7DF7', bg: '#EBF1FE' },
+  new: { label: 'Новая', color: 'var(--accent-indigo)', bg: '#EBF1FE' },
   in_review: { label: 'На проверке', color: '#C08020', bg: '#FEF3CD' },
-  approved: { label: 'Одобрена', color: '#1E8A5E', bg: '#E0F5EC' },
-  rejected: { label: 'Отклонена', color: '#C0392B', bg: '#FAD7D4' },
+  approved: { label: 'Одобрена', color: 'var(--accent-mint)', bg: '#E0F5EC' },
+  rejected: { label: 'Отклонена', color: 'var(--accent-crimson)', bg: '#FAD7D4' },
 };
 
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -55,9 +55,9 @@ const TRANSITION_LABELS: Record<string, string> = {
 };
 
 const TRANSITION_COLORS: Record<string, { bg: string; color: string; border?: string }> = {
-  in_review: { bg: '#fff', color: '#4A6580', border: '1.5px solid #C8D0DA' },
-  approved: { bg: '#1E8A5E', color: '#fff' },
-  rejected: { bg: '#fff', color: '#C0392B', border: '1.5px solid #C0392B' },
+  in_review: { bg: '#fff', color: 'var(--text-secondary)', border: '1px solid var(--line-strong)' },
+  approved: { bg: 'var(--accent-mint)', color: '#fff' },
+  rejected: { bg: '#fff', color: 'var(--accent-crimson)', border: '1.5px solid var(--accent-crimson)' },
 };
 
 export default function AdminApplicationDetailPage() {
@@ -128,7 +128,7 @@ export default function AdminApplicationDetailPage() {
   return (
     <AdminShell>
       <div className="admin-page">
-        <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#4A6580', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1.25rem', padding: 0 }}>
+        <button onClick={() => router.back()} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1.25rem', padding: 0 }}>
           <ChevronLeft size={16} /> Назад к заявкам
         </button>
 
@@ -139,16 +139,16 @@ export default function AdminApplicationDetailPage() {
         )}
 
         {!loading && error && (
-          <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '1rem', color: '#6B1A14' }}>{error}</div>
+          <div style={{ borderLeft: '4px solid var(--accent-crimson)', background: 'rgba(239, 71, 111, 0.16)', borderRadius: '8px', padding: '1rem', color: '#fecdd3' }}>{error}</div>
         )}
 
         {!loading && app && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
-                <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Заявка</p>
-                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>{clientName}</h1>
-                <p style={{ fontSize: '0.8125rem', color: '#4A6580', fontFamily: 'var(--f-mono)', marginTop: '2px' }}>{app.id.slice(0, 16)}…</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Заявка</p>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{clientName}</h1>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontFamily: 'var(--f-mono)', marginTop: '2px' }}>{app.id.slice(0, 16)}…</p>
               </div>
               {badge && (
                 <span style={{ background: badge.bg, color: badge.color, fontWeight: 700, fontSize: '0.875rem', padding: '6px 14px', borderRadius: '8px' }}>
@@ -157,8 +157,8 @@ export default function AdminApplicationDetailPage() {
               )}
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
-              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Параметры заявки</h2>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
+              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Параметры заявки</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                 {[
                   { label: 'Тип', value: app.type === 'personal' ? 'Физлицо' : 'Бизнес' },
@@ -167,18 +167,18 @@ export default function AdminApplicationDetailPage() {
                   { label: 'Подано', value: formatDate(app.createdAt) },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: '#0D1B2A' }}>{value}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: 'var(--text-primary)' }}>{value}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Клиент</h2>
+                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Клиент</h2>
                 {app.user?.id && (
-                  <Link href={`/admin/clients/${app.user.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>
+                  <Link href={`/admin/clients/${app.user.id}`} style={{ fontSize: '0.8125rem', color: 'var(--accent-indigo)', textDecoration: 'none', fontWeight: 600 }}>
                     Открыть карточку →
                   </Link>
                 )}
@@ -195,47 +195,47 @@ export default function AdminApplicationDetailPage() {
                   ] : []),
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--f-mono)', color: '#0D1B2A' }}>{value}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--f-mono)', color: 'var(--text-primary)' }}>{value}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
-              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Комментарий оператора</h2>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
+              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Комментарий оператора</h2>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Добавьте внутренний комментарий к заявке…"
                 rows={4}
-                style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', resize: 'vertical', outline: 'none', color: '#0D1B2A', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', resize: 'vertical', outline: 'none', color: 'var(--text-primary)', boxSizing: 'border-box', fontFamily: 'inherit' }}
               />
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.625rem' }}>
-                <button onClick={saveComment} disabled={saving} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: saving ? '#A9C4F0' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
+                <button onClick={saveComment} disabled={saving} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: saving ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 16px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
                   <Save size={14} /> {saving ? 'Сохраняю…' : 'Сохранить'}
                 </button>
-                {saveOk && <span style={{ fontSize: '0.8125rem', color: '#1E8A5E', fontWeight: 600 }}>Сохранено</span>}
+                {saveOk && <span style={{ fontSize: '0.8125rem', color: 'var(--accent-mint)', fontWeight: 600 }}>Сохранено</span>}
               </div>
             </div>
 
             {transitions.length > 0 ? (
-              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.875rem' }}>Изменить статус</h2>
+              <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
+                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.875rem' }}>Изменить статус</h2>
                 <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
                   {transitions.map((t) => {
                     const c = TRANSITION_COLORS[t];
                     return (
-                      <button key={t} onClick={() => changeStatus(t)} disabled={updating} style={{ background: updating ? '#E8ECF0' : c.bg, color: updating ? '#4A6580' : c.color, border: c.border ?? 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 600, cursor: updating ? 'not-allowed' : 'pointer', fontSize: '0.9375rem' }}>
+                      <button key={t} onClick={() => changeStatus(t)} disabled={updating} style={{ background: updating ? 'var(--surface-2)' : c.bg, color: updating ? 'var(--text-secondary)' : c.color, border: c.border ?? 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 600, cursor: updating ? 'not-allowed' : 'pointer', fontSize: '0.9375rem' }}>
                         {TRANSITION_LABELS[t]}
                       </button>
                     );
                   })}
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#4A6580', marginTop: '0.5rem' }}>Текущий статус: <strong>{STATUS_BADGE[app.status]?.label}</strong></p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Текущий статус: <strong>{STATUS_BADGE[app.status]?.label}</strong></p>
               </div>
             ) : (
-              <div style={{ background: '#F8F9FA', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1rem', fontSize: '0.875rem', color: '#4A6580' }}>
+              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                 Статус заявки зафиксирован — дальнейшие изменения недоступны.
               </div>
             )}

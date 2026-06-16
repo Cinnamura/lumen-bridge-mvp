@@ -39,10 +39,10 @@ const facts = [
 export default function HowItWorksPage() {
   return (
     <>
-      <section style={{ background: '#0D1B2A', padding: '100px 32px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: 'var(--surface-0)', padding: '72px 24px 40px', position: 'relative', overflow: 'hidden' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 60%, rgba(46,125,247,0.06) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '1rem' }}>Процесс</p>
+          <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-indigo)', marginBottom: '1rem' }}>Процесс</p>
           <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem', maxWidth: '14ch', lineHeight: 1.1 }}>
             Как работает сервис
           </h1>
@@ -52,41 +52,41 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section style={{ background: '#fff', padding: '100px 32px' }}>
+      <section style={{ background: 'var(--surface-1)', padding: '72px 24px 40px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
           {/* Timeline */}
-          <div style={{ position: 'relative', paddingLeft: '3rem' }}>
+          <div style={{ position: 'relative', paddingLeft: '2.25rem' }}>
             <div aria-hidden style={{ position: 'absolute', left: '19px', top: '20px', bottom: '20px', width: '1px', background: 'linear-gradient(to bottom,rgba(46,125,247,0.3),rgba(46,125,247,0.05))' }} />
             {steps.map(({ n, title, desc }, i) => (
-              <div key={n} style={{ position: 'relative', marginBottom: i < steps.length - 1 ? '3rem' : 0 }}>
-                <div style={{ position: 'absolute', left: '-3rem', top: '2px', width: '38px', height: '38px', borderRadius: '50%', background: '#0D1B2A', border: '2px solid rgba(46,125,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-mono)', fontSize: '0.6875rem', fontWeight: 700, color: '#2E7DF7', flexShrink: 0 }}>
+              <div key={n} style={{ position: 'relative', marginBottom: i < steps.length - 1 ? '1.75rem' : 0 }}>
+                <div style={{ position: 'absolute', left: '-2.25rem', top: '2px', width: '38px', height: '38px', borderRadius: '50%', background: 'var(--surface-0)', border: '2px solid rgba(46,125,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-mono)', fontSize: '0.6875rem', fontWeight: 700, color: 'var(--accent-indigo)', flexShrink: 0 }}>
                   {n}
                 </div>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.625rem', letterSpacing: '-0.01em' }}>{title}</h3>
-                <p style={{ color: '#4A6580', lineHeight: 1.75, fontSize: '0.9375rem' }}>{desc}</p>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.625rem', letterSpacing: '-0.01em' }}>{title}</h3>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.75, fontSize: '0.9375rem' }}>{desc}</p>
               </div>
             ))}
           </div>
 
           {/* Важно знать */}
-          <div style={{ marginTop: '3.5rem', background: '#F2F5F8', borderRadius: '16px', padding: '1.75rem', border: '1px solid rgba(13,27,42,0.06)', borderLeft: '3px solid #2E7DF7' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1rem' }}>Важно знать</h3>
+          <div style={{ marginTop: '2rem', background: 'var(--surface-2)', borderRadius: '12px', padding: '1rem', border: '1px solid rgba(13,27,42,0.06)', borderLeft: '3px solid var(--accent-indigo)' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>Важно знать</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
               {facts.map(f => (
                 <div key={f} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start' }}>
-                  <CheckCircle2 size={15} color="#2E7DF7" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <span style={{ fontSize: '0.875rem', color: '#4A6580', lineHeight: 1.6 }}>{f}</span>
+                  <CheckCircle2 size={15} color="var(--accent-indigo)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{f}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <p style={{ marginTop: '2rem', fontSize: '0.9375rem', color: '#4A6580', lineHeight: 1.75 }}>
+          <p style={{ marginTop: '2rem', fontSize: '0.9375rem', color: 'var(--text-secondary)', lineHeight: 1.75 }}>
             Весь процесс — от подачи заявки до получения средств — проходит дистанционно, что позволяет сэкономить время и получить доступ к финансированию тогда, когда это действительно нужно.
           </p>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
             <Link href="/apply" className="btn btn-primary" style={{ gap: '8px' }}>Подать заявку <ArrowRight size={15} /></Link>
             <Link href="/faq"   className="btn btn-secondary">Есть вопросы? FAQ</Link>
           </div>

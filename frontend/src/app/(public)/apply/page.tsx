@@ -58,12 +58,12 @@ function InputField({
   return (
     <div style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-        <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4A6580' }}>{label}</label>
+        <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)' }}>{label}</label>
         {locked && onSwitch && (
           <button
             type="button"
             onClick={onSwitch}
-            style={{ background: 'none', border: 'none', color: '#2E7DF7', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-indigo)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
           >
             Войти в другой аккаунт
           </button>
@@ -74,19 +74,19 @@ function InputField({
         disabled={locked || props.disabled}
         style={{
           width: '100%',
-          border: `1.5px solid ${error ? '#C0392B' : locked ? '#E8ECF0' : '#C8D0DA'}`,
+          border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--surface-2)' : 'var(--line-strong)'}`,
           borderRadius: '8px',
           padding: '10px 14px',
           fontSize: '1rem',
-          color: locked ? '#4A6580' : '#0D1B2A',
+          color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
           background: locked ? '#F8F9FA' : '#fff',
           boxSizing: 'border-box',
           outline: 'none',
           cursor: locked ? 'not-allowed' : 'text',
         }}
       />
-      {hint && !error && !locked && <p style={{ color: '#4A6580', fontSize: '0.75rem', marginTop: '3px' }}>{hint}</p>}
-      {error && <p style={{ color: '#C0392B', fontSize: '0.75rem', marginTop: '3px' }}>{error}</p>}
+      {hint && !error && !locked && <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '3px' }}>{hint}</p>}
+      {error && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.75rem', marginTop: '3px' }}>{error}</p>}
     </div>
   );
 }
@@ -206,8 +206,8 @@ function ApplyInner() {
     : { payment: 0, total: 0 };
 
   const cardStyle = (selected: boolean): React.CSSProperties => ({
-    flex: 1, border: `2px solid ${selected ? '#2E7DF7' : '#C8D0DA'}`,
-    borderRadius: '12px', padding: '1rem', cursor: 'pointer',
+    flex: 1, border: `2px solid ${selected ? 'var(--accent-indigo)' : 'var(--line-strong)'}`,
+    borderRadius: '10px', padding: '1rem', cursor: 'pointer',
     background: selected ? 'rgba(46,125,247,0.05)' : '#fff',
     textAlign: 'center', transition: 'border-color 150ms, background 150ms',
   });
@@ -216,16 +216,16 @@ function ApplyInner() {
   if (step === 3 && createdId) {
     return (
       <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#D4EDDA', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E8A5E" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-mint)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.5rem' }}>Заявка принята</h2>
-        <p style={{ color: '#4A6580', marginBottom: '0.5rem' }}>Номер заявки:</p>
-        <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.875rem', color: '#2E7DF7', marginBottom: '1.5rem', wordBreak: 'break-all' }}>{createdId}</p>
-        <p style={{ color: '#4A6580', fontSize: '0.9375rem', marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Заявка принята</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Номер заявки:</p>
+        <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.875rem', color: 'var(--accent-indigo)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>{createdId}</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', marginBottom: '2rem' }}>
           Мы уведомим вас о статусе по указанному номеру телефона.
         </p>
-        <Link href="/cabinet/applications" style={{ display: 'inline-block', background: '#2E7DF7', color: '#fff', borderRadius: '8px', padding: '12px 32px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
+        <Link href="/cabinet/applications" style={{ display: 'inline-block', background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 18px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
           Перейти в личный кабинет
         </Link>
       </div>
@@ -244,16 +244,16 @@ function ApplyInner() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <div style={{
                   width: '32px', height: '32px', borderRadius: '50%',
-                  background: done ? '#1E8A5E' : active ? '#2E7DF7' : '#E8ECF0',
-                  color: (done || active) ? '#fff' : '#4A6580',
+                  background: done ? 'var(--accent-mint)' : active ? 'var(--accent-indigo)' : 'var(--surface-2)',
+                  color: (done || active) ? '#fff' : 'var(--text-secondary)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.875rem', fontWeight: 700,
                 }}>
                   {done ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> : num}
                 </div>
-                <span style={{ fontSize: '0.6875rem', color: active ? '#0D1B2A' : '#4A6580', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>{label}</span>
+                <span style={{ fontSize: '0.6875rem', color: active ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>{label}</span>
               </div>
-              {num < 3 && <div style={{ flex: 1, height: '2px', background: done ? '#1E8A5E' : '#E8ECF0', margin: '0 0.5rem', marginBottom: '1.25rem' }} />}
+              {num < 3 && <div style={{ flex: 1, height: '2px', background: done ? 'var(--accent-mint)' : 'var(--surface-2)', margin: '0 0.5rem', marginBottom: '1.25rem' }} />}
             </div>
           );
         })}
@@ -262,24 +262,24 @@ function ApplyInner() {
       {/* Step 1 — type */}
       {step === 1 && (
         <>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1.25rem' }}>Выберите тип заявителя</h2>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>Выберите тип заявителя</h2>
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
             <div style={cardStyle(type === 'personal')} onClick={() => setType('personal')}>
               <div style={{ marginBottom: '0.5rem' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E7DF7" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
               </div>
-              <div style={{ fontWeight: 600, color: '#0D1B2A', marginBottom: '0.25rem' }}>Физическое лицо</div>
-              <div style={{ fontSize: '0.8125rem', color: '#4A6580' }}>500 — 50 000 EUR, 7–90 дней</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Физическое лицо</div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>500 — 50 000 EUR, 7–90 дней</div>
             </div>
             <div style={cardStyle(type === 'business')} onClick={() => setType('business')}>
               <div style={{ marginBottom: '0.5rem' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E7DF7" strokeWidth="1.5"><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" strokeWidth="1.5"><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
               </div>
-              <div style={{ fontWeight: 600, color: '#0D1B2A', marginBottom: '0.25rem' }}>Бизнес</div>
-              <div style={{ fontSize: '0.8125rem', color: '#4A6580' }}>30 000 — 500 000 EUR, 1–12 мес.</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Бизнес</div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>30 000 — 500 000 EUR, 1–12 мес.</div>
             </div>
           </div>
-          <button onClick={() => setStep(2)} style={{ width: '100%', background: '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}>
+          <button onClick={() => setStep(2)} style={{ width: '100%', background: 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}>
             Далее
           </button>
         </>
@@ -288,7 +288,7 @@ function ApplyInner() {
       {/* Step 2 — data */}
       {step === 2 && (
         <>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '1.25rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
             {type === 'personal' ? 'Личные данные' : 'Данные компании'}
           </h2>
 
@@ -314,14 +314,14 @@ function ApplyInner() {
                 <NumericField label="Сумма займа (EUR)" value={fields.amount} min={LOAN_CONFIG.personal.minAmount} max={LOAN_CONFIG.personal.maxAmount} onChange={(v) => set('amount', v)} error={errors.amount} />
                 <NumericField label="Срок (дней)" value={fields.termDays} min={LOAN_CONFIG.personal.minDays} max={LOAN_CONFIG.personal.maxDays} onChange={(v) => set('termDays', v)} error={errors.termDays} />
               </div>
-              <div style={{ background: '#0D1B2A', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              <div style={{ background: 'var(--surface-0)', borderRadius: '10px', padding: '0.875rem 1rem', marginBottom: '1rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                 <div>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '3px' }}>Ежедневный платёж</p>
                   <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#fff', fontSize: '1.125rem' }}>{formatCurrency(payment)}</p>
                 </div>
                 <div>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '3px' }}>Итого к возврату</p>
-                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#2E7DF7', fontSize: '1.125rem' }}>{formatCurrency(total)}</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--accent-indigo)', fontSize: '1.125rem' }}>{formatCurrency(total)}</p>
                 </div>
               </div>
             </>
@@ -351,27 +351,27 @@ function ApplyInner() {
 
           {/* Consent */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', marginBottom: '0.5rem' }}>
-            <input type="checkbox" id="consent" checked={!!fields.consent} onChange={(e) => set('consent', e.target.checked)} style={{ marginTop: '3px', cursor: 'pointer', accentColor: '#2E7DF7' }} />
-            <label htmlFor="consent" style={{ fontSize: '0.8125rem', color: '#4A6580', cursor: 'pointer', lineHeight: 1.5 }}>
+            <input type="checkbox" id="consent" checked={!!fields.consent} onChange={(e) => set('consent', e.target.checked)} style={{ marginTop: '3px', cursor: 'pointer', accentColor: 'var(--accent-indigo)' }} />
+            <label htmlFor="consent" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.5 }}>
               Я ознакомлен(-а) с{' '}
-              <Link href="/terms" target="_blank" style={{ color: '#2E7DF7' }}>условиями использования</Link>{' '}
+              <Link href="/terms" target="_blank" style={{ color: 'var(--accent-indigo)' }}>условиями использования</Link>{' '}
               и{' '}
-              <Link href="/privacy" target="_blank" style={{ color: '#2E7DF7' }}>политикой конфиденциальности</Link>
+              <Link href="/privacy" target="_blank" style={{ color: 'var(--accent-indigo)' }}>политикой конфиденциальности</Link>
             </label>
           </div>
-          {errors.consent && <p style={{ color: '#C0392B', fontSize: '0.75rem', marginBottom: '0.875rem' }}>{errors.consent}</p>}
+          {errors.consent && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.75rem', marginBottom: '0.875rem' }}>{errors.consent}</p>}
 
           {serverError && (
-            <div style={{ background: '#FAD7D4', borderLeft: '4px solid #C0392B', borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#6B1A14' }}>
+            <div style={{ background: 'rgba(239, 71, 111, 0.16)', borderLeft: '4px solid var(--accent-crimson)', borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#fecdd3' }}>
               {serverError}
             </div>
           )}
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-            <button onClick={() => setStep(1)} style={{ flex: 1, background: '#fff', border: '1.5px solid #2E7DF7', color: '#2E7DF7', borderRadius: '8px', padding: '11px', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => setStep(1)} style={{ flex: 1, background: 'var(--surface-1)', border: '1.5px solid var(--accent-indigo)', color: 'var(--accent-indigo)', borderRadius: '8px', padding: '11px', fontWeight: 600, cursor: 'pointer' }}>
               Назад
             </button>
-            <button onClick={submit} disabled={loading} style={{ flex: 2, background: loading ? '#7AABF7' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
+            <button onClick={submit} disabled={loading} style={{ flex: 2, background: loading ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
               {loading ? 'Отправка...' : 'Отправить заявку'}
             </button>
           </div>
@@ -383,21 +383,21 @@ function ApplyInner() {
 
 export default function ApplyPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#E8ECF0', padding: '5rem 1rem 3rem' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface-0)', padding: '3rem 1rem 2rem' }}>
       <div style={{
-        maxWidth: '640px', margin: '0 auto', background: '#fff',
-        borderRadius: '16px', padding: '2rem',
+        maxWidth: '640px', margin: '0 auto', background: 'var(--surface-1)',
+        borderRadius: '12px', padding: '1rem',
         boxShadow: '0 4px 24px rgba(13,27,42,0.08), 0 1px 3px rgba(13,27,42,0.04)',
       }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.375rem' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-indigo)', marginBottom: '0.375rem' }}>
             Оформление займа
           </p>
-          <h1 style={{ fontSize: '1.625rem', fontWeight: 700, color: '#0D1B2A', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontSize: '1.625rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             Подать заявку
           </h1>
         </div>
-        <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#4A6580' }}>Загрузка...</div>}>
+        <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Загрузка...</div>}>
           <ApplyInner />
         </Suspense>
       </div>

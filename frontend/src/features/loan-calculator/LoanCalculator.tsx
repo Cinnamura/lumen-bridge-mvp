@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { calcAnnuity, LOAN_CONFIG } from '@/shared/config/loan';
@@ -14,7 +14,6 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v));
 }
 
-/* Animated number — pulses opacity+scale when value changes */
 function AnimatedNumber({ value, children }: { value: number; children: React.ReactNode }) {
   const [flash, setFlash] = useState(false);
   const prev = useRef(value);
@@ -23,103 +22,131 @@ function AnimatedNumber({ value, children }: { value: number; children: React.Re
     if (prev.current !== value) {
       prev.current = value;
       setFlash(true);
-      const t = setTimeout(() => setFlash(false), 180);
+      const t = setTimeout(() => setFlash(false), 220);
       return () => clearTimeout(t);
     }
   }, [value]);
 
   return (
-    <span style={{
-      display: 'inline-block',
-      transition: 'opacity 120ms ease, transform 120ms cubic-bezier(0.16,1,0.3,1)',
-      opacity: flash ? 0.5 : 1,
-      transform: flash ? 'scale(0.97)' : 'scale(1)',
-    }}>
+    <span
+      style={{
+        display: 'inline-block',
+        transition: 'opacity 180ms ease, transform 220ms cubic-bezier(0.16,1,0.3,1)',
+        opacity: flash ? 0.65 : 1,
+        transform: flash ? 'translateY(-2px) scale(0.985)' : 'translateY(0) scale(1)',
+      }}
+    >
       {children}
     </span>
   );
 }
 
-/* Dual-input row: slider + number input synced */
 function SliderRow({
-  label, unit, value, min, max, step,
+  label,
+  unit,
+  value,
+  min,
+  max,
+  step,
   onChange,
 }: {
-  label: string; unit: string; value: number;
-  min: number; max: number; step: number;
+  label: string;
+  unit: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
   onChange: (v: number) => void;
 }) {
   const pct = ((value - min) / (max - min)) * 100;
-  const sliderBg = `linear-gradient(to right,#2E7DF7 ${pct}%,rgba(255,255,255,0.12) ${pct}%)`;
-
+  const sliderBg = `linear-gradient(90deg, #10B981 0%, #3B82F6 ${pct}%, rgba(140,144,159,0.18) ${pct}%, rgba(140,144,159,0.18) 100%)`;
   const [raw, setRaw] = useState('');
   const [editing, setEditing] = useState(false);
   const outOfRange = editing && raw !== '' && (Number(raw) < min || Number(raw) > max);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '1rem' }}>
-        <span style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+    <div style={{ display: 'grid', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: '1rem', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(154,164,182,0.82)' }}>
           {label}
         </span>
-
-        {/* Editable value chip */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="number"
-              value={editing ? raw : value}
-              min={min} max={max} step={step}
-              onFocus={() => { setEditing(true); setRaw(String(value)); }}
-              onBlur={() => {
-                setEditing(false);
-                const n = Number(raw);
-                if (!isNaN(n) && raw !== '') onChange(clamp(n, min, max));
-              }}
-              onChange={e => {
-                setRaw(e.target.value);
-                const n = Number(e.target.value);
-                if (!isNaN(n) && e.target.value !== '') onChange(clamp(n, min, max));
-              }}
-              style={{
-                fontFamily: 'var(--f-mono)',
-                fontSize: '1.625rem',
-                fontWeight: 700,
-                color: outOfRange ? '#C08020' : '#fff',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: `1.5px solid ${outOfRange ? '#C08020' : 'rgba(255,255,255,0.15)'}`,
-                outline: 'none',
-                width: `${String(editing ? raw : value).length + 1}ch`,
-                minWidth: '4ch',
-                maxWidth: '9ch',
-                letterSpacing: '-0.02em',
-                padding: '2px 0',
-                transition: 'color 150ms, border-color 150ms',
-                /* hide spin buttons */
-                MozAppearance: 'textfield',
-              } as React.CSSProperties}
-            />
-            {outOfRange && (
-              <span style={{ position: 'absolute', left: 0, top: '100%', marginTop: '3px', fontSize: '0.6875rem', color: '#C08020', whiteSpace: 'nowrap' }}>
-                {Number(raw) < min ? `мин. ${min}` : `макс. ${max}`}
-              </span>
-            )}
-          </div>
-          <span style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.35)', fontWeight: 400, paddingBottom: '4px' }}>
-            {unit}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+          <input
+            type="number"
+            value={editing ? raw : value}
+            min={min}
+            max={max}
+            step={step}
+            onFocus={() => {
+              setEditing(true);
+              setRaw(String(value));
+            }}
+            onBlur={() => {
+              setEditing(false);
+              const n = Number(raw);
+            }}
+            onChange={() => {}}
+            style={{ display: 'none' }}
+          />
         </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem' }}>
+          <input
+            type="number"
+            value={editing ? raw : value}
+            min={min}
+            max={max}
+            step={step}
+            onFocus={() => {
+              setEditing(true);
+              setRaw(String(value));
+            }}
+            onBlur={() => {
+              setEditing(false);
+              const n = Number(raw);
+              if (!isNaN(n) && raw !== '') onChange(clamp(n, min, max));
+            }}
+            onChange={(e) => {
+              setRaw(e.target.value);
+              const n = Number(e.target.value);
+              if (!isNaN(n) && e.target.value !== '') onChange(clamp(n, min, max));
+            }}
+            style={{
+              fontFamily: 'var(--f-mono)',
+              fontSize: '1.75rem',
+              fontWeight: 700,
+              color: outOfRange ? '#F59E0B' : '#F8FAFC',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `1px solid ${outOfRange ? 'rgba(245,158,11,0.65)' : 'rgba(140,144,159,0.28)'}`,
+              outline: 'none',
+              width: `${String(editing ? raw : value).length + 1}ch`,
+              minWidth: '4ch',
+              letterSpacing: '-0.03em',
+              paddingBottom: '0.15rem',
+            }}
+          />
+          <span style={{ fontSize: '0.875rem', color: 'rgba(154,164,182,0.86)', paddingBottom: '0.35rem' }}>{unit}</span>
+        </div>
+        {outOfRange && (
+          <span style={{ fontSize: '0.75rem', color: '#F59E0B' }}>
+            {Number(raw) < min ? `мин. ${min}` : `макс. ${max}`}
+          </span>
+        )}
       </div>
 
       <input
         type="range"
         className="calc-slider"
-        min={min} max={max} step={step} value={value}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
         style={{ background: sliderBg }}
-        onChange={e => onChange(Number(e.target.value))}
+        onChange={(e) => onChange(Number(e.target.value))}
       />
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.6875rem', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--f-mono)', letterSpacing: '0.02em' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'rgba(124,135,156,0.84)', fontFamily: 'var(--f-mono)' }}>
         <span>{min.toLocaleString('de-DE')}</span>
         <span>{max.toLocaleString('de-DE')}</span>
       </div>
@@ -127,125 +154,110 @@ function SliderRow({
   );
 }
 
-/* ─── Public API ─── */
 export function LoanCalculator({ dark = false }: { dark?: boolean }) {
   const [amount, setAmount] = useState(10_000);
-  const [days,   setDays]   = useState(30);
+  const [days, setDays] = useState(30);
   const { payment, total } = calcAnnuity(amount, cfg.dailyRate, days);
 
-  /* Standalone light-page version wraps itself in a dark Bento card */
-  if (!dark) {
-    return (
-      <div style={{
-        background: 'linear-gradient(135deg,#0D1B2A 0%,#1A2942 60%,#0D1B2A 100%)',
-        borderRadius: '24px',
-        padding: 'clamp(2rem,4vw,3rem)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '0 0 0 1px rgba(255,255,255,0.04),0 24px 64px rgba(13,27,42,0.35)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Glow accent */}
-        <div aria-hidden style={{ position: 'absolute', top: '-60px', right: '-60px', width: '280px', height: '280px', background: 'radial-gradient(circle,rgba(46,125,247,0.12) 0%,transparent 70%)', pointerEvents: 'none' }} />
+  const shell = {
+    position: 'relative' as const,
+    overflow: 'hidden' as const,
+    background: dark
+      ? 'transparent'
+      : 'linear-gradient(180deg, rgba(20,25,36,0.94) 0%, rgba(11,15,25,0.96) 100%)',
+    borderRadius: dark ? '0' : '24px',
+    border: dark ? 'none' : '1px solid rgba(140,144,159,0.18)',
+    padding: dark ? '0' : '2rem',
+    boxShadow: dark ? 'none' : '0 24px 60px rgba(0,0,0,0.32)',
+  };
 
-        <div style={{ marginBottom: '2rem', position: 'relative' }}>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>
-            Кредитный калькулятор
-          </p>
-          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.625rem,3vw,2.25rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.625rem', lineHeight: 1.15 }}>
+  return (
+    <div style={shell}>
+      {!dark && (
+        <>
+          <div aria-hidden style={{ position: 'absolute', inset: 'auto', width: '240px', height: '240px', top: '-70px', right: '-60px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.24) 0%, transparent 68%)' }} />
+          <div aria-hidden style={{ position: 'absolute', inset: 'auto', width: '260px', height: '260px', bottom: '-120px', left: '-80px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)' }} />
+        </>
+      )}
+
+      <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.55rem' }}>
+          {dark ? 'Калькулятор' : 'Кредитный калькулятор'}
+        </p>
+        {!dark && (
+          <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.75rem,3vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.65rem' }}>
             Рассчитайте условия займа
           </h2>
-          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, maxWidth: '46ch' }}>
-            Выберите сумму и срок или введите значение вручную — результат пересчитывается мгновенно.
-          </p>
-        </div>
-
-        <CalcInner amount={amount} days={days} payment={payment} total={total}
-          setAmount={setAmount} setDays={setDays} />
-      </div>
-    );
-  }
-
-  /* In-hero dark variant (already on dark bg) */
-  return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '0.5rem' }}>
-          Калькулятор
-        </p>
-        <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
-          Двигайте слайдер или вводите значение вручную
+        )}
+        <p style={{ fontSize: '0.9375rem', color: 'rgba(154,164,182,0.9)', lineHeight: 1.7, maxWidth: '42ch' }}>
+          Ползунки и итоговая сумма обновляются мгновенно, без графиков и лишнего визуального шума.
         </p>
       </div>
-      <CalcInner amount={amount} days={days} payment={payment} total={total}
-        setAmount={setAmount} setDays={setDays} />
-    </div>
-  );
-}
 
-function CalcInner({ amount, days, payment, total, setAmount, setDays }: {
-  amount: number; days: number; payment: number; total: number;
-  setAmount: (v: number) => void; setDays: (v: number) => void;
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      <SliderRow label="Сумма займа" unit="EUR"
-        value={amount} min={cfg.minAmount} max={cfg.maxAmount} step={100}
-        onChange={setAmount} />
+      <div style={{ display: 'grid', gap: '1.5rem', position: 'relative' }}>
+        <SliderRow label="Сумма займа" unit="EUR" value={amount} min={cfg.minAmount} max={cfg.maxAmount} step={100} onChange={setAmount} />
+        <div style={{ height: '1px', background: 'rgba(140,144,159,0.18)' }} />
+        <SliderRow label="Срок займа" unit="дн." value={days} min={cfg.minDays} max={cfg.maxDays} step={1} onChange={setDays} />
 
-      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-
-      <SliderRow label="Срок займа" unit="дн."
-        value={days} min={cfg.minDays} max={cfg.maxDays} step={1}
-        onChange={setDays} />
-
-      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)' }} />
-
-      {/* Result card */}
-      <div style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '16px',
-        padding: '1.375rem',
-      }}>
-        {/* Daily payment row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Ежедневный платёж
-          </span>
-          <AnimatedNumber value={payment}>
-            <span style={{ fontFamily: 'var(--f-mono)', fontSize: '1.0625rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>
-              {fmt(payment)} EUR
+        <div
+          className="aurora-blue"
+          style={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '20px',
+            border: '1px solid rgba(140,144,159,0.18)',
+            background: 'linear-gradient(180deg, rgba(24,33,49,0.92) 0%, rgba(11,15,25,0.94) 100%)',
+            padding: '1.35rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.24)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.95rem', gap: '1rem' }}>
+            <span style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.86)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Ежедневный платёж
             </span>
-          </AnimatedNumber>
-        </div>
-
-        {/* Total */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1rem', marginBottom: '1rem' }}>
-          <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Итого к возврату
+            <AnimatedNumber value={payment}>
+              <span style={{ fontFamily: 'var(--f-mono)', fontSize: '1.1rem', fontWeight: 700, color: '#E2E8F0' }}>
+                {fmt(payment)} EUR
+              </span>
+            </AnimatedNumber>
           </div>
-          <AnimatedNumber value={total}>
-            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 'clamp(2rem,4.5vw,2.75rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1 }}>
-              {fmt(total)}
-              <span style={{ fontSize: '1rem', fontWeight: 400, opacity: 0.45, marginLeft: '6px' }}>EUR</span>
-            </span>
-          </AnimatedNumber>
-        </div>
 
-        {/* Rate + disclaimer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.125rem' }}>
-          <span style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.04em' }}>
-            0,8% / день
-          </span>
-        </div>
-        <p style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.2)', lineHeight: 1.6, marginBottom: '1.25rem', fontStyle: 'italic' }}>
-          Расчёт носит ознакомительный характер. Итоговые условия зависят от результатов проверки клиента.
-        </p>
+          <div style={{ borderTop: '1px solid rgba(140,144,159,0.16)', paddingTop: '1rem', marginBottom: '0.95rem' }}>
+            <div style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.82)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.55rem' }}>
+              Итого к возврату
+            </div>
+            <AnimatedNumber value={total}>
+              <span
+                style={{
+                  fontFamily: 'var(--f-mono)',
+                  fontSize: 'clamp(2.2rem,5vw,3rem)',
+                  fontWeight: 700,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 1,
+                  background: 'linear-gradient(90deg, #6EE7B7 0%, #60A5FA 48%, #A78BFA 100%)',
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                }}
+              >
+                {fmt(total)}
+              </span>
+            </AnimatedNumber>
+            <div style={{ fontSize: '0.95rem', color: 'rgba(154,164,182,0.92)', marginTop: '0.3rem' }}>EUR</div>
+          </div>
 
-        <Link href={`/apply?amount=${amount}&termDays=${days}`} className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '8px' }}>
-          Подать заявку <ArrowRight size={15} />
-        </Link>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', gap: '1rem', flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: '#6EE7B7' }}>0,8% / день</span>
+            <span style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.84)' }}>Без скрытых комиссий</span>
+          </div>
+
+          <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.78)', lineHeight: 1.65, marginBottom: '1rem', fontStyle: 'italic' }}>
+            Расчёт носит ознакомительный характер. Итоговые условия зависят от результатов проверки клиента.
+          </p>
+
+          <Link href={`/apply?amount=${amount}&termDays=${days}`} className="btn btn-primary" style={{ display: 'flex', justifyContent: 'center', width: '100%', gap: '8px' }}>
+            Подать заявку <ArrowRight size={15} />
+          </Link>
+        </div>
       </div>
     </div>
   );

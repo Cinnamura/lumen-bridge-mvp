@@ -121,17 +121,17 @@ export default function AdminStaffPage() {
       <div className="admin-page">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Админ-панель</p>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>Сотрудники</h1>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Админ-панель</p>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Сотрудники</h1>
           </div>
           <form onSubmit={(e) => { e.preventDefault(); setSearch(searchInput.trim()); }} style={{ position: 'relative' }}>
-            <Search size={16} color="#4A6580" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <Search size={16} color="var(--text-secondary)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             <input
               type="search"
               placeholder="Поиск по логину…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              style={{ padding: '8px 14px 8px 36px', border: '1.5px solid #C8D0DA', borderRadius: '8px', fontSize: '0.875rem', minWidth: '240px', outline: 'none', color: '#0D1B2A', background: '#fff' }}
+              style={{ padding: '8px 14px 8px 36px', border: '1px solid var(--line-strong)', borderRadius: '8px', fontSize: '0.875rem', minWidth: '240px', outline: 'none', color: 'var(--text-primary)', background: 'var(--surface-1)' }}
             />
           </form>
         </div>
@@ -139,34 +139,34 @@ export default function AdminStaffPage() {
         {authLoading && <TableSkeleton rows={4} columns={4} />}
 
         {!authLoading && !isAdmin && (
-          <div style={{ borderLeft: '4px solid #C0392B', background: '#fff', borderRadius: '12px', padding: '1rem 1.25rem', color: '#0D1B2A' }}>
+          <div style={{ borderLeft: '4px solid var(--accent-crimson)', background: 'var(--surface-1)', borderRadius: '10px', padding: '0.875rem 1rem', color: 'var(--text-primary)' }}>
             <p style={{ fontWeight: 700, marginBottom: '0.375rem' }}>Доступ ограничен</p>
-            <p style={{ fontSize: '0.875rem', color: '#4A6580' }}>Управление ролями и учётными записями доступно только администратору.</p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Управление ролями и учётными записями доступно только администратору.</p>
           </div>
         )}
 
         {!authLoading && isAdmin && (
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(320px, 0.9fr)', gap: '1rem', alignItems: 'start' }}>
-            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
-              <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F0F3F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+            <div style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ padding: '0.875rem 1rem', borderBottom: '1px solid #F0F3F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                 <div>
-                  <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '0.9375rem' }}>Учётные записи персонала</p>
-                  <p style={{ fontSize: '0.8125rem', color: '#4A6580', marginTop: '2px' }}>Операторы не видят этот раздел и не могут менять роли.</p>
+                  <p style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9375rem' }}>Учётные записи персонала</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Операторы не видят этот раздел и не могут менять роли.</p>
                 </div>
-                <button onClick={resetForm} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={resetForm} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', fontWeight: 600, cursor: 'pointer' }}>
                   <UserPlus size={15} /> Новый
                 </button>
               </div>
 
               {loading && <TableSkeleton rows={5} columns={4} />}
               {!loading && error && (
-                <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', margin: '1rem', borderRadius: '8px', padding: '0.875rem 1rem', color: '#6B1A14' }}>{error}</div>
+                <div style={{ borderLeft: '4px solid var(--accent-crimson)', background: 'rgba(239, 71, 111, 0.16)', margin: '1rem', borderRadius: '8px', padding: '0.875rem 1rem', color: '#fecdd3' }}>{error}</div>
               )}
               {!loading && !error && sortedRows.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                  <Shield size={56} color="#4A6580" style={{ margin: '0 auto 1rem', display: 'block' }} />
-                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.5rem' }}>Сотрудники не найдены</h3>
-                  <p style={{ color: '#4A6580' }}>Измените поисковый запрос или создайте новую учётную запись.</p>
+                  <Shield size={56} color="var(--text-secondary)" style={{ margin: '0 auto 1rem', display: 'block' }} />
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Сотрудники не найдены</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>Измените поисковый запрос или создайте новую учётную запись.</p>
                 </div>
               )}
               {!loading && !error && sortedRows.length > 0 && (
@@ -184,12 +184,12 @@ export default function AdminStaffPage() {
                       {sortedRows.map((user) => (
                         <tr key={user.id}>
                           <td>
-                            <div style={{ fontWeight: 600, color: '#0D1B2A' }}>{user.login}</div>
-                            {profile?.id === user.id && <div style={{ fontSize: '0.75rem', color: '#4A6580' }}>Текущая сессия</div>}
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user.login}</div>
+                            {profile?.id === user.id && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Текущая сессия</div>}
                           </td>
                           <td><span className={`badge ${user.role === 'admin' ? 'badge-approved' : 'badge-pending'}`}>{user.role === 'admin' ? 'Администратор' : 'Оператор'}</span></td>
-                          <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(user.createdAt)}</td>
-                          <td><button onClick={() => startEdit(user)} style={{ background: 'none', border: 'none', color: '#2E7DF7', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Изменить</button></td>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{formatDate(user.createdAt)}</td>
+                          <td><button onClick={() => startEdit(user)} style={{ background: 'none', border: 'none', color: 'var(--accent-indigo)', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Изменить</button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -198,24 +198,24 @@ export default function AdminStaffPage() {
               )}
             </div>
 
-            <form onSubmit={submit} style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
-              <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '1rem', marginBottom: '0.375rem' }}>{title}</p>
-              <p style={{ fontSize: '0.8125rem', color: '#4A6580', marginBottom: '1rem' }}>{helperText}</p>
+            <form onSubmit={submit} style={{ background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '1rem' }}>
+              <p style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem', marginBottom: '0.375rem' }}>{title}</p>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{helperText}</p>
 
               <div style={{ display: 'grid', gap: '0.875rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Логин</label>
-                  <input value={form.login} onChange={(e) => setForm((prev) => ({ ...prev, login: e.target.value }))} style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Логин</label>
+                  <input value={form.login} onChange={(e) => setForm((prev) => ({ ...prev, login: e.target.value }))} style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>{editing ? 'Новый пароль' : 'Пароль'}</label>
-                  <input type="password" value={form.password} onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>{editing ? 'Новый пароль' : 'Пароль'}</label>
+                  <input type="password" value={form.password} onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Роль</label>
-                  <select value={form.role} onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value as 'admin' | 'operator' }))} style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box', background: '#fff' }}>
+                  <label style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Роль</label>
+                  <select value={form.role} onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value as 'admin' | 'operator' }))} style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9375rem', outline: 'none', boxSizing: 'border-box', background: 'var(--surface-1)' }}>
                     <option value="operator">Оператор</option>
                     <option value="admin">Администратор</option>
                   </select>
@@ -223,11 +223,11 @@ export default function AdminStaffPage() {
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                <button type="submit" disabled={saving} style={{ background: saving ? '#A9C4F0' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 16px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
+                <button type="submit" disabled={saving} style={{ background: saving ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 16px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}>
                   {saving ? 'Сохраняю…' : submitLabel}
                 </button>
                 {editing && (
-                  <button type="button" onClick={resetForm} style={{ background: '#fff', color: '#4A6580', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>
+                  <button type="button" onClick={resetForm} style={{ background: 'var(--surface-1)', color: 'var(--text-secondary)', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 16px', fontWeight: 600, cursor: 'pointer' }}>
                     Отмена
                   </button>
                 )}

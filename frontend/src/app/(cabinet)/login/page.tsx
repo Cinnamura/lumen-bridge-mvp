@@ -81,27 +81,27 @@ function LoginInner() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#E8ECF0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--surface-0)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
       <div style={{ width: '100%', maxWidth: '400px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.5rem', color: '#0D1B2A', textDecoration: 'none' }}>
+          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.5rem', color: 'var(--text-primary)', textDecoration: 'none' }}>
             LumenBridge
           </Link>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '2rem', boxShadow: '0 2px 8px rgba(13,27,42,0.06), 0 1px 2px rgba(13,27,42,0.04)', border: '1px solid #E8ECF0' }}>
+        <div style={{ background: 'var(--surface-1)', borderRadius: '10px', padding: '2rem', boxShadow: '0 2px 8px rgba(13,27,42,0.06), 0 1px 2px rgba(13,27,42,0.04)', border: '1px solid var(--line-soft)' }}>
           {step === 'phone' ? (
             <>
-              <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>
+              <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
                 Вход в личный кабинет
               </h1>
-              <p style={{ color: '#4A6580', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
                 Введите номер телефона для получения кода
               </p>
 
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#4A6580', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                   Номер телефона
                 </label>
                 <input
@@ -110,28 +110,28 @@ function LoginInner() {
                   onChange={(e) => setPhone(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && requestCode()}
                   placeholder="+353..."
-                  style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '10px 14px', fontSize: '1rem', color: '#0D1B2A', background: '#fff', boxSizing: 'border-box', outline: 'none' }}
+                  style={{ width: '100%', border: '1px solid var(--line-strong)', borderRadius: '8px', padding: '10px 14px', fontSize: '1rem', color: 'var(--text-primary)', background: 'var(--surface-1)', boxSizing: 'border-box', outline: 'none' }}
                 />
               </div>
 
               {error && (
-                <p style={{ color: '#C0392B', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>{error}</p>
+                <p style={{ color: 'var(--accent-crimson)', fontSize: '0.8125rem', marginBottom: '0.75rem' }}>{error}</p>
               )}
 
               <button
                 onClick={requestCode}
                 disabled={loading}
-                style={{ width: '100%', background: loading ? '#7AABF7' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
+                style={{ width: '100%', background: loading ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 24px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
               >
                 {loading ? 'Отправка...' : 'Получить код'}
               </button>
             </>
           ) : (
             <>
-              <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: '#0D1B2A', marginBottom: '0.375rem' }}>
+              <h1 style={{ fontSize: '1.375rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>
                 Введите код из SMS
               </h1>
-              <p style={{ color: '#4A6580', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
                 Код отправлен на {phone.slice(0, 4)}***{phone.slice(-4)}
               </p>
 
@@ -147,30 +147,30 @@ function LoginInner() {
                     value={d}
                     onChange={(e) => handleOtpInput(i, e.target.value)}
                     onKeyDown={(e) => handleOtpKey(i, e)}
-                    style={{ width: '48px', height: '52px', textAlign: 'center', fontSize: '1.375rem', fontWeight: 700, fontFamily: 'var(--f-mono)', border: '1.5px solid #C8D0DA', borderRadius: '8px', outline: 'none', color: '#0D1B2A' }}
+                    style={{ width: '48px', height: '52px', textAlign: 'center', fontSize: '1.375rem', fontWeight: 700, fontFamily: 'var(--f-mono)', border: '1px solid var(--line-strong)', borderRadius: '8px', outline: 'none', color: 'var(--text-primary)' }}
                   />
                 ))}
               </div>
 
               {error && (
-                <p style={{ color: '#C0392B', fontSize: '0.8125rem', marginBottom: '0.75rem', textAlign: 'center' }}>{error}</p>
+                <p style={{ color: 'var(--accent-crimson)', fontSize: '0.8125rem', marginBottom: '0.75rem', textAlign: 'center' }}>{error}</p>
               )}
 
               <button
                 onClick={verifyCode}
                 disabled={loading}
-                style={{ width: '100%', background: loading ? '#7AABF7' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', marginBottom: '0.75rem' }}
+                style={{ width: '100%', background: loading ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', marginBottom: '0.75rem' }}
               >
                 {loading ? 'Проверка...' : 'Подтвердить'}
               </button>
 
-              <p style={{ textAlign: 'center', fontSize: '0.8125rem', color: '#4A6580' }}>
+              <p style={{ textAlign: 'center', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
                 {countdown > 0 ? (
                   <>Отправить снова через {countdown} с.</>
                 ) : (
                   <button
                     onClick={() => { setStep('phone'); setOtp(['','','','','','']); setError(''); }}
-                    style={{ background: 'none', border: 'none', color: '#2E7DF7', cursor: 'pointer', fontSize: '0.8125rem', padding: 0 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--accent-indigo)', cursor: 'pointer', fontSize: '0.8125rem', padding: 0 }}
                   >
                     Не получили код? Попробовать снова
                   </button>
@@ -182,7 +182,7 @@ function LoginInner() {
 
         {/* Mock-banner */}
         {step === 'otp' && mockCode && (
-          <div style={{ marginTop: '1rem', background: '#FFFBCC', border: '1px solid #E6D200', color: '#5A4800', padding: '10px 16px', borderRadius: '8px', fontSize: '0.8125rem' }}>
+          <div style={{ marginTop: '1rem', background: 'rgba(245, 158, 11, 0.14)', border: '1px solid rgba(245, 158, 11, 0.24)', color: '#fde68a', padding: '10px 16px', borderRadius: '8px', fontSize: '0.8125rem' }}>
             Учебный режим — SMS не отправляется. Тестовый код: <strong style={{ fontFamily: 'var(--f-mono)' }}>{mockCode}</strong>
           </div>
         )}
@@ -193,7 +193,7 @@ function LoginInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#E8ECF0' }} />}>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--surface-0)' }} />}>
       <LoginInner />
     </Suspense>
   );

@@ -31,7 +31,7 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="accordion-item">
-      <button className="accordion-trigger" onClick={() => setOpen(o => !o)}>
+      <button className="accordion-trigger" onClick={() => setOpen((o) => !o)}>
         <span>{q}</span>
         <span className={`accordion-icon${open ? ' open' : ''}`}>
           <ChevronDown size={18} />
@@ -52,43 +52,51 @@ export default function FaqPage() {
 
   return (
     <>
-      <section style={{ background: '#0D1B2A', padding: '120px 32px 72px', position: 'relative', overflow: 'hidden' }}>
-        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 60%, rgba(46,125,247,0.05) 0%, transparent 60%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center', position: 'relative' }}>
-          <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#2E7DF7', marginBottom: '1rem' }}>FAQ</p>
-          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem' }}>
+      <section style={{ padding: '72px 24px 40px', position: 'relative' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.85rem' }}>FAQ</p>
+          <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#F8FAFC', letterSpacing: '-0.04em', marginBottom: '1rem' }}>
             Часто задаваемые вопросы
           </h1>
-          <p style={{ fontSize: '1.0625rem', color: 'rgba(255,255,255,0.5)', maxWidth: '50ch', margin: '0 auto', lineHeight: 1.75 }}>
+          <p style={{ fontSize: '1rem', color: 'rgba(154,164,182,0.9)', maxWidth: '50ch', margin: '0 auto', lineHeight: 1.75 }}>
             Здесь вы найдёте ответы на основные вопросы о займах, условиях и процессе оформления.
           </p>
         </div>
       </section>
 
-      <section style={{ background: '#fff', padding: '72px 32px' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '2.5rem', background: '#F2F5F8', borderRadius: '12px', padding: '4px' }}>
-            {(['personal', 'business'] as const).map(t => (
-              <button key={t} onClick={() => setTab(t)} style={{
-                flex: 1, padding: '10px 16px', borderRadius: '9px', border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--f-sans)', fontWeight: 600, fontSize: '0.875rem',
-                transition: 'all 200ms cubic-bezier(0.16,1,0.3,1)',
-                background: tab === t ? '#fff' : 'transparent',
-                color: tab === t ? '#0D1B2A' : '#4A6580',
-                boxShadow: tab === t ? '0 1px 3px rgba(13,27,42,0.08), 0 2px 8px rgba(13,27,42,0.05)' : 'none',
-              }}>
+      <section style={{ padding: '0 24px 56px' }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+          <div style={{ display: 'inline-flex', gap: '4px', marginBottom: '1.75rem', background: 'rgba(18,18,20,0.74)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '14px', padding: '4px' }}>
+            {(['personal', 'business'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  transition: 'all 200ms cubic-bezier(0.16,1,0.3,1)',
+                  background: tab === t ? 'linear-gradient(135deg, rgba(59,130,246,0.24) 0%, rgba(139,92,246,0.16) 100%)' : 'transparent',
+                  color: tab === t ? '#F8FAFC' : 'rgba(154,164,182,0.86)',
+                  boxShadow: tab === t ? '0 12px 30px rgba(59,130,246,0.14)' : 'none',
+                }}
+              >
                 {t === 'personal' ? 'Для физических лиц' : 'Для бизнеса'}
               </button>
             ))}
           </div>
 
-          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid rgba(13,27,42,0.06)', padding: '0 1.5rem', boxShadow: '0 1px 3px rgba(13,27,42,0.04), 0 8px 24px rgba(13,27,42,0.05)' }}>
-            {items.map(({ q, a }) => <AccordionItem key={q} q={q} a={a} />)}
+          <div className="card aurora-blue" style={{ padding: '0 1.5rem' }}>
+            {items.map(({ q, a }) => (
+              <AccordionItem key={q} q={q} a={a} />
+            ))}
           </div>
 
-          <div style={{ marginTop: '2.5rem', background: '#F2F5F8', borderRadius: '16px', padding: '2rem', textAlign: 'center', border: '1px solid rgba(13,27,42,0.06)' }}>
-            <p style={{ color: '#4A6580', marginBottom: '1.25rem', fontSize: '0.9375rem' }}>
+          <div className="surface-card aurora-violet" style={{ marginTop: '1.75rem', textAlign: 'center' }}>
+            <p style={{ color: 'rgba(154,164,182,0.88)', marginBottom: '1rem', fontSize: '0.94rem' }}>
               Если у вас остались вопросы, свяжитесь с нами через форму обратной связи.
             </p>
             <Link href="/contacts" className="btn btn-primary" style={{ gap: '8px' }}>
