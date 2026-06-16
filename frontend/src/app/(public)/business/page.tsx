@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -36,6 +37,8 @@ const requirementsIP = [
   'Выписка по банковскому счёту',
 ];
 
+const StitchTokenScene = dynamic(() => import('@/shared/ui/animations/StitchTokenScene'), { ssr: false });
+
 function LightLinesVisual() {
   return (
     <div className="light-lines" style={{ minHeight: '340px', borderRadius: '24px', border: '1px solid rgba(140,144,159,0.18)', background: 'linear-gradient(180deg, rgba(49,27,90,0.5) 0%, rgba(18,18,20,0.82) 100%)', position: 'relative' }}>
@@ -71,7 +74,7 @@ export default function BusinessPage() {
                 Оставить заявку <ArrowRight size={16} />
               </Link>
             </div>
-            <LightLinesVisual />
+            <div style={{ position: 'relative', minHeight: '340px' }}><LightLinesVisual /><div aria-hidden style={{ position: 'absolute', inset: '12% 14% 12% 14%', pointerEvents: 'none', opacity: 0.32, mixBlendMode: 'screen' }}><StitchTokenScene /></div></div>
           </div>
         </div>
       </section>

@@ -167,7 +167,7 @@ export default function LoansPage() {
                 { label: 'Остаток долга', value: formatCurrency(totalOutstanding), hint: 'По всем активным займам', icon: Wallet },
                 { label: 'Ближайшая дата', value: nextLoan?.nextPaymentDate ? formatDate(nextLoan.nextPaymentDate) : '—', hint: nextLoan?.nextPaymentAmount ? formatCurrency(nextLoan.nextPaymentAmount) : 'Нет обязательства', icon: CalendarClock },
               ].map(({ label, value, hint, icon: Icon }) => (
-                <div key={label} style={{ ...cardStyle({ padding: '1rem 1.1rem', background: 'linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%)' }) }}>
+                <div key={label} style={{ ...cardStyle({ padding: '1rem 1.1rem', background: 'linear-gradient(180deg, rgba(21, 24, 30, 0.96) 0%, rgba(17, 19, 24, 0.98) 100%)' }) }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{label}</span>
                     <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(79, 70, 229, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
 import { HomeClient } from './HomeClient';
@@ -44,6 +45,8 @@ const processSteps = [
   { step: '03', title: 'Получение средств', text: 'После одобрения деньги переводятся на банковский счёт.' },
 ];
 
+const StitchTokenScene = dynamic(() => import('@/shared/ui/animations/StitchTokenScene'), { ssr: false });
+
 function toneGlow(tone: string): string {
   if (tone === 'emerald') return 'radial-gradient(circle at top right, rgba(16,185,129,0.18), transparent 58%)';
   if (tone === 'amber') return 'radial-gradient(circle at top right, rgba(245,158,11,0.18), transparent 58%)';
@@ -73,14 +76,14 @@ export default function HomePage() {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          padding: 'clamp(5.5rem,10vw,7rem) 32px 4rem',
+          padding: 'clamp(4.75rem,8vw,6rem) 24px 2.5rem',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
         <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 18% 36%, rgba(59,130,246,0.16), transparent 32%), radial-gradient(circle at 82% 18%, rgba(139,92,246,0.12), transparent 28%), radial-gradient(circle at 72% 82%, rgba(16,185,129,0.08), transparent 24%)' }} />
         <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative' }}>
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(360px, 0.95fr)', gap: '3rem', alignItems: 'center' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(360px, 0.95fr)', gap: '1.5rem', alignItems: 'center' }}>
             <div className="anim-fade-up">
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.24)', borderRadius: '999px', padding: '0.4rem 0.85rem', marginBottom: '1.5rem' }}>
                 <Sparkles size={14} color="#93C5FD" />
@@ -115,7 +118,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="hero-calc anim-fade-up-1">
-              <div className="bento-dark aurora-blue" style={{ padding: '2rem' }}>
+              <div className="bento-dark aurora-blue" style={{ padding: '1rem 1rem 1.1rem' }}>
                 <LoanCalculator dark />
               </div>
             </div>
@@ -293,7 +296,7 @@ export default function HomePage() {
                 Оставить заявку <ArrowRight size={16} />
               </Link>
             </div>
-            <LightLinesVisual />
+            <div style={{ position: 'relative', minHeight: '320px' }}><LightLinesVisual /><div aria-hidden style={{ position: 'absolute', inset: '10% 12% 10% 12%', pointerEvents: 'none', opacity: 0.32, mixBlendMode: 'screen' }}><StitchTokenScene /></div></div>
           </div>
         </div>
       </section>
@@ -303,16 +306,30 @@ export default function HomePage() {
           <h2 style={{ textAlign: 'center', fontFamily: 'var(--f-display)', fontSize: 'clamp(1.8rem,2.8vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '2rem' }}>
             Работаем прозрачно и в рамках закона
           </h2>
-          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '1rem' }}>
-            {trustPoints.map(({ icon: Icon, title, text }, index) => (
-              <div key={title} className={`surface-card reveal reveal-${(index % 4) + 1}`}>
-                <div style={{ width: '42px', height: '42px', background: 'rgba(30,41,59,0.72)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.9rem' }}>
-                  <Icon size={18} color="#93C5FD" />
+          <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.75rem' }}>
+            {trustPoints.map(({ icon: Icon, title, text }, index) => {
+              const isSecurityCard = index === 0;
+              return (
+                <div
+                  key={title}
+                  className={`surface-card reveal reveal-${(index % 4) + 1}`}
+                  style={isSecurityCard ? { position: 'relative', overflow: 'hidden', minHeight: '192px' } : undefined}
+                >
+                  {isSecurityCard && (
+                    <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 0, opacity: 0.4, mixBlendMode: 'screen', pointerEvents: 'none' }}>
+                      <StitchTokenScene />
+                    </div>
+                  )}
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ width: '42px', height: '42px', background: 'rgba(30,41,59,0.72)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                      <Icon size={18} color="#93C5FD" />
+                    </div>
+                    <p style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: '0.35rem', fontSize: '0.95rem' }}>{title}</p>
+                    <p style={{ fontSize: '0.84rem', color: 'rgba(154,164,182,0.88)', lineHeight: 1.6, maxWidth: isSecurityCard ? '22ch' : undefined }}>{text}</p>
+                  </div>
                 </div>
-                <p style={{ fontWeight: 700, color: '#F8FAFC', marginBottom: '0.35rem', fontSize: '0.95rem' }}>{title}</p>
-                <p style={{ fontSize: '0.84rem', color: 'rgba(154,164,182,0.88)', lineHeight: 1.6 }}>{text}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <HomeClient section="compliance" />
