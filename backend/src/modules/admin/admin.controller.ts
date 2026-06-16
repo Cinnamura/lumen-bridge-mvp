@@ -272,26 +272,71 @@ export class AdminController {
     };
   }
 
+  /**
+   * Подтверждение/отклонение заявки клиента на оплату.
+   * При подтверждении создаётся реальный платёж по займу, график
+   * пересчитывается и при полном погашении займ закрывается —
+   * это тот же баланс-движок, что и при прямой фиксации платежа.
+   */
   @Patch('payment-requests/:id')
   async updatePaymentRequest(
     @Param('id') id: string,
     @Body() dto: UpdatePaymentRequestDto,
     @CurrentUser() user: AdminPayload,
   ) {
+    const request = await this.prisma.paymentRequest.findUnique({
+      where: { id },
+      include: { loan: true, user: { select: { id: true } } },
+    });
+    if (!request) throw new NotFoundException('Заявка на оплату не найдена');
+    if (request.status !== 'pending') {
+      throw new BadRequestException('Заявка уже обработана');
+    }
+
+    if (dto.status === 'confirmed') {
+      const loan = request.loan;
+      if (loan.status === 'closed') {
+        throw new BadRequestException('Займ уже закрыт — задолженность отсутствует');
+      }
+      const amount = Number(request.amount);
+      const remaining = Number(loan.remainingAmount);
+      if (amount > remaining) {
+        throw new BadRequestException('Сумма платежа превышает остаток задолженности');
+      }
+
+      await this.prisma.payment.create({
+        data: {
+          loanId: loan.id,
+          amount: new Prisma.Decimal(amount),
+          status: 'success',
+          recordedAt: new Date(),
+          recordedBy: user.id,
+          note: `Подтверждена заявка на оплату (reference: ${request.reference})`,
+        },
+      });
+
+      await this.schedule.applyPayment(loan.id);
+      const balance = await this.schedule.recalcBalance(loan.id);
+
+      await this.notifications.create({
+        userId: loan.userId, type: 'payment_confirmed',
+        title: 'Платёж подтверждён',
+        body: `Ваш платёж на сумму ${amount.toFixed(2)} EUR подтверждён. Остаток: ${balance.remainingAmount.toFixed(2)} EUR.`,
+        relatedId: loan.id,
+      });
+    } else {
+      await this.notifications.create({
+        userId: request.userId, type: 'payment_rejected',
+        title: 'Заявка на оплату отклонена',
+        body: 'К сожалению, заявка на оплату была отклонена.',
+        relatedId: request.id,
+      });
+    }
+
     const updated = await this.prisma.paymentRequest.update({
       where: { id },
       data: { status: dto.status, reviewedAt: new Date(), reviewedBy: user.id },
-      include: { user: { select: { id: true } } },
     });
-    if (updated.user?.id) {
-      await this.notifications.create({
-        userId: updated.user.id,
-        type:  dto.status === 'confirmed' ? 'payment_confirmed' : 'payment_rejected',
-        title: dto.status === 'confirmed' ? 'Платёж подтверждён' : 'Заявка на оплату отклонена',
-        body:  dto.status === 'confirmed' ? 'Ваш платёж подтверждён оператором.' : 'К сожалению, заявка на оплату была отклонена.',
-        relatedId: updated.id,
-      });
-    }
     return { id: updated.id, status: updated.status, reviewedAt: updated.reviewedAt };
   }
 
