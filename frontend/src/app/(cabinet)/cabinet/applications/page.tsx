@@ -60,7 +60,7 @@ export default function ApplicationsPage() {
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Личный кабинет</p>
             <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Мои заявки</h1>
           </div>
-          <Link href="/apply" style={{ background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 20px', fontWeight: 600, textDecoration: 'none', fontSize: '0.9375rem' }}>
+          <Link href="/apply" className="btn btn-primary">
             Подать новую заявку
           </Link>
         </div>
@@ -82,7 +82,7 @@ export default function ApplicationsPage() {
             <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.25" style={{ margin: '0 auto 1rem' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
             <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Заявок пока нет</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>Подайте первую заявку для получения займа</p>
-            <Link href="/apply" style={{ background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 24px', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/apply" className="btn btn-primary">
               Подать заявку
             </Link>
           </div>

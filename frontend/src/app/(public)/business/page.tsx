@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const whenItems = [
@@ -39,9 +40,19 @@ const requirementsIP = [
 
 const StitchTokenScene = dynamic(() => import('@/shared/ui/animations/StitchTokenScene'), { ssr: false });
 
-function LightLinesVisual() {
+function LightLinesVisual({ style }: { style?: CSSProperties }) {
   return (
-    <div className="light-lines" style={{ minHeight: '340px', borderRadius: '24px', border: '1px solid rgba(140,144,159,0.18)', background: 'linear-gradient(180deg, rgba(49,27,90,0.5) 0%, rgba(18,18,20,0.82) 100%)', position: 'relative' }}>
+    <div
+      className="light-lines"
+      style={{
+        minHeight: '340px',
+        borderRadius: '24px',
+        border: '1px solid rgba(140,144,159,0.18)',
+        background: 'linear-gradient(180deg, rgba(49,27,90,0.5) 0%, rgba(18,18,20,0.82) 100%)',
+        position: 'relative',
+        ...style,
+      }}
+    >
       <span style={{ width: '76%', top: '22%', left: '10%', animationDelay: '0s' }} />
       <span style={{ width: '54%', top: '36%', left: '20%', animationDelay: '1.2s' }} />
       <span style={{ width: '82%', top: '50%', left: '8%', animationDelay: '0.6s' }} />
@@ -58,8 +69,23 @@ export default function BusinessPage() {
     <>
       <section style={{ padding: '72px 24px 44px', position: 'relative' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)', gap: '2rem', alignItems: 'center' }}>
-            <div className="surface-card aurora-violet">
+          <div
+            className="surface-card aurora-violet"
+            style={{
+              overflow: 'hidden',
+              minHeight: '380px',
+              padding: 'clamp(1.5rem,3vw,2.5rem)',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.75 }}>
+              <LightLinesVisual style={{ minHeight: '100%', height: '100%', border: 'none', borderRadius: '0', background: 'linear-gradient(180deg, rgba(49,27,90,0.34) 0%, rgba(18,18,20,0.1) 100%)' }} />
+            </div>
+            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.3, mixBlendMode: 'screen' }}>
+              <StitchTokenScene />
+            </div>
+            <div className="relative z-10" style={{ maxWidth: '700px' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C4B5FD', marginBottom: '0.65rem' }}>Для бизнеса</p>
               <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4.2rem)', color: '#F8FAFC', letterSpacing: '-0.04em', lineHeight: 1.02, marginBottom: '1rem', maxWidth: '13ch' }}>
                 Займы для бизнеса в Европе
@@ -74,7 +100,6 @@ export default function BusinessPage() {
                 Оставить заявку <ArrowRight size={16} />
               </Link>
             </div>
-            <div style={{ position: 'relative', minHeight: '340px' }}><LightLinesVisual /><div aria-hidden style={{ position: 'absolute', inset: '12% 14% 12% 14%', pointerEvents: 'none', opacity: 0.32, mixBlendMode: 'screen' }}><StitchTokenScene /></div></div>
           </div>
         </div>
       </section>

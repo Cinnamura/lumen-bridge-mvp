@@ -24,7 +24,7 @@ export default function CabinetSidebar({ phone, onClose }: { phone?: string; onC
   return (
     <aside style={{ width: '248px', minHeight: '100vh', background: 'linear-gradient(180deg, rgba(8,20,37,0.96) 0%, rgba(11,15,25,0.98) 52%, rgba(18,18,20,0.98) 100%)', display: 'flex', flexDirection: 'column', flexShrink: 0, boxShadow: 'inset -1px 0 0 rgba(140,144,159,0.14)' }}>
       <div style={{ padding: '1.5rem 1.25rem 1rem', borderBottom: '1px solid rgba(140,144,159,0.16)' }}>
-        <Link href="/cabinet" style={{ fontFamily: 'var(--f-display)', fontSize: '1.125rem', color: '#F8FAFC', textDecoration: 'none' }}>LumenBridge</Link>
+        <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.125rem', color: '#F8FAFC', textDecoration: 'none' }}>LumenBridge</Link>
         <p style={{ marginTop: '0.5rem', fontSize: '0.6875rem', color: '#93C5FD', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
           Client Dashboard
         </p>

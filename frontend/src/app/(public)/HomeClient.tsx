@@ -47,7 +47,7 @@ export function HomeClient({ section }: { section: string }) {
 
   if (section === 'faq') {
     return (
-      <section style={{ padding: '56px 24px', position: 'relative' }}>
+      <section style={{ padding: '56px 24px 24px', position: 'relative' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           <div className="reveal reveal-1" style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>FAQ</p>

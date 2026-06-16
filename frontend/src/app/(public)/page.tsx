@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { LoanCalculator } from '@/features/loan-calculator/LoanCalculator';
 import { HomeClient } from './HomeClient';
 import {
@@ -54,9 +55,19 @@ function toneGlow(tone: string): string {
   return 'radial-gradient(circle at top right, rgba(59,130,246,0.18), transparent 58%)';
 }
 
-function LightLinesVisual() {
+function LightLinesVisual({ style }: { style?: CSSProperties }) {
   return (
-    <div className="light-lines" style={{ minHeight: '320px', borderRadius: '24px', border: '1px solid rgba(140,144,159,0.18)', background: 'linear-gradient(180deg, rgba(30,41,59,0.62) 0%, rgba(18,18,20,0.84) 100%)', position: 'relative' }}>
+    <div
+      className="light-lines"
+      style={{
+        minHeight: '320px',
+        borderRadius: '24px',
+        border: '1px solid rgba(140,144,159,0.18)',
+        background: 'linear-gradient(180deg, rgba(30,41,59,0.62) 0%, rgba(18,18,20,0.84) 100%)',
+        position: 'relative',
+        ...style,
+      }}
+    >
       <span style={{ width: '72%', top: '22%', left: '8%', animationDelay: '0s' }} />
       <span style={{ width: '58%', top: '34%', left: '18%', animationDelay: '1.1s' }} />
       <span style={{ width: '82%', top: '48%', left: '5%', animationDelay: '0.4s' }} />
@@ -172,9 +183,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section style={{ padding: '56px 24px' }}>
+      <section style={{ padding: '40px 24px 36px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.65rem' }}>Процесс</p>
             <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Как это работает</h2>
           </div>
@@ -264,8 +275,23 @@ export default function HomePage() {
 
       <section style={{ padding: '56px 24px', position: 'relative' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <div className="grid-2-resp" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)', gap: '2rem', alignItems: 'center' }}>
-            <div className="surface-card aurora-violet">
+          <div
+            className="surface-card aurora-violet"
+            style={{
+              overflow: 'hidden',
+              minHeight: '360px',
+              padding: 'clamp(1.5rem,3vw,2.25rem)',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.72 }}>
+              <LightLinesVisual style={{ minHeight: '100%', height: '100%', border: 'none', borderRadius: '0', background: 'linear-gradient(180deg, rgba(49,27,90,0.34) 0%, rgba(18,18,20,0.12) 100%)' }} />
+            </div>
+            <div aria-hidden className="absolute inset-0 z-0" style={{ pointerEvents: 'none', opacity: 0.28, mixBlendMode: 'screen' }}>
+              <StitchTokenScene />
+            </div>
+            <div className="relative z-10" style={{ maxWidth: '640px' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#C4B5FD', marginBottom: '0.65rem' }}>Для бизнеса</p>
               <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.8rem)', color: '#F8FAFC', letterSpacing: '-0.03em', marginBottom: '0.85rem' }}>
                 Финансирование для бизнеса
@@ -296,7 +322,6 @@ export default function HomePage() {
                 Оставить заявку <ArrowRight size={16} />
               </Link>
             </div>
-            <div style={{ position: 'relative', minHeight: '320px' }}><LightLinesVisual /><div aria-hidden style={{ position: 'absolute', inset: '10% 12% 10% 12%', pointerEvents: 'none', opacity: 0.32, mixBlendMode: 'screen' }}><StitchTokenScene /></div></div>
           </div>
         </div>
       </section>
@@ -337,7 +362,7 @@ export default function HomePage() {
 
       <HomeClient section="faq" />
 
-      <section style={{ padding: '56px 24px' }}>
+      <section style={{ padding: '28px 24px 56px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           <div className="card aurora-red" style={{ textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>

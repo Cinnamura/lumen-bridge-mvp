@@ -29,7 +29,7 @@ export default function CabinetShell({ children }: { children: React.ReactNode }
           <button onClick={() => setDrawerOpen(true)} aria-label="Меню" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#F8FAFC', padding: '0.25rem', display: 'flex', alignItems: 'center' }}>
             <Menu size={22} />
           </button>
-          <Link href="/cabinet" style={{ fontFamily: 'var(--f-display)', fontSize: '1.0625rem', color: '#F8FAFC', textDecoration: 'none' }}>
+          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.0625rem', color: '#F8FAFC', textDecoration: 'none' }}>
             LumenBridge
           </Link>
           <div style={{ width: '30px' }} />

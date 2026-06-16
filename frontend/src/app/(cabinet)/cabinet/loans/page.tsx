@@ -129,17 +129,6 @@ export default function LoansPage() {
 
   const totalOutstanding = useMemo(() => active.reduce((sum, loan) => sum + loan.remainingAmount, 0), [active]);
   const nextLoan = useMemo(() => active.find((loan) => loan.nextPaymentDate) ?? active[0] ?? null, [active]);
-  const tabStyle = (current: 'active' | 'closed'): React.CSSProperties => ({
-    padding: '8px 18px',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.9375rem',
-    background: tab === current ? 'var(--text-primary)' : 'transparent',
-    color: tab === current ? '#fff' : 'var(--text-secondary)',
-  });
-
   return (
     <CabinetShell>
       <div className="cabinet-page">
@@ -155,7 +144,7 @@ export default function LoansPage() {
           <div style={{ ...cardStyle({ borderLeft: '4px solid var(--accent-crimson)', padding: '0.875rem 1rem' }) }}>
             <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.375rem' }}>Не удалось загрузить займы</p>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '0.875rem' }}>{error}</p>
-            <button onClick={load} style={{ background: 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 16px', fontWeight: 600, cursor: 'pointer' }}>Попробовать снова</button>
+            <button onClick={load} className="btn btn-primary btn-sm">Попробовать снова</button>
           </div>
         )}
 
@@ -180,9 +169,9 @@ export default function LoansPage() {
               ))}
             </div>
 
-            <div style={{ display: 'inline-flex', background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '10px', padding: '4px', marginBottom: '1.25rem', gap: '4px' }}>
-              <button style={tabStyle('active')} onClick={() => setTab('active')}>Активные</button>
-              <button style={tabStyle('closed')} onClick={() => setTab('closed')}>Закрытые</button>
+            <div className="status-toggle-group" style={{ marginBottom: '1.25rem' }}>
+              <button className={`status-toggle${tab === 'active' ? ' active' : ''}`} onClick={() => setTab('active')}>Активные</button>
+              <button className={`status-toggle${tab === 'closed' ? ' active' : ''}`} onClick={() => setTab('closed')}>Закрытые</button>
             </div>
 
             {tab === 'active' && (active.length === 0 ? (

@@ -138,21 +138,11 @@ export default function AdminApplicationsPage() {
           </form>
         </div>
 
-        <div style={{ display: 'inline-flex', background: 'rgba(18,18,20,0.74)', border: '1px solid rgba(140,144,159,0.18)', borderRadius: '10px', padding: '3px', marginBottom: '1.25rem', gap: '2px', flexWrap: 'wrap' }}>
+        <div className="status-toggle-group" style={{ marginBottom: '1.25rem' }}>
           {STATUSES.map(({ key, label }) => (
             <button
               key={key}
-              style={{
-                padding: '7px 16px',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                background: status === key ? 'linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(30,41,59,0.64) 100%)' : 'transparent',
-                color: status === key ? '#F8FAFC' : 'rgba(154,164,182,0.86)',
-                transition: 'all 180ms ease',
-              }}
+              className={`status-toggle${status === key ? ' active' : ''}`}
               onClick={() => {
                 setStatus(key);
                 setPage(1);

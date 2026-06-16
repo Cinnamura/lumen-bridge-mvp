@@ -77,12 +77,6 @@ export default function AdminPaymentsPage() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
-  const tabStyle = (key: (typeof STATUSES)[number]['key']): React.CSSProperties => ({
-    padding: '7px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer',
-    fontWeight: 600, fontSize: '0.875rem',
-    background: status === key ? 'var(--text-primary)' : 'transparent',
-    color: status === key ? '#fff' : 'var(--text-secondary)',
-  });
 
   return (
     <AdminShell>
@@ -92,9 +86,9 @@ export default function AdminPaymentsPage() {
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Заявки на оплату</h1>
         </div>
 
-        <div style={{ display: 'inline-flex', background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '8px', padding: '3px', marginBottom: '1.25rem', gap: '2px', flexWrap: 'wrap' }}>
+        <div className="status-toggle-group" style={{ marginBottom: '1.25rem' }}>
           {STATUSES.map(({ key, label }) => (
-            <button key={key} style={tabStyle(key)} onClick={() => { setStatus(key); setPage(1); }}>{label}</button>
+            <button key={key} className={`status-toggle${status === key ? ' active' : ''}`} onClick={() => { setStatus(key); setPage(1); }}>{label}</button>
           ))}
         </div>
 
