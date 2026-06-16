@@ -1,0 +1,353 @@
+'use client';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import AdminShell from '@/widgets/sidebar/AdminShell';
+import { api, authHeader } from '@/shared/lib/api';
+import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { ChevronLeft } from 'lucide-react';
+import { Skeleton } from '@/shared/ui/Skeleton';
+import { useAdminAuth, useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
+
+function getAdminToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('lb_admin_token');
+}
+
+interface ScheduleRow { id: string; seq: number; dueDate: string; amount: number; status: string; paidAt?: string }
+interface PaymentRow  { id: string; amount: number; status: string; recordedAt: string; note?: string | null }
+interface PayReqRow   { id: string; amount: number; reference: string; status: string; createdAt: string; reviewedAt?: string }
+interface LoanDetail {
+  id: string; applicationId: string;
+  userId: string;
+  user?: { id: string; phone: string; firstName?: string; lastName?: string; email?: string };
+  amount: number; termDays: number;
+  dailyRate: number; dailyPayment: number; totalRepayment: number;
+  paidAmount: number; remainingAmount: number;
+  status: string;
+  signedAt?: string; signedIp?: string; issuedAt?: string; closedAt?: string; createdAt: string;
+  schedule: ScheduleRow[];
+  payments: PaymentRow[];
+  paymentRequests: PayReqRow[];
+}
+
+const LOAN_STATUS_LABEL: Record<string, string> = {
+  pending_signing: 'Ожидает подписания', active: 'Активен', overdue: 'Просрочен', closed: 'Закрыт',
+};
+const LOAN_STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+  pending_signing: { bg: '#EBF1FE', color: '#2E7DF7' },
+  active:          { bg: '#E0F5EC', color: '#1E8A5E' },
+  overdue:         { bg: '#FAD7D4', color: '#C0392B' },
+  closed:          { bg: '#F0F3F6', color: '#4A6580' },
+};
+const SCH_STATUS_LABEL: Record<string, string> = { pending: 'Ожидает', paid: 'Оплачен', overdue: 'Просрочен' };
+
+// FSM: допустимые переходы оператором
+const ALLOWED_LOAN_TRANSITIONS: Record<string, string[]> = {
+  active:  ['overdue', 'closed'],
+  overdue: ['active', 'closed'],
+  closed:  [],
+  pending_signing: [],
+};
+const TRANSITION_CFG: Record<string, { label: string; bg: string; color: string; border?: string }> = {
+  active:  { label: 'Отметить активным',    bg: '#1E8A5E', color: '#fff' },
+  overdue: { label: 'Отметить просроченным', bg: '#fff', color: '#C0392B', border: '1.5px solid #C0392B' },
+  closed:  { label: 'Закрыть займ',         bg: '#0D1B2A', color: '#fff' },
+};
+
+export default function AdminLoanDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const router  = useRouter();
+  const { admin } = useAdminAuth();
+  const isAdmin = admin?.role === 'admin';
+
+  const [loan, setLoan]         = useState<LoanDetail | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
+  const handleError = useAdminErrorHandler(setError);
+
+  const [statusBusy, setStatusBusy] = useState(false);
+
+  // Record payment (admin-only)
+  const [showPayForm, setShowPayForm] = useState(false);
+  const [payAmount, setPayAmount]     = useState('');
+  const [payNote, setPayNote]         = useState('');
+  const [payBusy, setPayBusy]         = useState(false);
+  const [payError, setPayError]       = useState('');
+
+  const load = useCallback(() => {
+    const token = getAdminToken(); if (!token) return;
+    setLoading(true);
+    api.get<LoanDetail>(`/admin/loans/${id}`, authHeader(token))
+      .then(setLoan).catch(handleError).finally(() => setLoading(false));
+  }, [id, handleError]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function changeStatus(status: string) {
+    const token = getAdminToken(); if (!token) return;
+    setStatusBusy(true); setError('');
+    try {
+      await api.patch(`/admin/loans/${id}/status`, { status }, authHeader(token));
+      await load();
+    } catch (e: any) { handleError(e); }
+    finally { setStatusBusy(false); }
+  }
+
+  async function recordPayment() {
+    const token = getAdminToken(); if (!token) return;
+    const amount = Number(payAmount);
+    if (!amount || amount <= 0) { setPayError('Введите сумму'); return; }
+    if (loan && amount > loan.remainingAmount) { setPayError('Сумма превышает остаток задолженности'); return; }
+    setPayBusy(true); setPayError('');
+    try {
+      await api.post(`/admin/loans/${id}/payments`, { amount, note: payNote || undefined }, authHeader(token));
+      setShowPayForm(false); setPayAmount(''); setPayNote('');
+      await load();
+    } catch (e: any) { setPayError(e?.message ?? 'Ошибка'); }
+    finally { setPayBusy(false); }
+  }
+
+  const loanStatusStyle = loan ? LOAN_STATUS_COLORS[loan.status] ?? { bg: '#F0F3F6', color: '#4A6580' } : null;
+  const transitions     = loan ? ALLOWED_LOAN_TRANSITIONS[loan.status] ?? [] : [];
+  const paidCount       = loan?.schedule.filter(s => s.status === 'paid').length ?? 0;
+  const nextSchedule    = loan?.schedule.find(s => s.status !== 'paid');
+
+  return (
+    <AdminShell>
+      <div className="admin-page">
+        <button onClick={() => router.back()}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: '#4A6580', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1.25rem', padding: 0 }}>
+          <ChevronLeft size={16} /> Назад к займам
+        </button>
+
+        {loading && <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>{[200,140,100,180].map(w=><Skeleton key={w} h={20} w={w}/>)}</div>}
+        {!loading && error && <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '1rem', color: '#6B1A14', marginBottom: '1rem' }}>{error}</div>}
+
+        {!loading && loan && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div>
+                <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Займ</p>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0D1B2A' }}>
+                  {[loan.user?.firstName, loan.user?.lastName].filter(Boolean).join(' ') || loan.user?.phone || '—'}
+                </h1>
+                <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580', marginTop: '2px' }}>{loan.id.slice(0, 16)}…</p>
+              </div>
+              {loanStatusStyle && (
+                <span style={{ background: loanStatusStyle.bg, color: loanStatusStyle.color, fontWeight: 700, fontSize: '0.875rem', padding: '6px 14px', borderRadius: '8px' }}>
+                  {LOAN_STATUS_LABEL[loan.status] ?? loan.status}
+                </span>
+              )}
+            </div>
+
+            {/* Balance block */}
+            <div style={{ background: '#0D1B2A', borderRadius: '12px', padding: '1.25rem 1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Итого к возврату</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#fff', fontSize: '1.0625rem' }}>{formatCurrency(loan.totalRepayment)}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Выплачено</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#1E8A5E', fontSize: '1.0625rem' }}>{formatCurrency(loan.paidAmount)}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Остаток</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: loan.remainingAmount === 0 ? '#1E8A5E' : '#2E7DF7', fontSize: '1.0625rem' }}>{formatCurrency(loan.remainingAmount)}</p>
+                </div>
+              </div>
+              <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: '999px', background: loan.remainingAmount === 0 ? '#1E8A5E' : '#2E7DF7', width: `${loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0}%`, transition: 'width 300ms ease' }} />
+              </div>
+            </div>
+
+            {/* Parameters */}
+            <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
+              <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Параметры займа</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+                {[
+                  { label: 'Сумма займа',       value: formatCurrency(loan.amount) },
+                  { label: 'Ставка',             value: `${(loan.dailyRate * 100).toFixed(1)}% / день` },
+                  { label: 'Срок',               value: `${loan.termDays} дней` },
+                  { label: 'Ежедневный платёж',  value: formatCurrency(loan.dailyPayment) },
+                  { label: 'Дата выдачи',        value: loan.issuedAt ? formatDate(loan.issuedAt) : '—' },
+                  { label: 'Дата закрытия',      value: loan.closedAt ? formatDate(loan.closedAt) : '—' },
+                  ...(loan.signedIp ? [{ label: 'IP подписания', value: loan.signedIp }] : []),
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: '#0D1B2A', fontSize: '0.9375rem' }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+              {loan.user && (
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #F0F3F6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '2px' }}>Клиент</p>
+                    <p style={{ fontFamily: 'var(--f-mono)', color: '#0D1B2A' }}>{loan.user.phone}</p>
+                  </div>
+                  <Link href={`/admin/clients/${loan.user.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>
+                    Карточка клиента →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Actions: status change + record payment */}
+            {(transitions.length > 0 || isAdmin) && loan.status !== 'pending_signing' && (
+              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
+                <h2 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#4A6580', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.875rem' }}>Действия</h2>
+                <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {transitions.map((t) => {
+                    const cfg = TRANSITION_CFG[t];
+                    if (!cfg) return null;
+                    return (
+                      <button key={t} onClick={() => changeStatus(t)} disabled={statusBusy}
+                        style={{ background: statusBusy ? '#E8ECF0' : cfg.bg, color: statusBusy ? '#4A6580' : cfg.color, border: cfg.border ?? 'none', borderRadius: '8px', padding: '9px 18px', fontWeight: 600, cursor: statusBusy ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                  {isAdmin && loan.status !== 'closed' && (
+                    <button onClick={() => setShowPayForm((v) => !v)}
+                      style={{ background: showPayForm ? '#E8ECF0' : '#2E7DF7', color: showPayForm ? '#4A6580' : '#fff', border: 'none', borderRadius: '8px', padding: '9px 18px', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}>
+                      {showPayForm ? 'Отмена' : 'Зафиксировать платёж'}
+                    </button>
+                  )}
+                </div>
+
+                {showPayForm && (
+                  <div style={{ marginTop: '1rem', padding: '1rem', background: '#F8F9FA', borderRadius: '10px', border: '1px solid #E8ECF0' }}>
+                    <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#0D1B2A', marginBottom: '0.875rem' }}>Фиксация платежа</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem', marginBottom: '0.625rem' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Сумма (EUR)</label>
+                        <input type="number" min={0.01} max={loan.remainingAmount} step="0.01"
+                          value={payAmount} onChange={(e) => setPayAmount(e.target.value)}
+                          placeholder={String(loan.remainingAmount)}
+                          style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '9px 12px', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.8125rem', color: '#4A6580', marginBottom: '4px' }}>Примечание (необязательно)</label>
+                        <input type="text" value={payNote} onChange={(e) => setPayNote(e.target.value)}
+                          placeholder="Банковский перевод, кэш…"
+                          style={{ width: '100%', border: '1.5px solid #C8D0DA', borderRadius: '8px', padding: '9px 12px', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+                    <p style={{ fontSize: '0.75rem', color: '#4A6580', marginBottom: '0.625rem' }}>
+                      Максимум: {formatCurrency(loan.remainingAmount)}
+                    </p>
+                    {payError && <p style={{ color: '#C0392B', fontSize: '0.8125rem', marginBottom: '0.5rem' }}>{payError}</p>}
+                    <button onClick={recordPayment} disabled={payBusy || !payAmount}
+                      style={{ background: (payBusy || !payAmount) ? '#A9C4F0' : '#2E7DF7', color: '#fff', border: 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 600, cursor: (payBusy || !payAmount) ? 'not-allowed' : 'pointer', fontSize: '0.9375rem' }}>
+                      {payBusy ? 'Фиксирую…' : 'Подтвердить'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Schedule timeline */}
+            {loan.schedule.length > 0 && (
+              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', padding: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+                  <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#0D1B2A' }}>График платежей</h2>
+                  <span style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: '#4A6580' }}>{paidCount} / {loan.schedule.length} оплачено</span>
+                </div>
+                {nextSchedule && (
+                  <div style={{ background: '#EBF1FE', borderRadius: '8px', padding: '0.625rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '0.875rem', color: '#2E7DF7', fontWeight: 600 }}>Ближайший платёж</span>
+                    <span style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#2E7DF7' }}>
+                      {formatCurrency(nextSchedule.amount)} — {formatDate(nextSchedule.dueDate)}
+                    </span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {loan.schedule.map((row, idx) => {
+                    const isPaid    = row.status === 'paid';
+                    const isOverdue = row.status === 'overdue';
+                    const isNext    = row.seq === nextSchedule?.seq;
+                    const last      = idx === loan.schedule.length - 1;
+                    const dotColor  = isPaid ? '#1E8A5E' : isOverdue ? '#C0392B' : isNext ? '#2E7DF7' : '#C8D0DA';
+                    return (
+                      <div key={row.id} style={{ display: 'flex', gap: '0.875rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: isPaid ? '#1E8A5E' : '#fff', border: `2px solid ${dotColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                            {isPaid && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                            {isNext && !isPaid && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#2E7DF7' }} />}
+                          </div>
+                          {!last && <div style={{ width: '2px', flex: 1, minHeight: '20px', background: isPaid ? '#1E8A5E' : '#E8ECF0' }} />}
+                        </div>
+                        <div style={{ flex: 1, paddingBottom: last ? 0 : '0.875rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                          <div>
+                            <span style={{ fontSize: '0.8125rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>Платёж №{row.seq}</span>
+                            <div style={{ fontSize: '0.875rem', color: '#0D1B2A', fontFamily: 'var(--f-mono)', marginTop: '2px' }}>{formatDate(row.dueDate)}</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#0D1B2A' }}>{formatCurrency(row.amount)}</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px', color: isPaid ? '#1E8A5E' : isOverdue ? '#C0392B' : '#4A6580' }}>
+                              {SCH_STATUS_LABEL[row.status] ?? row.status}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Payment history */}
+            {loan.payments.length > 0 && (
+              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F0F3F6' }}>
+                  <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '0.9375rem' }}>История платежей</p>
+                </div>
+                <table className="admin-table" style={{ width: '100%' }}>
+                  <thead><tr><th>Дата</th><th>Сумма</th><th>Примечание</th></tr></thead>
+                  <tbody>
+                    {loan.payments.map((p) => (
+                      <tr key={p.id}>
+                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(p.recordedAt)}</td>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#1E8A5E' }}>{formatCurrency(p.amount)}</td>
+                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{p.note || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Payment requests */}
+            {loan.paymentRequests.length > 0 && (
+              <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid #F0F3F6' }}>
+                  <p style={{ fontWeight: 700, color: '#0D1B2A', fontSize: '0.9375rem' }}>Заявки на оплату</p>
+                </div>
+                <table className="admin-table" style={{ width: '100%' }}>
+                  <thead><tr><th>Дата</th><th>Сумма</th><th>Reference</th><th>Статус</th></tr></thead>
+                  <tbody>
+                    {loan.paymentRequests.map((pr) => (
+                      <tr key={pr.id}>
+                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{formatDate(pr.createdAt)}</td>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(pr.amount)}</td>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580' }}>{pr.reference}</td>
+                        <td style={{ fontSize: '0.8125rem', fontWeight: 600, color: pr.status === 'confirmed' ? '#1E8A5E' : pr.status === 'rejected' ? '#C0392B' : '#C08020' }}>
+                          {pr.status === 'confirmed' ? 'Подтверждена' : pr.status === 'rejected' ? 'Отклонена' : 'Ожидает'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </AdminShell>
+  );
+}

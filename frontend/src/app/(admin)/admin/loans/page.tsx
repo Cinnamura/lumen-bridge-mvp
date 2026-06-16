@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
@@ -13,12 +14,18 @@ function getAdminToken(): string | null {
 }
 
 interface LoanRow {
-  id: string; amount: number; termDays: number;
-  dailyPayment: number; totalRepayment: number;
-  paidAmount: number; remainingAmount: number;
+  id: string;
+  amount: number;
+  termDays: number;
+  dailyPayment: number;
+  totalRepayment: number;
+  paidAmount: number;
+  remainingAmount: number;
   status: 'pending_signing' | 'active' | 'overdue' | 'closed';
-  issuedAt?: string; closedAt?: string; createdAt: string;
-  user?: { phone: string; firstName?: string; lastName?: string };
+  issuedAt?: string;
+  closedAt?: string;
+  createdAt: string;
+  user?: { id?: string; phone: string; firstName?: string; lastName?: string };
 }
 
 const STATUSES = [
@@ -27,41 +34,45 @@ const STATUSES = [
   { key: 'active', label: 'Активные' },
   { key: 'overdue', label: 'Просроченные' },
   { key: 'closed', label: 'Закрытые' },
-];
-const BADGE: Record<string, { label: string; cls: string }> = {
+] as const;
+
+const BADGE: Record<LoanRow['status'], { label: string; cls: string }> = {
   pending_signing: { label: 'Подписание', cls: 'badge-signing' },
-  active:          { label: 'Активен',    cls: 'badge-active' },
-  overdue:         { label: 'Просрочен',  cls: 'badge-overdue' },
-  closed:          { label: 'Закрыт',     cls: 'badge-closed' },
+  active: { label: 'Активен', cls: 'badge-active' },
+  overdue: { label: 'Просрочен', cls: 'badge-overdue' },
+  closed: { label: 'Закрыт', cls: 'badge-closed' },
 };
 
 export default function AdminLoansPage() {
-  const [rows, setRows]   = useState<LoanRow[]>([]);
+  const [rows, setRows] = useState<LoanRow[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage]   = useState(1);
-  const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(1);
+  const [status, setStatus] = useState<(typeof STATUSES)[number]['key']>('all');
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
   const handleError = useAdminErrorHandler(setError);
 
-  function load() {
+  const load = useCallback(() => {
     const token = getAdminToken(); if (!token) return;
     setLoading(true);
+    setError('');
     const params = new URLSearchParams({ page: String(page), limit: '20' });
     if (status !== 'all') params.set('status', status);
     api.get<{ data: LoanRow[]; total: number }>(`/admin/loans?${params}`, authHeader(token))
       .then((d) => { setRows(d.data); setTotal(d.total); })
       .catch(handleError)
       .finally(() => setLoading(false));
-  }
-  useEffect(load, [page, status]);
+  }, [handleError, page, status]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const totalPages = Math.max(1, Math.ceil(total / 20));
-  const tabStyle = (s: string): React.CSSProperties => ({
+  const tabStyle = (key: (typeof STATUSES)[number]['key']): React.CSSProperties => ({
     padding: '7px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer',
     fontWeight: 600, fontSize: '0.875rem',
-    background: status === s ? '#0D1B2A' : 'transparent',
-    color: status === s ? '#fff' : '#4A6580',
+    background: status === key ? '#0D1B2A' : 'transparent',
+    color: status === key ? '#fff' : '#4A6580',
   });
 
   return (
@@ -79,44 +90,43 @@ export default function AdminLoansPage() {
         </div>
 
         {error && <div style={{ borderLeft: '4px solid #C0392B', background: '#FAD7D4', borderRadius: '8px', padding: '0.875rem 1rem', marginBottom: '1rem', color: '#6B1A14' }}>{error}</div>}
-
-        {loading && <TableSkeleton rows={8} columns={7} />}
+        {loading && <TableSkeleton rows={8} columns={8} />}
 
         {!loading && (
-        <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Клиент</th>
-                  <th>Сумма</th>
-                  <th>Срок</th>
-                  <th style={{ minWidth: '200px' }}>Баланс выплат</th>
-                  <th>Статус</th>
-                  <th>Выдан</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Займов не найдено</td></tr>}
-                {rows.map((l) => {
-                  const s = BADGE[l.status] ?? { label: l.status, cls: 'badge-closed' };
-                  return (
-                    <tr key={l.id}>
-                      <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580' }}>{l.id.slice(0, 8)}…</td>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{[l.user?.firstName, l.user?.lastName].filter(Boolean).join(' ') || '—'}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>{l.user?.phone ?? '—'}</div>
-                      </td>
-                      <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
-                      <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.termDays} дн.</td>
-                      <td>
-                        {l.status === 'pending_signing' ? (
-                          <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>—</span>
-                        ) : (() => {
-                          const pct = l.totalRepayment > 0 ? Math.min(100, (l.paidAmount / l.totalRepayment) * 100) : 0;
-                          const done = l.remainingAmount === 0;
-                          return (
+          <div style={{ background: '#fff', border: '1px solid #E8ECF0', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Клиент</th>
+                    <th>Сумма</th>
+                    <th>Срок</th>
+                    <th style={{ minWidth: '200px' }}>Баланс выплат</th>
+                    <th>Статус</th>
+                    <th>Выдан</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: '#4A6580' }}>Займов не найдено</td></tr>}
+                  {rows.map((l) => {
+                    const s = BADGE[l.status] ?? { label: l.status, cls: 'badge-closed' };
+                    const pct = l.totalRepayment > 0 ? Math.min(100, (l.paidAmount / l.totalRepayment) * 100) : 0;
+                    const done = l.remainingAmount === 0;
+                    return (
+                      <tr key={l.id}>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: '#4A6580' }}>{l.id.slice(0, 8)}…</td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{[l.user?.firstName, l.user?.lastName].filter(Boolean).join(' ') || '—'}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#4A6580', fontFamily: 'var(--f-mono)' }}>{l.user?.phone ?? '—'}</div>
+                        </td>
+                        <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
+                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.termDays} дн.</td>
+                        <td>
+                          {l.status === 'pending_signing' ? (
+                            <span style={{ fontSize: '0.8125rem', color: '#4A6580' }}>Ожидает подписания клиентом</span>
+                          ) : (
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontFamily: 'var(--f-mono)' }}>
                                 <span style={{ color: done ? '#1E8A5E' : '#0D1B2A', fontWeight: 600 }}>{formatCurrency(l.paidAmount)}</span>
@@ -129,18 +139,18 @@ export default function AdminLoansPage() {
                                 {done ? 'Погашен полностью' : `Остаток ${formatCurrency(l.remainingAmount)}`}
                               </p>
                             </div>
-                          );
-                        })()}
-                      </td>
-                      <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
-                      <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.issuedAt ? formatDate(l.issuedAt) : '—'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          )}
+                        </td>
+                        <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
+                        <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{l.issuedAt ? formatDate(l.issuedAt) : '—'}</td>
+                        <td><Link href={`/admin/loans/${l.id}`} style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600 }}>Открыть</Link></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: '#4A6580' }}>

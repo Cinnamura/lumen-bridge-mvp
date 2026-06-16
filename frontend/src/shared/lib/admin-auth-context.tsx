@@ -10,14 +10,18 @@ interface AdminProfile {
 
 interface AdminAuthState {
   profile: AdminProfile | null;
+  admin: AdminProfile | null;
   loading: boolean;
   login:  (token: string) => Promise<void>;
   logout: () => void;
 }
 
 const AdminAuthContext = createContext<AdminAuthState>({
-  profile: null, loading: true,
-  login: async () => {}, logout: () => {},
+  profile: null,
+  admin: null,
+  loading: true,
+  login: async () => {},
+  logout: () => {},
 });
 
 const TOKEN_KEY = 'lb_admin_token';
@@ -36,8 +40,8 @@ function clearAdminToken() {
 }
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile]   = useState<AdminProfile | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [profile, setProfile] = useState<AdminProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchMe = useCallback(async (token: string): Promise<AdminProfile | null> => {
     try {
@@ -51,8 +55,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = getAdminToken();
-    if (!token) { setLoading(false); return; }
-    fetchMe(token).then((p) => { setProfile(p); setLoading(false); });
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    fetchMe(token).then((p) => {
+      setProfile(p);
+      setLoading(false);
+    });
   }, [fetchMe]);
 
   const login = useCallback(async (token: string) => {
@@ -69,7 +79,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AdminAuthContext.Provider value={{ profile, loading, login, logout }}>
+    <AdminAuthContext.Provider value={{ profile, admin: profile, loading, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   );
@@ -95,4 +105,3 @@ export function useAdminErrorHandler(setError: (msg: string) => void) {
     setError(e?.message ?? 'Ошибка запроса');
   }, [logout, setError]);
 }
-

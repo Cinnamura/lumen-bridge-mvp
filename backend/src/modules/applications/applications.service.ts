@@ -16,9 +16,13 @@ function toApplicationDto(a: any) {
     termMonths: a.termMonths ?? undefined,
     status: a.status,
     phone: a.phone,
+    email: a.email ?? undefined,
     firstName: a.firstName ?? undefined,
     lastName: a.lastName ?? undefined,
     companyName: a.companyName ?? undefined,
+    regNumber: a.regNumber ?? undefined,
+    repName: a.repName ?? undefined,
+    repPosition: a.repPosition ?? undefined,
     comment: a.comment ?? undefined,
     createdAt: a.createdAt.toISOString(),
   };

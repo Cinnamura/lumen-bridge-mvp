@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
@@ -64,7 +65,7 @@ export default function AdminApplicationsPage() {
 
   const LIMIT = 20;
 
-  function load() {
+  const load = useCallback(() => {
     const token = getAdminToken(); if (!token) return;
     setLoading(true); setError('');
     const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
@@ -74,9 +75,11 @@ export default function AdminApplicationsPage() {
       .then((d) => { setRows(d.data); setTotal(d.total); })
       .catch(handleError)
       .finally(() => setLoading(false));
-  }
+  }, [handleError, page, status, search]);
 
-  useEffect(load, [page, status, search]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function changeStatus(id: string, newStatus: AppRow['status']) {
     const token = getAdminToken(); if (!token) return;
@@ -184,9 +187,12 @@ export default function AdminApplicationsPage() {
                       <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(a.amount)}</td>
                       <td style={{ fontSize: '0.8125rem', color: '#4A6580' }}>{termLabel}</td>
                       <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
-                      <td className="col-actions">
+                      <td className="col-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <Link href={`/admin/applications/${a.id}`}
+                          style={{ fontSize: '0.8125rem', color: '#2E7DF7', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          Открыть
+                        </Link>
                         {(a.status === 'approved' || a.status === 'rejected') ? (
-                          // Терминальный статус — менять нельзя
                           <span style={{ fontSize: '0.75rem', color: '#4A6580', fontStyle: 'italic' }}>
                             {a.status === 'approved' ? 'Займ создан' : 'Решение принято'}
                           </span>
@@ -197,7 +203,6 @@ export default function AdminApplicationsPage() {
                             onChange={(e) => changeStatus(a.id, e.target.value as AppRow['status'])}
                             style={{ padding: '6px 10px', border: '1.5px solid #C8D0DA', borderRadius: '6px', fontSize: '0.8125rem', background: '#fff', color: '#0D1B2A', cursor: 'pointer', minWidth: '140px' }}
                           >
-                            {/* текущий статус + только допустимые переходы по FSM */}
                             <option value={a.status} disabled>
                               {a.status === 'new' ? 'Новая' : 'На проверке'}
                             </option>

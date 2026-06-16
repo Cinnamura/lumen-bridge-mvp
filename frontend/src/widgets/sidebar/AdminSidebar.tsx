@@ -1,26 +1,30 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { FileText, Users, CreditCard, Wallet, Bell, LogOut, LayoutDashboard, Menu } from 'lucide-react';
+import { FileText, Users, CreditCard, Wallet, Bell, LogOut, LayoutDashboard, Shield } from 'lucide-react';
 import { useAdminAuth } from '@/shared/lib/admin-auth-context';
 
 const NAV = [
-  { href: '/admin/applications',  icon: FileText,        label: 'Заявки' },
-  { href: '/admin/clients',       icon: Users,           label: 'Клиенты' },
-  { href: '/admin/loans',         icon: CreditCard,      label: 'Займы' },
-  { href: '/admin/payments',      icon: Wallet,          label: 'Платежи' },
-  { href: '/admin/notifications', icon: Bell,            label: 'Уведомления' },
+  { href: '/admin/applications',  icon: FileText, label: 'Заявки' },
+  { href: '/admin/clients',       icon: Users,    label: 'Клиенты' },
+  { href: '/admin/loans',         icon: CreditCard, label: 'Займы' },
+  { href: '/admin/payments',      icon: Wallet,   label: 'Платежи' },
+  { href: '/admin/notifications', icon: Bell,     label: 'Уведомления' },
 ];
 
 export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
   const { profile, logout } = useAdminAuth();
 
   function handleLogout() {
     logout();
     router.push('/admin/login');
   }
+
+  const navItems = profile?.role === 'admin'
+    ? [...NAV, { href: '/admin/staff', icon: Shield, label: 'Сотрудники' }]
+    : NAV;
 
   return (
     <aside style={{
@@ -48,7 +52,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       <nav style={{ flex: 1, padding: '0.75rem 0' }}>
-        {NAV.map(({ href, icon: Icon, label }) => {
+        {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link key={href} href={href} onClick={onClose} style={{
