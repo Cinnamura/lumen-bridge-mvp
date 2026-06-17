@@ -1,6 +1,6 @@
 import { calcAnnuity } from '../../common/utils/loan-calculator';
 
-export type ScheduleStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
+export type ScheduleStatus = 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'SKIPPED_EARLY_PAYMENT';
 
 export interface ScheduleSnapshotRow {
   id: string;
@@ -65,7 +65,14 @@ function deriveStatus(row: {
   dueDate: Date;
   amountRequired: number;
   amountPaid: number;
+  paidAt: Date | null;
 }, today: Date): ScheduleStatus {
+  // Row was wiped to zero by an early/over-payment rather than a direct payment.
+  // amountRequired==0 AND amountPaid==0 AND paidAt set means the principal was
+  // cleared by an overpayment cascade, not a genuine day-by-day settlement.
+  if (row.amountRequired <= 0.0001 && row.amountPaid <= 0.0001 && row.paidAt !== null) {
+    return 'SKIPPED_EARLY_PAYMENT';
+  }
   if (row.amountRequired <= 0.0001 || row.amountPaid >= row.amountRequired - 0.0001) {
     return 'PAID';
   }
@@ -90,6 +97,7 @@ export function replayScheduleRows(params: {
   remainingAmount: number;
   totalRepayment: number;
   currentDailyPayment: number;
+  outstandingPrincipal: number;
   allPaid: boolean;
 } {
   const now = params.now ?? new Date();
@@ -198,6 +206,7 @@ export function replayScheduleRows(params: {
     remainingAmount,
     totalRepayment,
     currentDailyPayment: nextOpenRow?.amountRequired ?? 0,
-    allPaid: rows.every((row) => row.status === 'PAID'),
+    outstandingPrincipal: roundMoney(outstandingPrincipal),
+    allPaid: rows.every((row) => row.status === 'PAID' || row.status === 'SKIPPED_EARLY_PAYMENT'),
   };
 }

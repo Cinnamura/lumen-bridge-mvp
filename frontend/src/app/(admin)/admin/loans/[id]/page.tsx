@@ -21,7 +21,7 @@ interface ScheduleRow {
   amountRequired: number;
   amountPaid: number;
   amountRemaining: number;
-  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
+  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'SKIPPED_EARLY_PAYMENT';
   paidAt?: string;
 }
 interface PaymentRow  { id: string; amount: number; status: string; recordedAt: string; note?: string | null }
@@ -54,6 +54,7 @@ const SCH_STATUS_LABEL: Record<ScheduleRow['status'], string> = {
   PARTIALLY_PAID: 'Частично оплачен',
   PAID: 'Оплачен',
   OVERDUE: 'Просрочен',
+  SKIPPED_EARLY_PAYMENT: 'Досрочно закрыт',
 };
 
 // FSM: допустимые переходы оператором
@@ -283,11 +284,12 @@ export default function AdminLoanDetailPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {loan.schedule.map((row, idx) => {
                     const isPaid    = row.status === 'PAID';
+                    const isSkipped = row.status === 'SKIPPED_EARLY_PAYMENT';
                     const isOverdue = row.status === 'OVERDUE';
                     const isPartial = row.status === 'PARTIALLY_PAID';
                     const isNext    = row.seq === nextSchedule?.seq;
                     const last      = idx === loan.schedule.length - 1;
-                    const dotColor  = isPaid
+                    const dotColor  = (isPaid || isSkipped)
                       ? 'var(--accent-mint)'
                       : isOverdue
                         ? 'var(--accent-crimson)'
@@ -299,11 +301,11 @@ export default function AdminLoanDetailPage() {
                     return (
                       <div key={row.id} style={{ display: 'flex', gap: '0.875rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: isPaid ? 'var(--accent-mint)' : isPartial ? 'rgba(46, 125, 247, 0.14)' : '#fff', border: `2px solid ${dotColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
-                            {isPaid && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
-                            {isNext && !isPaid && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-indigo)' }} />}
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: (isPaid || isSkipped) ? 'var(--accent-mint)' : isPartial ? 'rgba(46, 125, 247, 0.14)' : '#fff', border: `2px solid ${dotColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                            {(isPaid || isSkipped) && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                            {isNext && !isPaid && !isSkipped && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-indigo)' }} />}
                           </div>
-                          {!last && <div style={{ width: '2px', flex: 1, minHeight: '20px', background: isPaid ? 'var(--accent-mint)' : 'var(--surface-2)' }} />}
+                          {!last && <div style={{ width: '2px', flex: 1, minHeight: '20px', background: (isPaid || isSkipped) ? 'var(--accent-mint)' : 'var(--surface-2)' }} />}
                         </div>
                         <div style={{ flex: 1, paddingBottom: last ? 0 : '0.875rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                           <div>
@@ -316,13 +318,13 @@ export default function AdminLoanDetailPage() {
                             )}
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(isPaid ? row.amountRequired : row.amountRemaining)}</div>
-                            {!isPaid && (
+                            <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency((isPaid || isSkipped) ? row.amountRequired : row.amountRemaining)}</div>
+                            {!isPaid && !isSkipped && (
                               <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                                 План {formatCurrency(row.amountRequired)}
                               </div>
                             )}
-                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px', color: isPaid ? 'var(--accent-mint)' : isOverdue ? 'var(--accent-crimson)' : isPartial ? 'var(--accent-indigo)' : 'var(--text-secondary)' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px', color: (isPaid || isSkipped) ? 'var(--accent-mint)' : isOverdue ? 'var(--accent-crimson)' : isPartial ? 'var(--accent-indigo)' : 'var(--text-secondary)' }}>
                               {SCH_STATUS_LABEL[row.status] ?? row.status}
                             </div>
                           </div>

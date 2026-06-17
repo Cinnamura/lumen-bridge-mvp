@@ -16,7 +16,7 @@ interface ScheduleItem {
   amountRequired: number;
   amountPaid: number;
   amountRemaining: number;
-  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
+  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'SKIPPED_EARLY_PAYMENT';
   paidAt?: string;
 }
 
@@ -93,23 +93,28 @@ function ScheduleRows({ rows, tone, nearestPendingId }: { rows: ScheduleItem[]; 
         const isPaid = row.status === 'PAID';
         const isOverdue = row.status === 'OVERDUE';
         const isPartial = row.status === 'PARTIALLY_PAID';
+        const isSkipped = row.status === 'SKIPPED_EARLY_PAYMENT';
         const isNearest = nearestPendingId === row.id;
         const badgeClass = isPaid
           ? 'badge-approved'
-          : isOverdue
-            ? 'badge-overdue'
-            : isPartial
-              ? 'badge-partial'
-              : 'badge-pending';
+          : isSkipped
+            ? 'badge-approved'
+            : isOverdue
+              ? 'badge-overdue'
+              : isPartial
+                ? 'badge-partial'
+                : 'badge-pending';
         const badgeLabel = isPaid
           ? 'Оплачен'
-          : isOverdue
-            ? 'Просрочен'
-            : isPartial
-              ? 'Частично оплачен'
-              : isNearest
-                ? 'Ближайший'
-                : 'Ожидает';
+          : isSkipped
+            ? 'Досрочно закрыт'
+            : isOverdue
+              ? 'Просрочен'
+              : isPartial
+                ? 'Частично оплачен'
+                : isNearest
+                  ? 'Ближайший'
+                  : 'Ожидает';
         return (
           <div
             key={row.id}
@@ -122,13 +127,15 @@ function ScheduleRows({ rows, tone, nearestPendingId }: { rows: ScheduleItem[]; 
               alignItems: 'center',
               background: isPaid
                 ? 'rgba(16,185,129,0.06)'
-                : isOverdue
-                  ? 'rgba(239,68,68,0.08)'
-                  : isPartial
-                    ? 'rgba(59,130,246,0.08)'
-                  : isNearest
-                    ? 'rgba(245,158,11,0.08)'
-                    : 'transparent',
+                : isSkipped
+                  ? 'rgba(16,185,129,0.04)'
+                  : isOverdue
+                    ? 'rgba(239,68,68,0.08)'
+                    : isPartial
+                      ? 'rgba(59,130,246,0.08)'
+                      : isNearest
+                        ? 'rgba(245,158,11,0.08)'
+                        : 'transparent',
               boxShadow: isPartial
                 ? 'inset 0 0 0 1px rgba(59,130,246,0.24)'
                 : isNearest
@@ -181,6 +188,9 @@ export default function LoanDetailPage() {
   const [payRef, setPayRef] = useState('');
   const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState('');
+  const [payoffData, setPayoffData] = useState<{ payoffAmount: number; savings: number } | null>(null);
+  const [payoffLoading, setPayoffLoading] = useState(false);
+  const [payoffLocked, setPayoffLocked] = useState(false);
 
   const reload = useCallback(async () => {
     const token = getToken();
@@ -249,6 +259,26 @@ export default function LoanDetailPage() {
     }
   }
 
+  async function fetchPayoff() {
+    const token = getToken();
+    if (!token || !loan) return;
+    setPayoffLoading(true);
+    try {
+      const data = await api.get<{ payoffAmount: number; savings: number }>(
+        `/cabinet/loans/${id}/payoff`,
+        authHeader(token),
+      );
+      setPayoffData(data);
+      setPayAmount(data.payoffAmount.toFixed(2));
+      setPayoffLocked(true);
+      setShowPayForm(true);
+    } catch (e: any) {
+      setPayError(e.message ?? 'Не удалось рассчитать сумму погашения');
+    } finally {
+      setPayoffLoading(false);
+    }
+  }
+
   async function submitPayment() {
     const token = getToken();
     if (!token || !loan) return;
@@ -273,6 +303,8 @@ export default function LoanDetailPage() {
       setShowPayForm(false);
       setPayAmount('');
       setPayRef('');
+      setPayoffData(null);
+      setPayoffLocked(false);
       await reload();
       router.refresh();
     } catch (e: any) {
@@ -290,8 +322,14 @@ export default function LoanDetailPage() {
     if (digit && index < 5) otpRefs.current[index + 1]?.focus();
   }
 
-  const openRows = useMemo(() => loan?.schedule.filter((row) => row.status !== 'PAID') ?? [], [loan]);
-  const paidRows = useMemo(() => loan?.schedule.filter((row) => row.status === 'PAID') ?? [], [loan]);
+  const openRows = useMemo(
+    () => loan?.schedule.filter((row) => row.status !== 'PAID' && row.status !== 'SKIPPED_EARLY_PAYMENT') ?? [],
+    [loan],
+  );
+  const paidRows = useMemo(
+    () => loan?.schedule.filter((row) => row.status === 'PAID' || row.status === 'SKIPPED_EARLY_PAYMENT') ?? [],
+    [loan],
+  );
   const nearestPendingId = useMemo(() => openRows[0]?.id, [openRows]);
   const progress = loan && loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0;
   const activeRequest = payRequests.find((request) => request.status === 'pending');
@@ -463,9 +501,14 @@ export default function LoanDetailPage() {
                   <FileText size={16} /> Просмотреть договор
                 </button>
                 {(loan.status === 'active' || loan.status === 'overdue') && (
-                  <button onClick={() => setShowPayForm((value) => !value)} className="btn btn-primary" style={{ justifyContent: 'center' }}>
-                    <Wallet size={16} /> {showPayForm ? 'Скрыть форму оплаты' : 'Создать заявку на оплату'}
-                  </button>
+                  <>
+                    <button onClick={() => { setPayoffLocked(false); setPayoffData(null); setShowPayForm((v) => !v); }} className="btn btn-primary" style={{ justifyContent: 'center' }}>
+                      <Wallet size={16} /> {showPayForm ? 'Скрыть форму оплаты' : 'Создать заявку на оплату'}
+                    </button>
+                    <button onClick={fetchPayoff} disabled={payoffLoading} className="btn btn-secondary" style={{ justifyContent: 'center', borderColor: 'rgba(16,185,129,0.4)', color: '#6EE7B7' }}>
+                      {payoffLoading ? 'Расчёт...' : '✓ Погасить займ полностью'}
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -475,18 +518,51 @@ export default function LoanDetailPage() {
 
               {showPayForm && (loan.status === 'active' || loan.status === 'overdue') && (
                 <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(18,18,20,0.54)', border: '1px solid rgba(140,144,159,0.16)' }}>
-                  <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '0.75rem' }}>Новая заявка на оплату</h4>
+                  <h4 style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '0.75rem' }}>
+                    {payoffLocked ? 'Досрочное погашение' : 'Новая заявка на оплату'}
+                  </h4>
+
+                  {payoffData && payoffLocked && (
+                    <div style={{ padding: '0.75rem', borderRadius: '10px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.24)', marginBottom: '0.875rem' }}>
+                      <p style={{ fontSize: '0.8125rem', color: '#6EE7B7', lineHeight: 1.6 }}>
+                        При досрочном погашении сегодня вы платите только за фактические дни использования займа.
+                        {payoffData.savings > 0 && (
+                          <> Экономия на процентах составит <strong style={{ fontFamily: 'var(--f-mono)' }}>{formatCurrency(payoffData.savings)}</strong>.</>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     <div>
                       <label className="input-label">Сумма (EUR)</label>
-                      <input className="input" type="number" min={0.01} max={loan.remainingAmount} step="0.01" value={payAmount} onChange={(event) => setPayAmount(event.target.value)} />
+                      <input
+                        className="input"
+                        type="number"
+                        min={0.01}
+                        max={payoffLocked ? (payoffData?.payoffAmount ?? loan.remainingAmount) : loan.remainingAmount}
+                        step="0.01"
+                        value={payAmount}
+                        readOnly={payoffLocked}
+                        onChange={(event) => !payoffLocked && setPayAmount(event.target.value)}
+                        style={payoffLocked ? { opacity: 0.85, cursor: 'not-allowed' } : undefined}
+                      />
                     </div>
                     <div>
                       <label className="input-label">Reference</label>
                       <input className="input" type="text" value={payRef} onChange={(event) => setPayRef(event.target.value)} />
                     </div>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.88)', marginTop: '0.625rem' }}>Максимальная сумма: {formatCurrency(loan.remainingAmount)}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.88)', marginTop: '0.625rem' }}>
+                    {payoffLocked
+                      ? `Сумма досрочного погашения: ${formatCurrency(payoffData?.payoffAmount ?? 0)} (тело + проценты за 1 день)`
+                      : `Максимальная сумма: ${formatCurrency(loan.remainingAmount)}`}
+                  </p>
+                  {payoffLocked && (
+                    <button onClick={() => { setPayoffLocked(false); setPayoffData(null); setPayAmount(''); }} style={{ background: 'none', border: 'none', color: 'rgba(154,164,182,0.7)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 0' }}>
+                      Ввести другую сумму
+                    </button>
+                  )}
                   {payError && <p style={{ fontSize: '0.8125rem', color: '#FCA5A5', marginTop: '0.5rem' }}>{payError}</p>}
                   <button onClick={submitPayment} disabled={payLoading} className="btn btn-primary" style={{ marginTop: '0.875rem', width: '100%' }}>
                     {payLoading ? 'Отправка…' : 'Отправить заявку'}

@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { roundMoney } from './payment-schedule.utils';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentScheduleService } from './payment-schedule.service';
@@ -118,6 +119,41 @@ export class LoansService {
         note: p.note ?? undefined,
       })),
     };
+  }
+
+  /**
+   * Рассчитывает сумму досрочного погашения займа на текущий момент:
+   *   payoffAmount = остаток тела займа + проценты ровно за ОДИН день.
+   *
+   * Только тело и один день процентов — будущие строки графика и их
+   * проценты полностью игнорируются. Это защищает пользователя от
+   * списания процентов за ещё не прожитые дни.
+   */
+  async calculatePayoffAmount(
+    loanId: string,
+    userId: string,
+  ): Promise<{
+    payoffAmount: number;
+    outstandingPrincipal: number;
+    todayInterest: number;
+    savings: number;
+  }> {
+    const loan = await this.prisma.loan.findUnique({ where: { id: loanId } });
+    if (!loan) throw new NotFoundException('Займ не найден');
+    if (loan.userId !== userId) throw new ForbiddenException('Нет доступа к займу');
+
+    const snapshot = await this.schedule.synchronize(loanId);
+    if (!snapshot) throw new NotFoundException('График платежей не найден');
+
+    const dailyRate = Number(loan.dailyRate);
+    const principal = snapshot.outstandingPrincipal ?? Number(loan.amount);
+
+    const todayInterest = roundMoney(principal * dailyRate);
+    const payoffAmount = roundMoney(principal + todayInterest);
+    // Экономия = разница между полным остатком по графику и суммой досрочного погашения
+    const savings = roundMoney(Math.max(0, snapshot.remainingAmount - payoffAmount));
+
+    return { payoffAmount, outstandingPrincipal: principal, todayInterest, savings };
   }
 
   /** Шаг 1 подписания: генерация OTP-кода (mock) */

@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { PaymentScheduleService } from '../loans/payment-schedule.service';
+import { roundMoney } from '../loans/payment-schedule.utils';
 
 function toPaymentRequestDto(p: any) {
   return {
@@ -21,7 +23,10 @@ function toPaymentRequestDto(p: any) {
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private schedule: PaymentScheduleService,
+  ) {}
 
   async createRequest(userId: string, dto: any) {
     const loan = await this.prisma.loan.findUnique({ where: { id: dto.loanId } });
@@ -32,22 +37,34 @@ export class PaymentsService {
       throw new BadRequestException('Займ уже закрыт — задолженность отсутствует');
     }
 
-    const amount = Number(dto.amount);
-    const remaining = Number(loan.remainingAmount);
-    if (amount > remaining) {
-      throw new BadRequestException('Сумма платежа превышает остаток задолженности');
+    // Рассчитываем максимально допустимую сумму платежа — это
+    // сумма досрочного погашения (тело + проценты за один день).
+    // Она всегда <= остатку задолженности. Платёж сверх этой суммы
+    // означал бы списание процентов за будущие (ещё не прожитые) дни.
+    const snapshot = await this.schedule.synchronize(loan.id);
+    const dailyRate = Number(loan.dailyRate);
+    const outstandingPrincipal = snapshot?.outstandingPrincipal ?? Number(loan.amount);
+    const payoffAmount = roundMoney(outstandingPrincipal + outstandingPrincipal * dailyRate);
+    const maxAllowed = Math.min(payoffAmount, Number(loan.remainingAmount));
+
+    let amount = roundMoney(Number(dto.amount));
+    if (amount <= 0) throw new BadRequestException('Сумма должна быть больше нуля');
+
+    // Автоматически срезаем до payoff amount — не принимаем будущие проценты
+    if (amount > maxAllowed) {
+      amount = roundMoney(maxAllowed);
     }
 
     const created = await this.prisma.paymentRequest.create({
       data: {
         loanId: dto.loanId,
         userId,
-        amount: new Prisma.Decimal(dto.amount),
+        amount: new Prisma.Decimal(amount),
         reference: dto.reference,
         status: 'pending',
       },
     });
-    return toPaymentRequestDto(created);
+    return { ...toPaymentRequestDto(created), cappedToPayoff: amount < roundMoney(Number(dto.amount)) };
   }
 
   async listForUser(userId: string) {

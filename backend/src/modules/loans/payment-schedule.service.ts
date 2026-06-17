@@ -61,6 +61,7 @@ export class PaymentScheduleService {
     remainingAmount: number;
     totalRepayment: number;
     dailyPayment: number;
+    outstandingPrincipal: number;
     closed: boolean;
     loanStatus: string;
   } | null> {
@@ -82,6 +83,7 @@ export class PaymentScheduleService {
         remainingAmount: Number(loan.remainingAmount ?? 0),
         totalRepayment: Number(loan.totalRepayment ?? 0),
         dailyPayment: Number(loan.dailyPayment ?? 0),
+        outstandingPrincipal: Number(loan.amount ?? 0),
         closed: loan.status === 'closed',
         loanStatus: loan.status,
       };
@@ -109,6 +111,7 @@ export class PaymentScheduleService {
         : loan.status === 'pending_signing'
           ? 'pending_signing'
           : 'active';
+
     const shouldClose = normalized.allPaid && loan.status !== 'closed' && loan.status !== 'pending_signing';
 
     await this.prisma.$transaction(
@@ -154,6 +157,7 @@ export class PaymentScheduleService {
       remainingAmount: normalized.remainingAmount,
       totalRepayment: normalized.totalRepayment,
       dailyPayment: normalized.currentDailyPayment,
+      outstandingPrincipal: normalized.outstandingPrincipal,
       closed: normalized.allPaid,
       loanStatus: nextLoanStatus,
     };

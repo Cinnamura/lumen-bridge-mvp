@@ -28,6 +28,11 @@ export class LoansController {
     return this.loans.getForUser(user.id, id);
   }
 
+  @Get(':id/payoff')
+  payoff(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.loans.calculatePayoffAmount(id, user.id);
+  }
+
   @Post(':id/sign/request')
   requestSign(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     return this.loans.requestSignOtp(user.id, id);
