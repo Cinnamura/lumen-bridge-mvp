@@ -11,10 +11,16 @@ import { PaymentScheduleService } from './payment-schedule.service';
 
 function nextPayment(schedule: any[]) {
   const pending = schedule
-    .filter((s) => s.status !== 'paid')
+    .filter((s) => s.status !== 'PAID')
     .sort((a, b) => a.seq - b.seq)[0];
   return pending
-    ? { date: pending.dueDate.toISOString(), amount: Number(pending.amount) }
+    ? {
+        date: pending.dueDate.toISOString(),
+        amount: Math.max(
+          0,
+          Number(pending.amountRequired ?? 0) - Number(pending.amountPaid ?? 0),
+        ),
+      }
     : { date: undefined, amount: undefined };
 }
 
@@ -44,7 +50,9 @@ function toScheduleDto(s: any) {
     id: s.id,
     seq: s.seq,
     dueDate: s.dueDate.toISOString(),
-    amount: Number(s.amount),
+    amountRequired: Number(s.amountRequired ?? 0),
+    amountPaid: Number(s.amountPaid ?? 0),
+    amountRemaining: Math.max(0, Number(s.amountRequired ?? 0) - Number(s.amountPaid ?? 0)),
     status: s.status,
     paidAt: s.paidAt?.toISOString(),
   };
@@ -61,19 +69,27 @@ export class LoansService {
   async listForUser(userId: string) {
     const loans = await this.prisma.loan.findMany({
       where: { userId },
-      include: { schedule: true },
+      include: { schedule: { orderBy: { seq: 'asc' } } },
       orderBy: { createdAt: 'desc' },
     });
-    const active = loans
+    await Promise.all(loans.map((loan) => this.schedule.synchronize(loan.id)));
+    const syncedLoans = await this.prisma.loan.findMany({
+      where: { userId },
+      include: { schedule: { orderBy: { seq: 'asc' } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    const active = syncedLoans
       .filter((l) => l.status !== 'closed')
       .map((l) => toLoanDto(l, l.schedule));
-    const closed = loans
+    const closed = syncedLoans
       .filter((l) => l.status === 'closed')
       .map((l) => toLoanDto(l, l.schedule));
     return { active, closed };
   }
 
   async getForUser(userId: string, id: string) {
+    await this.schedule.synchronize(id);
+
     const loan = await this.prisma.loan.findUnique({
       where: { id },
       include: { schedule: { orderBy: { seq: 'asc' } }, payments: true },

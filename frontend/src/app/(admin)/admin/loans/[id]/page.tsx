@@ -14,7 +14,16 @@ function getAdminToken(): string | null {
   return localStorage.getItem('lb_admin_token');
 }
 
-interface ScheduleRow { id: string; seq: number; dueDate: string; amount: number; status: string; paidAt?: string }
+interface ScheduleRow {
+  id: string;
+  seq: number;
+  dueDate: string;
+  amountRequired: number;
+  amountPaid: number;
+  amountRemaining: number;
+  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
+  paidAt?: string;
+}
 interface PaymentRow  { id: string; amount: number; status: string; recordedAt: string; note?: string | null }
 interface PayReqRow   { id: string; amount: number; reference: string; status: string; createdAt: string; reviewedAt?: string }
 interface LoanDetail {
@@ -40,7 +49,12 @@ const LOAN_STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   overdue:         { bg: '#FAD7D4', color: 'var(--accent-crimson)' },
   closed:          { bg: '#F0F3F6', color: 'var(--text-secondary)' },
 };
-const SCH_STATUS_LABEL: Record<string, string> = { pending: 'Ожидает', paid: 'Оплачен', overdue: 'Просрочен' };
+const SCH_STATUS_LABEL: Record<ScheduleRow['status'], string> = {
+  UNPAID: 'Ожидает',
+  PARTIALLY_PAID: 'Частично оплачен',
+  PAID: 'Оплачен',
+  OVERDUE: 'Просрочен',
+};
 
 // FSM: допустимые переходы оператором
 const ALLOWED_LOAN_TRANSITIONS: Record<string, string[]> = {
@@ -110,8 +124,8 @@ export default function AdminLoanDetailPage() {
 
   const loanStatusStyle = loan ? LOAN_STATUS_COLORS[loan.status] ?? { bg: '#F0F3F6', color: 'var(--text-secondary)' } : null;
   const transitions     = loan ? ALLOWED_LOAN_TRANSITIONS[loan.status] ?? [] : [];
-  const paidCount       = loan?.schedule.filter(s => s.status === 'paid').length ?? 0;
-  const nextSchedule    = loan?.schedule.find(s => s.status !== 'paid');
+  const paidCount       = loan?.schedule.filter(s => s.status === 'PAID').length ?? 0;
+  const nextSchedule    = loan?.schedule.find(s => s.status !== 'PAID');
 
   return (
     <AdminShell>
@@ -262,21 +276,30 @@ export default function AdminLoanDetailPage() {
                   <div style={{ background: 'rgba(79, 70, 229, 0.16)', borderRadius: '8px', padding: '0.625rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: '0.875rem', color: 'var(--accent-indigo)', fontWeight: 600 }}>Ближайший платёж</span>
                     <span style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--accent-indigo)' }}>
-                      {formatCurrency(nextSchedule.amount)} — {formatDate(nextSchedule.dueDate)}
+                      {formatCurrency(nextSchedule.amountRemaining)} — {formatDate(nextSchedule.dueDate)}
                     </span>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {loan.schedule.map((row, idx) => {
-                    const isPaid    = row.status === 'paid';
-                    const isOverdue = row.status === 'overdue';
+                    const isPaid    = row.status === 'PAID';
+                    const isOverdue = row.status === 'OVERDUE';
+                    const isPartial = row.status === 'PARTIALLY_PAID';
                     const isNext    = row.seq === nextSchedule?.seq;
                     const last      = idx === loan.schedule.length - 1;
-                    const dotColor  = isPaid ? 'var(--accent-mint)' : isOverdue ? 'var(--accent-crimson)' : isNext ? 'var(--accent-indigo)' : 'var(--line-strong)';
+                    const dotColor  = isPaid
+                      ? 'var(--accent-mint)'
+                      : isOverdue
+                        ? 'var(--accent-crimson)'
+                        : isPartial
+                          ? 'var(--accent-indigo)'
+                          : isNext
+                            ? 'var(--accent-indigo)'
+                            : 'var(--line-strong)';
                     return (
                       <div key={row.id} style={{ display: 'flex', gap: '0.875rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: isPaid ? 'var(--accent-mint)' : '#fff', border: `2px solid ${dotColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: isPaid ? 'var(--accent-mint)' : isPartial ? 'rgba(46, 125, 247, 0.14)' : '#fff', border: `2px solid ${dotColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
                             {isPaid && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5"><polyline points="20 6 9 17 4 12"/></svg>}
                             {isNext && !isPaid && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-indigo)' }} />}
                           </div>
@@ -286,10 +309,20 @@ export default function AdminLoanDetailPage() {
                           <div>
                             <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontFamily: 'var(--f-mono)' }}>Платёж №{row.seq}</span>
                             <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontFamily: 'var(--f-mono)', marginTop: '2px' }}>{formatDate(row.dueDate)}</div>
+                            {(isPartial || isOverdue) && row.amountPaid > 0 && (
+                              <div style={{ fontSize: '0.75rem', color: isOverdue ? 'var(--accent-crimson)' : 'var(--accent-indigo)', marginTop: '2px' }}>
+                                Оплачено {formatCurrency(row.amountPaid)} из {formatCurrency(row.amountRequired)}
+                              </div>
+                            )}
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(row.amount)}</div>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px', color: isPaid ? 'var(--accent-mint)' : isOverdue ? 'var(--accent-crimson)' : 'var(--text-secondary)' }}>
+                            <div style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(isPaid ? row.amountRequired : row.amountRemaining)}</div>
+                            {!isPaid && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                План {formatCurrency(row.amountRequired)}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '2px', color: isPaid ? 'var(--accent-mint)' : isOverdue ? 'var(--accent-crimson)' : isPartial ? 'var(--accent-indigo)' : 'var(--text-secondary)' }}>
                               {SCH_STATUS_LABEL[row.status] ?? row.status}
                             </div>
                           </div>

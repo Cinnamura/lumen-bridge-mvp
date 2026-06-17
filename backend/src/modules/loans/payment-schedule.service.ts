@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { normalizeScheduleRows, roundMoney, splitAmount } from './payment-schedule.utils';
+import { buildInstallmentAmounts, replayScheduleRows, roundMoney } from './payment-schedule.utils';
 
 function addDays(base: Date, days: number): Date {
   const d = new Date(base);
@@ -23,95 +23,120 @@ export class PaymentScheduleService {
     if (!loan) return;
 
     const issued = loan.issuedAt ?? new Date();
-    const amounts = splitAmount(Number(loan.totalRepayment), loan.termDays);
+    const amounts = buildInstallmentAmounts(
+      Number(loan.amount),
+      Number(loan.dailyRate),
+      loan.termDays,
+    );
 
     const rows: Prisma.PaymentScheduleCreateManyInput[] = amounts.map((amount, index) => ({
       loanId,
       seq: index + 1,
       dueDate: addDays(issued, index + 1),
-      amount: new Prisma.Decimal(amount),
-      status: 'pending',
+      amountRequired: new Prisma.Decimal(amount),
+      amountPaid: new Prisma.Decimal(0),
+      status: 'UNPAID',
     }));
 
     await this.prisma.paymentSchedule.createMany({ data: rows });
+    await this.synchronize(loanId);
   }
 
   /**
-   * Полностью синхронизирует график с фактически уплаченными деньгами.
-   * После пересчёта сумма всех непогашенных строк всегда равна remainingAmount.
+   * Полностью перестраивает календарный график по истории успешных платежей.
+   * Даты и seq никогда не сдвигаются: меняются только amountRequired/amountPaid/status.
    */
-  async applyPayment(loanId: string): Promise<boolean> {
+  async synchronize(loanId: string): Promise<{
+    rows: Array<{
+      id: string;
+      seq: number;
+      dueDate: Date;
+      amountRequired: number;
+      amountPaid: number;
+      amountRemaining: number;
+      status: string;
+      paidAt: Date | null;
+    }>;
+    paidAmount: number;
+    remainingAmount: number;
+    totalRepayment: number;
+    dailyPayment: number;
+    closed: boolean;
+    loanStatus: string;
+  } | null> {
     const loan = await this.prisma.loan.findUnique({
       where: { id: loanId },
-      include: { schedule: { orderBy: { seq: 'asc' } } },
+      include: {
+        schedule: { orderBy: { seq: 'asc' } },
+        payments: {
+          where: { status: 'success' },
+          orderBy: [{ recordedAt: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
     });
-    if (!loan) return false;
+    if (!loan) return null;
+    if (loan.schedule.length === 0) {
+      return {
+        rows: [],
+        paidAmount: Number(loan.paidAmount ?? 0),
+        remainingAmount: Number(loan.remainingAmount ?? 0),
+        totalRepayment: Number(loan.totalRepayment ?? 0),
+        dailyPayment: Number(loan.dailyPayment ?? 0),
+        closed: loan.status === 'closed',
+        loanStatus: loan.status,
+      };
+    }
 
-    const agg = await this.prisma.payment.aggregate({
-      where: { loanId, status: 'success' },
-      _sum: { amount: true },
-    });
-    const totalPaid = Number(agg._sum.amount ?? 0);
-
-    const normalized = normalizeScheduleRows({
+    const normalized = replayScheduleRows({
       rows: loan.schedule.map((row) => ({
         id: row.id,
         seq: row.seq,
         dueDate: row.dueDate,
-        amount: Number(row.amount),
-        status: row.status as 'pending' | 'paid' | 'overdue',
-        paidAt: row.paidAt,
       })),
-      totalRepayment: Number(loan.totalRepayment),
-      totalPaid,
+      principal: Number(loan.amount),
+      dailyRate: Number(loan.dailyRate),
+      payments: loan.payments.map((payment) => ({
+        amount: Number(payment.amount),
+        recordedAt: payment.recordedAt,
+      })),
       now: new Date(),
     });
 
+    const nextLoanStatus = normalized.allPaid
+      ? 'closed'
+      : normalized.rows.some((row) => row.status === 'OVERDUE')
+        ? 'overdue'
+        : loan.status === 'pending_signing'
+          ? 'pending_signing'
+          : 'active';
+    const shouldClose = normalized.allPaid && loan.status !== 'closed' && loan.status !== 'pending_signing';
+
     await this.prisma.$transaction(
-      normalized.rows.map((row) =>
+      [
+        ...normalized.rows.map((row) =>
         this.prisma.paymentSchedule.update({
           where: { id: row.id },
           data: {
-            amount: new Prisma.Decimal(row.amount),
+            amountRequired: new Prisma.Decimal(row.amountRequired),
+            amountPaid: new Prisma.Decimal(row.amountPaid),
             status: row.status,
             paidAt: row.paidAt,
           },
         }),
       ),
+        this.prisma.loan.update({
+          where: { id: loanId },
+          data: {
+            paidAmount: new Prisma.Decimal(normalized.paidAmount),
+            remainingAmount: new Prisma.Decimal(normalized.remainingAmount),
+            dailyPayment: new Prisma.Decimal(normalized.currentDailyPayment || 0),
+            totalRepayment: new Prisma.Decimal(normalized.totalRepayment),
+            status: nextLoanStatus,
+            closedAt: shouldClose ? new Date() : normalized.allPaid ? loan.closedAt ?? new Date() : null,
+          },
+        }),
+      ],
     );
-
-    return normalized.allPaid;
-  }
-
-  /**
-   * Единый источник истины для баланса займа.
-   * Пересчитывает paidAmount как сумму успешных платежей и remainingAmount
-   * как остаток к возврату (не меньше нуля). При нулевом остатке —
-   * автоматически закрывает займ и уведомляет клиента.
-   * Возвращает актуальные значения баланса и флаг закрытия.
-   */
-  async recalcBalance(loanId: string): Promise<{ paidAmount: number; remainingAmount: number; closed: boolean }> {
-    const loan = await this.prisma.loan.findUnique({ where: { id: loanId } });
-    if (!loan) return { paidAmount: 0, remainingAmount: 0, closed: false };
-
-    const agg = await this.prisma.payment.aggregate({
-      where: { loanId, status: 'success' },
-      _sum: { amount: true },
-    });
-
-    const total = Number(loan.totalRepayment);
-    const paid = roundMoney(Number(agg._sum.amount ?? 0));
-    const remaining = roundMoney(Math.max(0, total - paid));
-    const shouldClose = remaining === 0 && loan.status !== 'closed' && loan.status !== 'pending_signing';
-
-    await this.prisma.loan.update({
-      where: { id: loanId },
-      data: {
-        paidAmount: new Prisma.Decimal(paid),
-        remainingAmount: new Prisma.Decimal(remaining),
-        ...(shouldClose ? { status: 'closed', closedAt: new Date() } : {}),
-      },
-    });
 
     if (shouldClose) {
       await this.notifications.create({
@@ -123,6 +148,36 @@ export class PaymentScheduleService {
       });
     }
 
-    return { paidAmount: paid, remainingAmount: remaining, closed: shouldClose };
+    return {
+      rows: normalized.rows,
+      paidAmount: normalized.paidAmount,
+      remainingAmount: normalized.remainingAmount,
+      totalRepayment: normalized.totalRepayment,
+      dailyPayment: normalized.currentDailyPayment,
+      closed: normalized.allPaid,
+      loanStatus: nextLoanStatus,
+    };
+  }
+
+  async applyPayment(loanId: string): Promise<boolean> {
+    const snapshot = await this.synchronize(loanId);
+    return snapshot?.closed ?? false;
+  }
+
+  /**
+   * Единый источник истины для баланса займа.
+   * Пересчитывает paidAmount как сумму успешных платежей и remainingAmount
+   * как остаток к возврату (не меньше нуля). При нулевом остатке —
+   * автоматически закрывает займ и уведомляет клиента.
+   * Возвращает актуальные значения баланса и флаг закрытия.
+   */
+  async recalcBalance(loanId: string): Promise<{ paidAmount: number; remainingAmount: number; closed: boolean }> {
+    const snapshot = await this.synchronize(loanId);
+    if (!snapshot) return { paidAmount: 0, remainingAmount: 0, closed: false };
+    return {
+      paidAmount: roundMoney(snapshot.paidAmount),
+      remainingAmount: roundMoney(snapshot.remainingAmount),
+      closed: snapshot.closed,
+    };
   }
 }

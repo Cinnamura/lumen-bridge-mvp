@@ -388,6 +388,12 @@ select {
   border-color: rgba(239, 68, 68, 0.22);
 }
 
+.badge-partial {
+  background: rgba(59, 130, 246, 0.14);
+  color: #bfdbfe;
+  border-color: rgba(59, 130, 246, 0.22);
+}
+
 .badge-closed {
   background: rgba(124, 135, 156, 0.12);
   color: #cbd5e1;

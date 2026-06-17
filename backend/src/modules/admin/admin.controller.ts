@@ -329,6 +329,8 @@ export class AdminController {
   /** Карточка займа: параметры + полный график + история платежей. */
   @Get('loans/:id')
   async getLoan(@Param('id') id: string) {
+    await this.schedule.synchronize(id);
+
     const loan = await this.prisma.loan.findUnique({
       where: { id },
       include: {
@@ -352,7 +354,11 @@ export class AdminController {
       createdAt: loan.createdAt.toISOString(),
       schedule: loan.schedule.map((s) => ({
         id: s.id, seq: s.seq, dueDate: s.dueDate.toISOString(),
-        amount: Number(s.amount), status: s.status, paidAt: s.paidAt?.toISOString(),
+        amountRequired: Number(s.amountRequired ?? 0),
+        amountPaid: Number(s.amountPaid ?? 0),
+        amountRemaining: Math.max(0, Number(s.amountRequired ?? 0) - Number(s.amountPaid ?? 0)),
+        status: s.status,
+        paidAt: s.paidAt?.toISOString(),
       })),
       payments: loan.payments.map((p) => ({
         id: p.id, amount: Number(p.amount), status: p.status,
@@ -441,9 +447,12 @@ export class AdminController {
       },
     });
 
-    // Отмечаем строки графика и пересчитываем баланс (единый источник истины)
-    await this.schedule.applyPayment(id);
-    const balance = await this.schedule.recalcBalance(id);
+    const scheduleState = await this.schedule.synchronize(id);
+    const balance = {
+      paidAmount: scheduleState?.paidAmount ?? 0,
+      remainingAmount: scheduleState?.remainingAmount ?? 0,
+      closed: scheduleState?.closed ?? false,
+    };
 
     await this.notifications.create({
       userId: loan.userId, type: 'payment_confirmed',
@@ -457,12 +466,17 @@ export class AdminController {
     });
     return {
       id,
-      status: balance.closed ? 'closed' : loan.status,
+      status: scheduleState?.loanStatus ?? (balance.closed ? 'closed' : loan.status),
       closed: balance.closed,
       paidAmount: balance.paidAmount,
       remainingAmount: balance.remainingAmount,
       schedule: schedule.map((s) => ({
-        seq: s.seq, dueDate: s.dueDate.toISOString(), amount: Number(s.amount), status: s.status,
+        seq: s.seq,
+        dueDate: s.dueDate.toISOString(),
+        amountRequired: Number(s.amountRequired ?? 0),
+        amountPaid: Number(s.amountPaid ?? 0),
+        amountRemaining: Math.max(0, Number(s.amountRequired ?? 0) - Number(s.amountPaid ?? 0)),
+        status: s.status,
       })),
     };
   }
@@ -538,8 +552,12 @@ export class AdminController {
         },
       });
 
-      await this.schedule.applyPayment(loan.id);
-      const balance = await this.schedule.recalcBalance(loan.id);
+      const scheduleState = await this.schedule.synchronize(loan.id);
+      const balance = {
+        paidAmount: scheduleState?.paidAmount ?? 0,
+        remainingAmount: scheduleState?.remainingAmount ?? 0,
+        closed: scheduleState?.closed ?? false,
+      };
 
       await this.notifications.create({
         userId: loan.userId, type: 'payment_confirmed',

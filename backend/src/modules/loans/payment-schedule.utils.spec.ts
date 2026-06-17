@@ -1,55 +1,69 @@
-import { normalizeScheduleRows, splitAmount } from './payment-schedule.utils';
+import { buildInstallmentAmounts, replayScheduleRows } from './payment-schedule.utils';
+
+function buildRows() {
+  return Array.from({ length: 4 }, (_, index) => ({
+    id: `row-${index + 1}`,
+    seq: index + 1,
+    dueDate: new Date(`2026-06-${17 + index}T00:00:00.000Z`),
+  }));
+}
 
 describe('payment schedule utils', () => {
-  it('splits remaining debt so the last payment absorbs rounding residue', () => {
-    expect(splitAmount(2154.37, 5)).toEqual([430.87, 430.87, 430.87, 430.87, 430.89]);
+  it('keeps installment count fixed and preserves the total annuity amount', () => {
+    const amounts = buildInstallmentAmounts(1000, 0.008, 4);
+
+    expect(amounts).toHaveLength(4);
+    expect(Number(amounts.reduce((sum, value) => sum + value, 0).toFixed(2))).toBe(1020.08);
   });
 
-  it('keeps the sum of pending rows equal to the real remaining debt after an extra payment', () => {
-    const now = new Date('2026-06-16T12:00:00.000Z');
-    const rows = Array.from({ length: 5 }, (_, index) => ({
-      id: `row-${index + 1}`,
-      seq: index + 1,
-      dueDate: new Date(`2026-06-${17 + index}T00:00:00.000Z`),
-      amount: 442.39,
-      status: 'pending' as const,
-      paidAt: null,
-    }));
-
-    const normalized = normalizeScheduleRows({
+  it('marks the current calendar day as partially paid without shifting due dates', () => {
+    const rows = buildRows();
+    const normalized = replayScheduleRows({
       rows,
-      totalRepayment: 2211.95,
-      totalPaid: 57.58,
-      now,
+      principal: 1000,
+      dailyRate: 0.008,
+      payments: [{ amount: 50, recordedAt: new Date('2026-06-17T10:00:00.000Z') }],
+      now: new Date('2026-06-17T12:00:00.000Z'),
     });
 
-    const pending = normalized.rows.filter((row) => row.status !== 'paid');
-    const pendingSum = pending.reduce((sum, row) => sum + row.amount, 0);
-
-    expect(Number(pendingSum.toFixed(2))).toBe(2154.37);
-    expect(normalized.remainingAmount).toBe(2154.37);
+    expect(normalized.rows[0].dueDate.toISOString()).toBe('2026-06-17T00:00:00.000Z');
+    expect(normalized.rows[0].status).toBe('PARTIALLY_PAID');
+    expect(normalized.rows[0].amountPaid).toBe(50);
+    expect(normalized.rows[1].dueDate.toISOString()).toBe('2026-06-18T00:00:00.000Z');
+    expect(normalized.rows[1].status).toBe('UNPAID');
   });
 
-  it('preserves a mathematically consistent total after a partial prepayment', () => {
-    const now = new Date('2026-06-16T12:00:00.000Z');
-    const rows = Array.from({ length: 5 }, (_, index) => ({
-      id: `row-${index + 1}`,
-      seq: index + 1,
-      dueDate: new Date(`2026-06-${17 + index}T00:00:00.000Z`),
-      amount: 100,
-      status: 'pending' as const,
-      paidAt: null,
-    }));
+  it('reduces only future installment amounts after an overpayment', () => {
+    const rows = buildRows();
+    const base = buildInstallmentAmounts(1000, 0.008, rows.length);
+    const firstDayPayment = base[0] + 150;
 
-    const normalized = normalizeScheduleRows({
+    const normalized = replayScheduleRows({
       rows,
-      totalRepayment: 500,
-      totalPaid: 150,
-      now,
+      principal: 1000,
+      dailyRate: 0.008,
+      payments: [{ amount: firstDayPayment, recordedAt: new Date('2026-06-17T10:00:00.000Z') }],
+      now: new Date('2026-06-17T12:00:00.000Z'),
     });
 
-    expect(normalized.rows.filter((row) => row.status === 'paid').map((row) => row.amount)).toEqual([100, 50]);
-    expect(normalized.rows.filter((row) => row.status !== 'paid').map((row) => row.amount)).toEqual([116.66, 116.66, 116.68]);
-    expect(Number(normalized.rows.reduce((sum, row) => sum + row.amount, 0).toFixed(2))).toBe(500);
+    expect(normalized.rows[0].status).toBe('PAID');
+    expect(normalized.rows[1].dueDate.toISOString()).toBe('2026-06-18T00:00:00.000Z');
+    expect(normalized.rows[1].amountRequired).toBeLessThan(base[1]);
+    expect(normalized.rows[2].amountRequired).toBeLessThan(base[2]);
+    expect(normalized.totalRepayment).toBeLessThan(Number(base.reduce((sum, value) => sum + value, 0).toFixed(2)));
+  });
+
+  it('marks an unpaid past day as overdue while preserving already paid part', () => {
+    const normalized = replayScheduleRows({
+      rows: buildRows(),
+      principal: 1000,
+      dailyRate: 0.008,
+      payments: [{ amount: 40, recordedAt: new Date('2026-06-17T10:00:00.000Z') }],
+      now: new Date('2026-06-18T12:00:00.000Z'),
+    });
+
+    expect(normalized.rows[0].status).toBe('OVERDUE');
+    expect(normalized.rows[0].amountPaid).toBe(40);
+    expect(normalized.rows[0].amountRemaining).toBeGreaterThan(0);
   });
 });

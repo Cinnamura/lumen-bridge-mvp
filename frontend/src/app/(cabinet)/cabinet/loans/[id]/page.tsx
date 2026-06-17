@@ -13,8 +13,10 @@ interface ScheduleItem {
   id: string;
   seq: number;
   dueDate: string;
-  amount: number;
-  status: 'pending' | 'paid' | 'overdue';
+  amountRequired: number;
+  amountPaid: number;
+  amountRemaining: number;
+  status: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE';
   paidAt?: string;
 }
 
@@ -88,11 +90,26 @@ function ScheduleRows({ rows, tone, nearestPendingId }: { rows: ScheduleItem[]; 
         <span>Статус</span>
       </div>
       {rows.map((row) => {
-        const isPaid = row.status === 'paid';
-        const isOverdue = row.status === 'overdue';
+        const isPaid = row.status === 'PAID';
+        const isOverdue = row.status === 'OVERDUE';
+        const isPartial = row.status === 'PARTIALLY_PAID';
         const isNearest = nearestPendingId === row.id;
-        const badgeClass = isPaid ? 'badge-approved' : isOverdue ? 'badge-overdue' : 'badge-pending';
-        const badgeLabel = isPaid ? 'Оплачен' : isOverdue ? 'Просрочен' : isNearest ? 'Ближайший' : 'Актуален';
+        const badgeClass = isPaid
+          ? 'badge-approved'
+          : isOverdue
+            ? 'badge-overdue'
+            : isPartial
+              ? 'badge-partial'
+              : 'badge-pending';
+        const badgeLabel = isPaid
+          ? 'Оплачен'
+          : isOverdue
+            ? 'Просрочен'
+            : isPartial
+              ? 'Частично оплачен'
+              : isNearest
+                ? 'Ближайший'
+                : 'Ожидает';
         return (
           <div
             key={row.id}
@@ -107,10 +124,16 @@ function ScheduleRows({ rows, tone, nearestPendingId }: { rows: ScheduleItem[]; 
                 ? 'rgba(16,185,129,0.06)'
                 : isOverdue
                   ? 'rgba(239,68,68,0.08)'
+                  : isPartial
+                    ? 'rgba(59,130,246,0.08)'
                   : isNearest
                     ? 'rgba(245,158,11,0.08)'
                     : 'transparent',
-              boxShadow: isNearest ? 'inset 0 0 0 1px rgba(245,158,11,0.28)' : 'none',
+              boxShadow: isPartial
+                ? 'inset 0 0 0 1px rgba(59,130,246,0.24)'
+                : isNearest
+                  ? 'inset 0 0 0 1px rgba(245,158,11,0.28)'
+                  : 'none',
               opacity: isPaid && tone === 'paid' ? 0.82 : 1,
             }}
           >
@@ -118,8 +141,17 @@ function ScheduleRows({ rows, tone, nearestPendingId }: { rows: ScheduleItem[]; 
             <div>
               <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 600, color: '#F8FAFC', marginBottom: '2px' }}>{formatDate(row.dueDate)}</p>
               {isPaid && row.paidAt && <p style={{ fontSize: '0.75rem', color: '#6EE7B7' }}>Оплачен {formatDate(row.paidAt)}</p>}
+              {isPartial && <p style={{ fontSize: '0.75rem', color: '#93C5FD' }}>Оплачено {formatCurrency(row.amountPaid)} из {formatCurrency(row.amountRequired)}</p>}
+              {isOverdue && row.amountPaid > 0 && <p style={{ fontSize: '0.75rem', color: '#FCA5A5' }}>Частично закрыт: {formatCurrency(row.amountPaid)}</p>}
             </div>
-            <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#F8FAFC' }}>{formatCurrency(row.amount)}</p>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#F8FAFC' }}>{formatCurrency(isPaid ? row.amountRequired : row.amountRemaining)}</p>
+              {!isPaid && (
+                <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.88)' }}>
+                  Требуется {formatCurrency(row.amountRequired)}
+                </p>
+              )}
+            </div>
             <span className={`badge ${badgeClass}`}>{badgeLabel}</span>
           </div>
         );
@@ -258,9 +290,9 @@ export default function LoanDetailPage() {
     if (digit && index < 5) otpRefs.current[index + 1]?.focus();
   }
 
-  const openRows = useMemo(() => loan?.schedule.filter((row) => row.status !== 'paid') ?? [], [loan]);
-  const paidRows = useMemo(() => loan?.schedule.filter((row) => row.status === 'paid') ?? [], [loan]);
-  const nearestPendingId = useMemo(() => openRows.find((row) => row.status === 'pending')?.id, [openRows]);
+  const openRows = useMemo(() => loan?.schedule.filter((row) => row.status !== 'PAID') ?? [], [loan]);
+  const paidRows = useMemo(() => loan?.schedule.filter((row) => row.status === 'PAID') ?? [], [loan]);
+  const nearestPendingId = useMemo(() => openRows[0]?.id, [openRows]);
   const progress = loan && loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0;
   const activeRequest = payRequests.find((request) => request.status === 'pending');
 
@@ -399,7 +431,7 @@ export default function LoanDetailPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.875rem', gap: '1rem', flexWrap: 'wrap' }}>
                   <div>
                     <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '0.25rem' }}>График платежей</h3>
-                    <p style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>Сумма актуальных строк всегда равна текущему остатку долга.</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>Календарные даты зафиксированы, а переплата уменьшает только будущие суммы.</p>
                   </div>
                   <span style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>{openRows.length} актуальных · {paidRows.length} оплаченных</span>
                 </div>
