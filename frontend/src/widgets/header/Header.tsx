@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/shared/lib/auth-context';
 
@@ -48,8 +49,8 @@ export function Header() {
             transition: 'all 220ms cubic-bezier(0.16,1,0.3,1)',
           }}
         >
-          <Link href="/" style={{ fontFamily: 'var(--f-display)', fontSize: '1.2rem', color: '#F8FAFC', letterSpacing: '-0.02em', flexShrink: 0 }}>
-            LumenBridge
+          <Link href="/" style={{ flexShrink: 0, lineHeight: 0 }}>
+            <Image src="/logo.png" alt="LumenBridge" width={202} height={86} priority />
           </Link>
 
           <nav className="hdr-desktop" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>

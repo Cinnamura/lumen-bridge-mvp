@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, Mail, Phone } from 'lucide-react';
 
@@ -8,7 +9,7 @@ export function Footer() {
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '2.5rem', marginBottom: '3rem' }}>
           <div>
-            <div style={{ fontFamily: 'var(--f-display)', fontSize: '1.35rem', marginBottom: '1rem', color: '#F8FAFC', letterSpacing: '-0.02em' }}>LumenBridge</div>
+            <Image src="/logo.png" alt="LumenBridge" width={293} height={125} style={{ marginBottom: '1rem' }} />
             <p style={{ fontSize: '0.9rem', color: 'rgba(154,164,182,0.86)', lineHeight: 1.75, marginBottom: '1.5rem', maxWidth: '30ch' }}>
               Финансовая организация, предоставляющая быстрые и доступные решения в сфере кредитования в Европе.
             </p>
