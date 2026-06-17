@@ -309,11 +309,14 @@ export default function HomePage() {
                 className="business-coin-col"
                 style={{
                   position: 'relative',
-                  aspectRatio: '1 / 1',
+                  height: '570px',
                   borderRadius: '16px',
                   overflow: 'hidden',
                   background: 'rgba(11,15,25,0.7)',
                   border: '1px solid rgba(139,92,246,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <PremiumFintechEuroCoin className="w-full h-full" />
