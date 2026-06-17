@@ -12,7 +12,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </div>
       <div style={{ position: 'relative', zIndex: 1 }}>
         <Header />
-        <main style={{ paddingTop: '0', background: 'transparent' }}>{children}</main>
+        {/* 16px (top offset) + 60px (header height) + 16px (breathing room) = 92px */}
+        <main style={{ paddingTop: '92px', background: 'transparent' }}>{children}</main>
         <Footer />
       </div>
     </>

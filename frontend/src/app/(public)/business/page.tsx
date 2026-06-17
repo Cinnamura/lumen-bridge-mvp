@@ -67,7 +67,7 @@ function LightLinesVisual({ style }: { style?: CSSProperties }) {
 export default function BusinessPage() {
   return (
     <>
-      <section style={{ padding: '72px 24px 44px', position: 'relative' }}>
+      <section style={{ padding: '56px 24px 44px', position: 'relative' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           <div
             className="surface-card aurora-violet"
@@ -142,8 +142,8 @@ export default function BusinessPage() {
             <h2 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(1.9rem,3vw,2.6rem)', color: '#F8FAFC', letterSpacing: '-0.03em' }}>Условия финансирования</h2>
           </div>
           <div className="grid-4-resp" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '1rem' }}>
-            {conditions.map(({ label, value }, index) => (
-              <div key={label} className={`surface-card reveal reveal-${(index % 4) + 1}`}>
+            {conditions.map(({ label, value }) => (
+              <div key={label} className="surface-card">
                 <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.75rem' }}>{label}</p>
                 <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.95rem', fontWeight: 700, color: '#F8FAFC', lineHeight: 1.45 }}>{value}</p>
               </div>

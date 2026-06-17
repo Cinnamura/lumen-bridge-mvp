@@ -5,7 +5,7 @@ import { MapPin, Mail, Phone, ArrowRight, AlertTriangle } from 'lucide-react';
 export default function ContactsPage() {
   return (
     <>
-      <section style={{ background: 'var(--surface-0)', padding: '72px 24px 40px' }}>
+      <section style={{ background: 'var(--surface-0)', padding: '56px 24px 40px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-indigo)', marginBottom: '1rem' }}>Поддержка</p>
           <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem', maxWidth: '14ch', lineHeight: 1.1 }}>

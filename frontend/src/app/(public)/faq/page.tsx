@@ -52,7 +52,7 @@ export default function FaqPage() {
 
   return (
     <>
-      <section style={{ padding: '72px 24px 40px', position: 'relative' }}>
+      <section style={{ padding: '56px 24px 40px', position: 'relative' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.85rem' }}>FAQ</p>
           <h1 style={{ fontFamily: 'var(--f-display)', fontSize: 'clamp(2.5rem,5vw,4rem)', color: '#F8FAFC', letterSpacing: '-0.04em', marginBottom: '1rem' }}>

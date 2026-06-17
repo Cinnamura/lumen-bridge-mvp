@@ -261,6 +261,13 @@ select {
   transform: translateY(-2px);
 }
 
+/* Accordion items sit inside .card — cancel the card-level lift so
+   accordion rows don't jump when hovered. */
+.card:has(.accordion-item):hover,
+.card:has(.accordion-trigger):hover {
+  transform: none;
+}
+
 .card-dark,
 .card-glass,
 .bento-dark {
@@ -451,11 +458,11 @@ input[type=number] { -moz-appearance: textfield; }
   color: var(--c-text);
   transition:
     color 300ms ease-in-out,
-    background-color 300ms ease-in-out,
-    transform 300ms ease-in-out;
+    background-color 300ms ease-in-out;
 }
 
-.accordion-trigger:hover { color: #dbeafe; }
+/* Colour tint on hover is intentional; lift/movement is not */
+.accordion-trigger:hover { color: #dbeafe; transform: none; }
 
 .accordion-icon {
   flex-shrink: 0;

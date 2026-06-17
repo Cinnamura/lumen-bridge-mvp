@@ -59,7 +59,7 @@ const companyParagraphs = [
   'Мы работаем в соответствии с действующим законодательством и уделяем особое внимание защите данных клиентов и ответственному кредитованию.',
 ];
 
-const StitchTokenScene = dynamic(() => import('@/shared/ui/animations/StitchTokenScene'), { ssr: false });
+const RotatingEuroCoin = dynamic(() => import('@/shared/ui/animations/RotatingEuroCoin'), { ssr: false });
 
 function toneGlow(tone: string): string {
   if (tone === 'emerald') return 'radial-gradient(circle at top right, rgba(16,185,129,0.18), transparent 58%)';
@@ -304,18 +304,21 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Right column — Three.js animation */}
+              {/* Right column — RotatingEuroCoin */}
               <div
                 style={{
                   position: 'relative',
                   height: '380px',
                   borderRadius: '16px',
                   overflow: 'hidden',
-                  background: 'rgba(139,92,246,0.06)',
+                  background: 'rgba(11,15,25,0.7)',
                   border: '1px solid rgba(139,92,246,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <StitchTokenScene />
+                <RotatingEuroCoin className="w-full h-full" />
               </div>
             </div>
           </div>

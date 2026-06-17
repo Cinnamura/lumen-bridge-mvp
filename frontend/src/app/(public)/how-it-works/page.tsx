@@ -39,7 +39,7 @@ const facts = [
 export default function HowItWorksPage() {
   return (
     <>
-      <section style={{ background: 'var(--surface-0)', padding: '72px 24px 40px', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: 'var(--surface-0)', padding: '56px 24px 40px', position: 'relative', overflow: 'hidden' }}>
         <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 60%, rgba(46,125,247,0.06) 0%, transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
           <p style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-indigo)', marginBottom: '1rem' }}>Процесс</p>
@@ -52,15 +52,15 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section style={{ background: 'var(--surface-1)', padding: '72px 24px 40px' }}>
+      <section style={{ background: 'var(--surface-1)', padding: '56px 24px 40px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-          {/* Timeline */}
-          <div style={{ position: 'relative', paddingLeft: '2.25rem' }}>
-            <div aria-hidden style={{ position: 'absolute', left: '19px', top: '20px', bottom: '20px', width: '1px', background: 'linear-gradient(to bottom,rgba(46,125,247,0.3),rgba(46,125,247,0.05))' }} />
+          {/* Timeline — 52px left padding gives the 38px circle (centered at 26px) enough room */}
+          <div style={{ position: 'relative', paddingLeft: '3.5rem' }}>
+            <div aria-hidden style={{ position: 'absolute', left: '18px', top: '20px', bottom: '20px', width: '1px', background: 'linear-gradient(to bottom,rgba(46,125,247,0.3),rgba(46,125,247,0.05))' }} />
             {steps.map(({ n, title, desc }, i) => (
-              <div key={n} style={{ position: 'relative', marginBottom: i < steps.length - 1 ? '1.75rem' : 0 }}>
-                <div style={{ position: 'absolute', left: '-2.25rem', top: '2px', width: '38px', height: '38px', borderRadius: '50%', background: 'var(--surface-0)', border: '2px solid rgba(46,125,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-mono)', fontSize: '0.6875rem', fontWeight: 700, color: 'var(--accent-indigo)', flexShrink: 0 }}>
+              <div key={n} style={{ position: 'relative', marginBottom: i < steps.length - 1 ? '2rem' : 0 }}>
+                <div style={{ position: 'absolute', left: '-3.5rem', top: '2px', width: '38px', height: '38px', borderRadius: '50%', background: 'var(--surface-0)', border: '2px solid rgba(46,125,247,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-mono)', fontSize: '0.6875rem', fontWeight: 700, color: 'var(--accent-indigo)', flexShrink: 0 }}>
                   {n}
                 </div>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.625rem', letterSpacing: '-0.01em' }}>{title}</h3>
