@@ -60,7 +60,7 @@ export default function PremiumFintechEuroCoin({ className }: PremiumFintechEuro
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.9, 100);
     camera.position.set(0, 0, 6);
 
     // ------------------------------------------------------------------
@@ -178,6 +178,7 @@ export default function PremiumFintechEuroCoin({ className }: PremiumFintechEuro
     // Coin construction — four stacked layers inside one rotating group
     // ==================================================================
     const coinGroup = new THREE.Group();
+    coinGroup.scale.set(1.5, 1.5, 1.5);
     scene.add(coinGroup);
 
     const OUTER_RADIUS = 1.55; // rim outer edge

@@ -643,6 +643,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 @media (max-width: 767px) {
   .wrap, .wrap-sm, .wrap-md { padding: 0 16px; }
+  .business-coin-col { display: none !important; }
   .grid-4-resp { grid-template-columns: repeat(2, 1fr) !important; }
   .grid-3-resp { grid-template-columns: 1fr !important; }
   .grid-2-resp { grid-template-columns: 1fr !important; }

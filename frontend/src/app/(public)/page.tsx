@@ -304,8 +304,9 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Right column — PremiumFintechEuroCoin */}
+              {/* Right column — PremiumFintechEuroCoin (hidden on mobile) */}
               <div
+                className="business-coin-col"
                 style={{
                   position: 'relative',
                   height: '570px',
