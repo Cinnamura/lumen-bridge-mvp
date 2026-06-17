@@ -180,19 +180,21 @@ export function LoanCalculator({ dark = false }: { dark?: boolean }) {
         </>
       )}
 
-      <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.55rem' }}>
+      <div style={{ marginBottom: dark ? '0.85rem' : '1.5rem', position: 'relative' }}>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#93C5FD', marginBottom: '0.45rem' }}>
           Кредитный калькулятор
         </p>
-        <h2 style={{ fontFamily: 'var(--f-display)', fontSize: dark ? 'clamp(1.4rem,2.6vw,1.9rem)' : 'clamp(1.75rem,3vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.65rem' }}>
+        <h2 style={{ fontFamily: 'var(--f-display)', fontSize: dark ? 'clamp(1.25rem,2.2vw,1.6rem)' : 'clamp(1.75rem,3vw,2.5rem)', color: '#F8FAFC', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: dark ? 0 : '0.65rem' }}>
           Рассчитайте условия займа
         </h2>
-        <p style={{ fontSize: '0.9375rem', color: 'rgba(154,164,182,0.9)', lineHeight: 1.7, maxWidth: '42ch' }}>
-          Рассчитайте условия займа за несколько секунд — выберите сумму и срок, чтобы сразу увидеть итоговую сумму к возврату. Все условия отображаются до оформления займа.
-        </p>
+        {!dark && (
+          <p style={{ fontSize: '0.9375rem', color: 'rgba(154,164,182,0.9)', lineHeight: 1.7, maxWidth: '42ch' }}>
+            Рассчитайте условия займа за несколько секунд — выберите сумму и срок, чтобы сразу увидеть итоговую сумму к возврату. Все условия отображаются до оформления займа.
+          </p>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gap: '1.5rem', position: 'relative' }}>
+      <div style={{ display: 'grid', gap: dark ? '1rem' : '1.5rem', position: 'relative' }}>
         <SliderRow label="Сумма займа" unit="EUR" value={amount} min={cfg.minAmount} max={cfg.maxAmount} step={100} onChange={setAmount} />
         <div style={{ height: '1px', background: 'rgba(140,144,159,0.18)' }} />
         <SliderRow label="Срок займа" unit="дн." value={days} min={cfg.minDays} max={cfg.maxDays} step={1} onChange={setDays} />

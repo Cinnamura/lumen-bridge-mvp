@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 
 const conditions = [
-  { label: 'Сумма', value: 'от 500 до 50,000 EUR', tone: 'blue' },
-  { label: 'Срок', value: 'от 7 до 90 дней', tone: 'violet' },
-  { label: 'Процентная ставка', value: 'определяется индивидуально', tone: 'amber' },
-  { label: 'Погашение', value: 'равными платежами', tone: 'emerald' },
+  { label: 'Сумма', value: 'От 500 до 50,000 EUR', tone: 'blue' },
+  { label: 'Срок', value: 'От 7 до 90 дней', tone: 'violet' },
+  { label: 'Процентная ставка', value: 'Определяется индивидуально', tone: 'amber' },
+  { label: 'Погашение', value: 'Равными платежами', tone: 'emerald' },
 ];
 
 const useCases = [
@@ -59,7 +59,7 @@ const companyParagraphs = [
   'Мы работаем в соответствии с действующим законодательством и уделяем особое внимание защите данных клиентов и ответственному кредитованию.',
 ];
 
-const RotatingEuroCoin = dynamic(() => import('@/shared/ui/animations/RotatingEuroCoin'), { ssr: false });
+const PremiumFintechEuroCoin = dynamic(() => import('@/shared/ui/animations/PremiumFintechEuroCoin'), { ssr: false });
 
 function toneGlow(tone: string): string {
   if (tone === 'emerald') return 'radial-gradient(circle at top right, rgba(16,185,129,0.18), transparent 58%)';
@@ -83,7 +83,7 @@ export default function HomePage() {
       >
         <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 18% 36%, rgba(59,130,246,0.16), transparent 32%), radial-gradient(circle at 82% 18%, rgba(139,92,246,0.12), transparent 28%), radial-gradient(circle at 72% 82%, rgba(16,185,129,0.08), transparent 24%)' }} />
         <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%', position: 'relative' }}>
-          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(360px, 0.95fr)', gap: '1.5rem', alignItems: 'center' }}>
+          <div className="hero-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(360px, 0.95fr)', gap: '1.5rem', alignItems: 'stretch' }}>
             <div className="anim-fade-up">
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.24)', borderRadius: '999px', padding: '0.4rem 0.85rem', marginBottom: '1.5rem' }}>
                 <Sparkles size={14} color="#93C5FD" />
@@ -117,8 +117,8 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className="hero-calc anim-fade-up-1">
-              <div className="bento-dark aurora-blue" style={{ padding: '1rem 1rem 1.1rem' }}>
+            <div className="hero-calc anim-fade-up-1" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="bento-dark aurora-blue" style={{ padding: '1rem 1rem 1.1rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <LoanCalculator dark />
               </div>
             </div>
@@ -304,11 +304,11 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Right column — RotatingEuroCoin */}
+              {/* Right column — PremiumFintechEuroCoin */}
               <div
                 style={{
                   position: 'relative',
-                  height: '380px',
+                  height: '570px',
                   borderRadius: '16px',
                   overflow: 'hidden',
                   background: 'rgba(11,15,25,0.7)',
@@ -318,7 +318,7 @@ export default function HomePage() {
                   justifyContent: 'center',
                 }}
               >
-                <RotatingEuroCoin className="w-full h-full" />
+                <PremiumFintechEuroCoin className="w-full h-full" />
               </div>
             </div>
           </div>
