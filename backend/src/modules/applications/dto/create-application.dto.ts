@@ -10,6 +10,7 @@ import {
   MaxLength,
   IsEmail,
   ValidateIf,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateApplicationDto {
@@ -38,6 +39,7 @@ export class CreateApplicationDto {
 
   @IsOptional()
   @IsEmail()
+  @MaxLength(255)
   email?: string;
 
   // personal
@@ -53,8 +55,13 @@ export class CreateApplicationDto {
   @MaxLength(100)
   lastName?: string;
 
-  @IsOptional()
-  @IsString()
+  /**
+   * dateOfBirth must be a valid ISO-8601 date string (YYYY-MM-DD).
+   * Server-side we additionally reject years outside [1900, current year - 18]
+   * to prevent both garbage dates and the year > 9999 crash.
+   */
+  @ValidateIf((o) => o.type === 'personal')
+  @IsDateString({}, { message: 'Дата рождения должна быть в формате YYYY-MM-DD' })
   dateOfBirth?: string;
 
   // business

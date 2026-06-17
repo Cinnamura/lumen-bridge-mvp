@@ -1,8 +1,9 @@
-import { IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class RecordPaymentDto {
   @IsNumber()
   @Min(0.01)
+  @Max(500000)
   amount!: number;
 
   @IsOptional()

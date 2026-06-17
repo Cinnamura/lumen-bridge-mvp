@@ -17,7 +17,16 @@ function validatePersonal(f: Record<string, any>): ValidationErrors {
   const e: ValidationErrors = {};
   if (!f.firstName || String(f.firstName).trim().length < 2) e.firstName = 'Введите имя (минимум 2 символа)';
   if (!f.lastName  || String(f.lastName).trim().length < 2)  e.lastName  = 'Введите фамилию (минимум 2 символа)';
-  if (!f.dateOfBirth) e.dateOfBirth = 'Укажите дату рождения';
+  if (!f.dateOfBirth) {
+    e.dateOfBirth = 'Укажите дату рождения';
+  } else {
+    const dob = new Date(f.dateOfBirth);
+    const year = dob.getFullYear();
+    const maxYear = new Date().getFullYear() - 18;
+    if (isNaN(dob.getTime()) || year < 1900 || year > maxYear) {
+      e.dateOfBirth = `Укажите корректную дату рождения (от 1900 до ${maxYear})`;
+    }
+  }
   if (!f.email || !emailRe.test(f.email)) e.email = 'Введите корректный email, например: ivan@mail.com';
   if (!f.phone || !phoneRe.test(f.phone)) e.phone = 'Введите номер в международном формате, например: +35312345678';
   const amt = Number(f.amount);
@@ -74,12 +83,12 @@ function InputField({
         disabled={locked || props.disabled}
         style={{
           width: '100%',
-          border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--surface-2)' : 'var(--line-strong)'}`,
+          border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--line-soft)' : 'var(--line-strong)'}`,
           borderRadius: '8px',
           padding: '10px 14px',
           fontSize: '1rem',
           color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
-          background: locked ? '#F8F9FA' : '#fff',
+          background: locked ? 'var(--surface-2)' : 'var(--surface-2)',
           boxSizing: 'border-box',
           outline: 'none',
           cursor: locked ? 'not-allowed' : 'text',
@@ -131,16 +140,18 @@ function ApplyInner() {
   const [fields, setFields] = useState<Record<string, any>>({
     amount: initAmount, termDays: initTermDays, termMonths: 3,
     consent: false,
-    // auth users get their phone pre-filled
     phone: user?.phone ?? '',
+    firstName: user?.firstName ?? '',
+    lastName: user?.lastName ?? '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
   const [createdId, setCreatedId] = useState('');
 
-  // true when the field should be locked (user is authenticated)
   const phoneLocked = !!user;
+  // Lock name fields only when the user already has a name on file
+  const nameLocked = !!user && !!(user.firstName || user.lastName);
 
   function set(key: string, val: any) {
     setFields((f) => ({ ...f, [key]: val }));
@@ -153,8 +164,12 @@ function ApplyInner() {
   }
 
   function validate(): boolean {
-    // Always validate against the effective phone
-    const effective = { ...fields, phone: phoneLocked ? user!.phone : fields.phone };
+    const effective = {
+      ...fields,
+      phone:     phoneLocked ? user!.phone         : fields.phone,
+      firstName: nameLocked  ? user!.firstName ?? '' : fields.firstName,
+      lastName:  nameLocked  ? user!.lastName  ?? '' : fields.lastName,
+    };
     const errs = type === 'personal' ? validatePersonal(effective) : validateBusiness(effective);
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -167,12 +182,12 @@ function ApplyInner() {
       const payload: any = {
         type,
         amount: fields.amount,
-        phone:  phoneLocked ? user!.phone : fields.phone,
-        email:  fields.email,
+        phone:     phoneLocked ? user!.phone         : fields.phone,
+        email:     fields.email,
         ...(type === 'personal' ? {
           termDays:    fields.termDays,
-          firstName:   fields.firstName,
-          lastName:    fields.lastName,
+          firstName:   nameLocked ? (user!.firstName ?? '') : fields.firstName,
+          lastName:    nameLocked ? (user!.lastName  ?? '') : fields.lastName,
           dateOfBirth: fields.dateOfBirth,
         } : {
           termMonths:  fields.termMonths,
@@ -208,7 +223,7 @@ function ApplyInner() {
   const cardStyle = (selected: boolean): React.CSSProperties => ({
     flex: 1, border: `2px solid ${selected ? 'var(--accent-indigo)' : 'var(--line-strong)'}`,
     borderRadius: '10px', padding: '1rem', cursor: 'pointer',
-    background: selected ? 'rgba(46,125,247,0.05)' : '#fff',
+    background: selected ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
     textAlign: 'center', transition: 'border-color 150ms, background 150ms',
   });
 
@@ -295,10 +310,10 @@ function ApplyInner() {
           {type === 'personal' ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
-                <InputField label="Имя" value={fields.firstName || ''} onChange={(e) => set('firstName', e.target.value)} error={errors.firstName} placeholder="Иван" />
-                <InputField label="Фамилия" value={fields.lastName || ''} onChange={(e) => set('lastName', e.target.value)} error={errors.lastName} placeholder="Иванов" />
+                <InputField label="Имя" value={nameLocked ? (user!.firstName ?? '') : (fields.firstName || '')} onChange={(e) => !nameLocked && set('firstName', e.target.value)} error={errors.firstName} placeholder="Иван" locked={nameLocked} />
+                <InputField label="Фамилия" value={nameLocked ? (user!.lastName ?? '') : (fields.lastName || '')} onChange={(e) => !nameLocked && set('lastName', e.target.value)} error={errors.lastName} placeholder="Иванов" locked={nameLocked} />
               </div>
-              <InputField label="Дата рождения" type="date" value={fields.dateOfBirth || ''} onChange={(e) => set('dateOfBirth', e.target.value)} error={errors.dateOfBirth} />
+              <InputField label="Дата рождения" type="date" value={fields.dateOfBirth || ''} onChange={(e) => set('dateOfBirth', e.target.value)} error={errors.dateOfBirth} min="1900-01-01" max={`${new Date().getFullYear() - 18}-12-31`} />
               <InputField label="Email" type="email" value={fields.email || ''} onChange={(e) => set('email', e.target.value)} error={errors.email} placeholder="ivan@example.com" />
               <InputField
                 label="Номер телефона"

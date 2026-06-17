@@ -43,6 +43,20 @@ export class ApplicationsService {
    * frontend can overwrite any stale token in localStorage.
    */
   async create(dto: any) {
+    // Validate dateOfBirth range server-side to prevent year > 9999 and
+    // other out-of-range values that would crash Postgres or produce garbage data.
+    if (dto.dateOfBirth) {
+      const dob = new Date(dto.dateOfBirth);
+      const year = dob.getUTCFullYear();
+      const minYear = 1900;
+      const maxYear = new Date().getUTCFullYear() - 18;
+      if (isNaN(dob.getTime()) || year < minYear || year > maxYear) {
+        throw new BadRequestException(
+          `Дата рождения должна быть между ${minYear} и ${maxYear} годом`,
+        );
+      }
+    }
+
     let user = await this.prisma.user.findUnique({ where: { phone: dto.phone } });
     if (!user) {
       user = await this.prisma.user.create({
@@ -53,6 +67,15 @@ export class ApplicationsService {
           email: dto.email ?? null,
         },
       });
+    } else if (dto.type === 'personal') {
+      // Backfill name/email on existing user if previously empty
+      const updates: Record<string, string> = {};
+      if (!user.firstName && dto.firstName) updates.firstName = dto.firstName;
+      if (!user.lastName  && dto.lastName)  updates.lastName  = dto.lastName;
+      if (!user.email     && dto.email)     updates.email     = dto.email;
+      if (Object.keys(updates).length > 0) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
+      }
     }
 
     const application = await this.prisma.application.create({
