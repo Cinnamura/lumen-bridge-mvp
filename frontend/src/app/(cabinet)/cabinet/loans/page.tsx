@@ -58,7 +58,7 @@ function LoanCard({ loan }: { loan: LoanDto }) {
   const progress = loan.totalRepayment > 0 ? Math.min(100, (loan.paidAmount / loan.totalRepayment) * 100) : 0;
 
   return (
-    <div style={{ ...cardStyle({ padding: '1rem', background: loan.status === 'overdue' ? 'linear-gradient(180deg, #fff 0%, #fff8f0 100%)' : 'linear-gradient(180deg, #fff 0%, #f8fafc 100%)' }) }}>
+    <div style={{ ...cardStyle({ padding: '1rem', background: loan.status === 'overdue' ? 'linear-gradient(180deg, rgba(36, 19, 24, 0.94) 0%, rgba(17, 19, 24, 0.98) 100%)' : 'linear-gradient(180deg, rgba(21, 24, 30, 0.96) 0%, rgba(17, 19, 24, 0.98) 100%)' }) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{formatCurrency(loan.amount)}</p>
@@ -68,11 +68,11 @@ function LoanCard({ loan }: { loan: LoanDto }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-        <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(21, 24, 30, 0.92)', border: '1px solid #EDF1F5' }}>
+        <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(11, 15, 25, 0.88)', border: '1px solid var(--line-soft)' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '3px' }}>Остаток долга</p>
           <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(loan.remainingAmount)}</p>
         </div>
-        <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(21, 24, 30, 0.92)', border: '1px solid #EDF1F5' }}>
+        <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(11, 15, 25, 0.88)', border: '1px solid var(--line-soft)' }}>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '3px' }}>Следующий платёж</p>
           <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{loan.nextPaymentAmount ? formatCurrency(loan.nextPaymentAmount) : '—'}</p>
         </div>

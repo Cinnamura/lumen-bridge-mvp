@@ -65,10 +65,12 @@ export default function NotificationsPage() {
               <div key={n.id} onClick={() => !n.isRead && markRead(n.id)} style={{
                 display: 'flex', alignItems: 'flex-start', gap: '0.875rem',
                 padding: '1rem',
-                background: n.isRead ? '#fff' : 'var(--surface-2)',
-                borderBottom: '1px solid #F0F3F6',
+                background: n.isRead ? 'rgba(17, 19, 24, 0.82)' : 'rgba(30, 41, 59, 0.68)',
+                borderBottom: '1px solid var(--line-soft)',
                 cursor: n.isRead ? 'default' : 'pointer',
                 position: 'relative',
+                borderRadius: '10px',
+                marginBottom: '0.75rem',
               }}>
                 <div style={{ marginTop: '2px', flexShrink: 0 }}>{iconFor(n.type)}</div>
                 <div style={{ flex: 1 }}>

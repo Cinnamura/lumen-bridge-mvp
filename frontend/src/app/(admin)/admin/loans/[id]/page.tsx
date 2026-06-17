@@ -51,8 +51,8 @@ const ALLOWED_LOAN_TRANSITIONS: Record<string, string[]> = {
 };
 const TRANSITION_CFG: Record<string, { label: string; bg: string; color: string; border?: string }> = {
   active:  { label: 'Отметить активным',    bg: 'var(--accent-mint)', color: '#fff' },
-  overdue: { label: 'Отметить просроченным', bg: '#fff', color: 'var(--accent-crimson)', border: '1.5px solid var(--accent-crimson)' },
-  closed:  { label: 'Закрыть займ',         bg: 'var(--text-primary)', color: '#fff' },
+  overdue: { label: 'Отметить просроченным', bg: 'rgba(239, 71, 111, 0.14)', color: 'var(--accent-crimson)', border: '1.5px solid rgba(239, 71, 111, 0.4)' },
+  closed:  { label: 'Закрыть займ',         bg: 'rgba(30, 41, 59, 0.88)', color: '#E2E8F0', border: '1px solid var(--line-strong)' },
 };
 
 export default function AdminLoanDetailPage() {

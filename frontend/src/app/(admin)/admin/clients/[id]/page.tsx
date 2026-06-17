@@ -69,13 +69,6 @@ export default function AdminClientDetailPage() {
     l.paymentRequests.map((pr) => ({ ...pr, loanId: l.id }))
   ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) ?? [];
 
-  const tabStyle = (t: Tab): React.CSSProperties => ({
-    padding: '7px 18px', border: 'none', borderRadius: '6px', cursor: 'pointer',
-    fontWeight: 600, fontSize: '0.875rem',
-    background: tab === t ? 'var(--text-primary)' : 'transparent',
-    color: tab === t ? '#fff' : 'var(--text-secondary)',
-  });
-
   return (
     <AdminShell>
       <div className="admin-page">
@@ -118,14 +111,14 @@ export default function AdminClientDetailPage() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'inline-flex', background: 'var(--surface-1)', border: '1px solid var(--line-soft)', borderRadius: '8px', padding: '3px', gap: '2px' }}>
-              <button style={tabStyle('applications')} onClick={() => setTab('applications')}>
+            <div className="status-toggle-group">
+              <button className={`status-toggle${tab === 'applications' ? ' active' : ''}`} onClick={() => setTab('applications')}>
                 Заявки ({client.applications.length})
               </button>
-              <button style={tabStyle('loans')} onClick={() => setTab('loans')}>
+              <button className={`status-toggle${tab === 'loans' ? ' active' : ''}`} onClick={() => setTab('loans')}>
                 Займы ({client.loans.length})
               </button>
-              <button style={tabStyle('payments')} onClick={() => setTab('payments')}>
+              <button className={`status-toggle${tab === 'payments' ? ' active' : ''}`} onClick={() => setTab('payments')}>
                 Платежи ({allPayReqs.length})
               </button>
             </div>

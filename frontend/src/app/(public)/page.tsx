@@ -310,16 +310,29 @@ export default function HomePage() {
                 style={{
                   position: 'relative',
                   height: '570px',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  background: 'rgba(11,15,25,0.7)',
-                  border: '1px solid rgba(139,92,246,0.2)',
+                  width: '100%',
+                  overflow: 'visible',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <PremiumFintechEuroCoin className="w-full h-full" />
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '72%',
+                    maxWidth: '420px',
+                    aspectRatio: '1 / 1',
+                    pointerEvents: 'none',
+                    overflow: 'visible',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: 'translateX(8%)',
+                  }}
+                >
+                  <PremiumFintechEuroCoin className="w-full h-full" />
+                </div>
               </div>
             </div>
           </div>

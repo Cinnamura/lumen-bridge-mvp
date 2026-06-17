@@ -55,9 +55,9 @@ const TRANSITION_LABELS: Record<string, string> = {
 };
 
 const TRANSITION_COLORS: Record<string, { bg: string; color: string; border?: string }> = {
-  in_review: { bg: '#fff', color: 'var(--text-secondary)', border: '1px solid var(--line-strong)' },
+  in_review: { bg: 'rgba(30, 41, 59, 0.88)', color: '#E2E8F0', border: '1px solid var(--line-strong)' },
   approved: { bg: 'var(--accent-mint)', color: '#fff' },
-  rejected: { bg: '#fff', color: 'var(--accent-crimson)', border: '1.5px solid var(--accent-crimson)' },
+  rejected: { bg: 'rgba(239, 71, 111, 0.14)', color: 'var(--accent-crimson)', border: '1.5px solid rgba(239, 71, 111, 0.4)' },
 };
 
 export default function AdminApplicationDetailPage() {

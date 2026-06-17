@@ -57,11 +57,15 @@ export default function PremiumFintechEuroCoin({ className }: PremiumFintechEuro
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.display = "block";
+    renderer.domElement.style.background = "transparent";
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, 1, 0.9, 100);
-    camera.position.set(0, 0, 6);
+    camera.position.set(0, 0, 7.4);
 
     // ------------------------------------------------------------------
     // Procedural studio environment — required for the chrome rim's
@@ -178,7 +182,7 @@ export default function PremiumFintechEuroCoin({ className }: PremiumFintechEuro
     // Coin construction — four stacked layers inside one rotating group
     // ==================================================================
     const coinGroup = new THREE.Group();
-    coinGroup.scale.set(1.5, 1.5, 1.5);
+    coinGroup.scale.set(0.975, 0.975, 0.975);
     scene.add(coinGroup);
 
     const OUTER_RADIUS = 1.55; // rim outer edge
@@ -374,5 +378,16 @@ export default function PremiumFintechEuroCoin({ className }: PremiumFintechEuro
     };
   }, []);
 
-  return <div ref={containerRef} className={className ?? "w-full h-full"} />;
+  return (
+    <div
+      ref={containerRef}
+      className={className ?? "w-full h-full"}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "visible",
+      }}
+    />
+  );
 }
