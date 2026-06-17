@@ -52,11 +52,11 @@ function clientName(a: AppRow): string {
 
 function panelStyle(extra: React.CSSProperties = {}): React.CSSProperties {
   return {
-    background: 'linear-gradient(180deg, rgba(20,25,36,0.94) 0%, rgba(11,15,25,0.96) 100%)',
-    border: '1px solid rgba(140,144,159,0.18)',
-    borderRadius: '12px',
-    boxShadow: '0 18px 44px rgba(0,0,0,0.24)',
-    color: '#D8E3FB',
+    background: 'var(--surface-1)',
+    border: '1px solid var(--line-soft)',
+    borderRadius: '10px',
+    boxShadow: '0 8px 24px rgba(13,27,42,0.06), 0 2px 6px rgba(13,27,42,0.04)',
+    color: 'var(--text-primary)',
     ...extra,
   };
 }
@@ -123,17 +123,17 @@ export default function AdminApplicationsPage() {
       <div className="admin-page">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.84)', marginBottom: '2px' }}>Админ-панель</p>
-            <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#F8FAFC', letterSpacing: '-0.03em' }}>Заявки</h1>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Админ-панель</p>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Заявки</h1>
           </div>
           <form onSubmit={submitSearch} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={16} color="#93C5FD" style={{ position: 'absolute', left: 12, pointerEvents: 'none' }} />
+            <Search size={16} color="var(--text-secondary)" style={{ position: 'absolute', left: 12, pointerEvents: 'none' }} />
             <input
               type="search"
               placeholder="Поиск по имени, телефону, email…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              style={{ padding: '8px 14px 8px 36px', border: '1px solid rgba(140,144,159,0.22)', borderRadius: '10px', fontSize: '0.875rem', minWidth: '260px', outline: 'none', color: '#F8FAFC', background: 'rgba(11,15,25,0.88)' }}
+              style={{ padding: '8px 14px 8px 36px', border: '1px solid var(--line-strong)', borderRadius: '8px', fontSize: '0.875rem', minWidth: '260px', outline: 'none', color: 'var(--text-primary)', background: 'var(--surface-1)' }}
             />
           </form>
         </div>
@@ -155,7 +155,7 @@ export default function AdminApplicationsPage() {
 
         {error && (
           <div style={{ ...panelStyle({ borderLeft: '4px solid #EF4444', padding: '0.875rem 1rem', marginBottom: '1rem' }) }}>
-            <span style={{ color: '#FECACA', fontSize: '0.875rem' }}>{error}</span>
+            <span style={{ color: 'var(--accent-crimson)', fontSize: '0.875rem' }}>{error}</span>
           </div>
         )}
 
@@ -197,36 +197,38 @@ export default function AdminApplicationsPage() {
                   return (
                     <tr key={a.id}>
                       <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.75rem', color: 'rgba(154,164,182,0.88)' }}>{a.id.slice(0, 8)}…</td>
-                      <td style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>{formatDate(a.createdAt)}</td>
+                      <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{formatDate(a.createdAt)}</td>
                       <td>
-                        <div style={{ fontWeight: 600, color: '#F8FAFC' }}>{clientName(a)}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.84)' }}>{a.type === 'personal' ? 'Физлицо' : 'Бизнес'}</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{clientName(a)}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{a.type === 'personal' ? 'Физлицо' : 'Бизнес'}</div>
                       </td>
-                      <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: '#D8E3FB' }}>{a.phone ?? a.user?.phone ?? '—'}</td>
-                      <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#F8FAFC' }}>{formatCurrency(a.amount)}</td>
-                      <td style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>{termLabel}</td>
+                      <td style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: 'var(--text-primary)' }}>{a.phone ?? a.user?.phone ?? '—'}</td>
+                      <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--text-primary)' }}>{formatCurrency(a.amount)}</td>
+                      <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{termLabel}</td>
                       <td><span className={`badge ${s.cls}`}>{s.label}</span></td>
-                      <td className="col-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <Link href={`/admin/applications/${a.id}`} style={{ fontSize: '0.8125rem', color: '#93C5FD', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                          Открыть
-                        </Link>
-                        {(a.status === 'approved' || a.status === 'rejected') ? (
-                          <span style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.8)', fontStyle: 'italic' }}>
-                            {a.status === 'approved' ? 'Займ создан' : 'Решение принято'}
-                          </span>
-                        ) : (
-                          <select
-                            disabled={updatingId === a.id}
-                            value={a.status}
-                            onChange={(e) => changeStatus(a.id, e.target.value as AppRow['status'])}
-                            style={{ padding: '6px 10px', border: '1px solid rgba(140,144,159,0.22)', borderRadius: '8px', fontSize: '0.8125rem', background: 'rgba(11,15,25,0.94)', color: '#F8FAFC', cursor: 'pointer', minWidth: '140px' }}
-                          >
-                            <option value={a.status} disabled>{a.status === 'new' ? 'Новая' : 'На проверке'}</option>
-                            {a.status === 'new' && <option value="in_review">Взять на проверку</option>}
-                            <option value="approved">Одобрить</option>
-                            <option value="rejected">Отклонить</option>
-                          </select>
-                        )}
+                      <td className="col-actions">
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                          <Link href={`/admin/applications/${a.id}`} style={{ fontSize: '0.8125rem', color: 'var(--accent-indigo)', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                            Открыть
+                          </Link>
+                          {(a.status === 'approved' || a.status === 'rejected') ? (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                              {a.status === 'approved' ? 'Займ создан' : 'Решение принято'}
+                            </span>
+                          ) : (
+                            <select
+                              disabled={updatingId === a.id}
+                              value={a.status}
+                              onChange={(e) => changeStatus(a.id, e.target.value as AppRow['status'])}
+                              style={{ padding: '6px 10px', border: '1px solid var(--line-strong)', borderRadius: '8px', fontSize: '0.8125rem', background: 'var(--surface-1)', color: 'var(--text-primary)', cursor: 'pointer', minWidth: '140px' }}
+                            >
+                              <option value={a.status} disabled>{a.status === 'new' ? 'Новая' : 'На проверке'}</option>
+                              {a.status === 'new' && <option value="in_review">Взять на проверку</option>}
+                              <option value="approved">Одобрить</option>
+                              <option value="rejected">Отклонить</option>
+                            </select>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -237,10 +239,10 @@ export default function AdminApplicationsPage() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', fontSize: '0.875rem', color: 'rgba(154,164,182,0.88)' }}>
-          <span>Всего: <strong style={{ color: '#F8FAFC' }}>{total}</strong></span>
+          <span>Всего: <strong style={{ color: 'var(--text-primary)' }}>{total}</strong></span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="btn btn-secondary btn-sm" style={{ padding: '6px 10px', opacity: page <= 1 ? 0.5 : 1 }}><ChevronLeft size={16} /></button>
-            <span style={{ fontFamily: 'var(--f-mono)', color: '#F8FAFC' }}>{page} / {totalPages}</span>
+            <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--text-primary)' }}>{page} / {totalPages}</span>
             <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="btn btn-secondary btn-sm" style={{ padding: '6px 10px', opacity: page >= totalPages ? 0.5 : 1 }}><ChevronRight size={16} /></button>
           </div>
         </div>

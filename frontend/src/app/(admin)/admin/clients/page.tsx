@@ -37,7 +37,7 @@ const STATUS_BADGE: Record<ClientRow['status'], { label: string; cls: string }> 
   applicant: { label: 'Есть заявки', cls: 'badge-pending' },
   active: { label: 'Активный займ', cls: 'badge-active' },
   overdue: { label: 'Просрочка', cls: 'badge-overdue' },
-  closed: { label: 'История займов', cls: 'badge-closed' },
+  closed: { label: 'Закрытые займы', cls: 'badge-closed' },
 };
 
 export default function AdminClientsPage() {

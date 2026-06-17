@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   ConflictException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -60,11 +61,21 @@ function toScheduleDto(s: any) {
 
 @Injectable()
 export class LoansService {
+  private readonly logger = new Logger(LoansService.name);
+
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private schedule: PaymentScheduleService,
   ) {}
+
+  private async synchronizeSafely(loanId: string) {
+    try {
+      await this.schedule.synchronize(loanId);
+    } catch (error) {
+      this.logger.warn(`Loan schedule sync skipped for ${loanId}: ${error instanceof Error ? error.message : 'unknown error'}`);
+    }
+  }
 
   async listForUser(userId: string) {
     const loans = await this.prisma.loan.findMany({
@@ -72,7 +83,7 @@ export class LoansService {
       include: { schedule: { orderBy: { seq: 'asc' } } },
       orderBy: { createdAt: 'desc' },
     });
-    await Promise.all(loans.map((loan) => this.schedule.synchronize(loan.id)));
+    await Promise.all(loans.map((loan) => this.synchronizeSafely(loan.id)));
     const syncedLoans = await this.prisma.loan.findMany({
       where: { userId },
       include: { schedule: { orderBy: { seq: 'asc' } } },
@@ -88,7 +99,7 @@ export class LoansService {
   }
 
   async getForUser(userId: string, id: string) {
-    await this.schedule.synchronize(id);
+    await this.synchronizeSafely(id);
 
     const loan = await this.prisma.loan.findUnique({
       where: { id },
