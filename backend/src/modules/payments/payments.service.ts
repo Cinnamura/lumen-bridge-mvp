@@ -45,7 +45,8 @@ export class PaymentsService {
     const dailyRate = Number(loan.dailyRate);
     const outstandingPrincipal = snapshot?.outstandingPrincipal ?? Number(loan.amount);
     const payoffAmount = roundMoney(outstandingPrincipal + outstandingPrincipal * dailyRate);
-    const maxAllowed = Math.min(payoffAmount, Number(loan.remainingAmount));
+    const remainingAmount = snapshot?.remainingAmount ?? Number(loan.remainingAmount);
+    const maxAllowed = Math.min(payoffAmount, remainingAmount);
 
     let amount = roundMoney(Number(dto.amount));
     if (amount <= 0) throw new BadRequestException('Сумма должна быть больше нуля');

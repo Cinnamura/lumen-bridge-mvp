@@ -1,69 +1,105 @@
 'use client';
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+
+import type { InputHTMLAttributes } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useForm, type UseFormRegisterReturn } from 'react-hook-form';
+import { createValibotResolver } from '@/shared/lib/valibot-resolver';
+import * as v from 'valibot';
 import { api } from '@/shared/lib/api';
 import { saveToken } from '@/shared/lib/auth';
 import { useAuth } from '@/shared/lib/auth-context';
 import { LOAN_CONFIG, calcAnnuity } from '@/shared/config/loan';
 import { formatCurrency } from '@/shared/lib/format';
 
-/* ─── Validation ─── */
 const phoneRe = /^\+[1-9]\d{6,14}$/;
-const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-interface ValidationErrors { [key: string]: string }
+const currentYear = new Date().getFullYear();
+const maxBirthYear = currentYear - 18;
 
-function validatePersonal(f: Record<string, any>): ValidationErrors {
-  const e: ValidationErrors = {};
-  if (!f.firstName || String(f.firstName).trim().length < 2) e.firstName = 'Введите имя (минимум 2 символа)';
-  if (!f.lastName  || String(f.lastName).trim().length < 2)  e.lastName  = 'Введите фамилию (минимум 2 символа)';
-  if (!f.dateOfBirth) {
-    e.dateOfBirth = 'Укажите дату рождения';
-  } else {
-    const dob = new Date(f.dateOfBirth);
-    const year = dob.getFullYear();
-    const maxYear = new Date().getFullYear() - 18;
-    if (isNaN(dob.getTime()) || year < 1900 || year > maxYear) {
-      e.dateOfBirth = `Укажите корректную дату рождения (от 1900 до ${maxYear})`;
-    }
-  }
-  if (!f.email || !emailRe.test(f.email)) e.email = 'Введите корректный email, например: ivan@mail.com';
-  if (!f.phone || !phoneRe.test(f.phone)) e.phone = 'Введите номер в международном формате, например: +35312345678';
-  const amt = Number(f.amount);
-  if (!amt || amt < LOAN_CONFIG.personal.minAmount || amt > LOAN_CONFIG.personal.maxAmount)
-    e.amount = `Сумма — от ${LOAN_CONFIG.personal.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.personal.maxAmount.toLocaleString('ru')} EUR`;
-  const days = Number(f.termDays);
-  if (!days || days < LOAN_CONFIG.personal.minDays || days > LOAN_CONFIG.personal.maxDays)
-    e.termDays = `Срок — от ${LOAN_CONFIG.personal.minDays} до ${LOAN_CONFIG.personal.maxDays} дней`;
-  if (!f.consent) e.consent = 'Необходимо принять условия для продолжения';
-  return e;
+const personalSchema = v.object({
+  type: v.literal('personal'),
+  firstName: v.string('Введите имя', [v.minLength(2, 'Введите имя (минимум 2 символа)'), v.maxLength(100)]),
+  lastName: v.string('Введите фамилию', [v.minLength(2, 'Введите фамилию (минимум 2 символа)'), v.maxLength(100)]),
+  dateOfBirth: v.string('Укажите дату рождения', [v.regex(/^\d{4}-\d{2}-\d{2}$/, 'Дата рождения должна быть в формате YYYY-MM-DD')]),
+  email: v.string('Введите email', [v.email('Введите корректный email, например: ivan@mail.com')]),
+  phone: v.string('Введите номер телефона', [v.regex(phoneRe, 'Введите номер в международном формате, например: +35312345678')]),
+  amount: v.number('Введите сумму займа', [v.minValue(LOAN_CONFIG.personal.minAmount, `Сумма — от ${LOAN_CONFIG.personal.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.personal.maxAmount.toLocaleString('ru')} EUR`), v.maxValue(LOAN_CONFIG.personal.maxAmount, `Сумма — от ${LOAN_CONFIG.personal.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.personal.maxAmount.toLocaleString('ru')} EUR`)]),
+  termDays: v.number('Введите срок займа', [v.minValue(LOAN_CONFIG.personal.minDays, `Срок — от ${LOAN_CONFIG.personal.minDays} до ${LOAN_CONFIG.personal.maxDays} дней`), v.maxValue(LOAN_CONFIG.personal.maxDays, `Срок — от ${LOAN_CONFIG.personal.minDays} до ${LOAN_CONFIG.personal.maxDays} дней`)]),
+  termMonths: v.optional(v.number()),
+  consent: v.literal(true, 'Необходимо принять условия для продолжения'),
+  companyName: v.optional(v.string()),
+  regNumber: v.optional(v.string()),
+  repName: v.optional(v.string()),
+  repPosition: v.optional(v.string()),
+});
+
+const businessSchema = v.object({
+  type: v.literal('business'),
+  companyName: v.string('Введите название компании', [v.minLength(2, 'Введите название компании (минимум 2 символа)'), v.maxLength(255)]),
+  regNumber: v.string('Введите регистрационный номер компании', [v.minLength(2, 'Введите регистрационный номер компании'), v.maxLength(100)]),
+  repName: v.string('Введите имя представителя', [v.minLength(2, 'Введите имя представителя'), v.maxLength(200)]),
+  repPosition: v.string('Укажите должность представителя', [v.minLength(2, 'Укажите должность представителя'), v.maxLength(100)]),
+  email: v.string('Введите email', [v.email('Введите корректный email, например: info@company.com')]),
+  phone: v.string('Введите номер телефона', [v.regex(phoneRe, 'Введите номер в международном формате, например: +35312345678')]),
+  amount: v.number('Введите сумму займа', [v.minValue(LOAN_CONFIG.business.minAmount, `Сумма — от ${LOAN_CONFIG.business.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.business.maxAmount.toLocaleString('ru')} EUR`), v.maxValue(LOAN_CONFIG.business.maxAmount, `Сумма — от ${LOAN_CONFIG.business.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.business.maxAmount.toLocaleString('ru')} EUR`)]),
+  termMonths: v.number('Введите срок займа', [v.minValue(LOAN_CONFIG.business.minMonths, `Срок — от ${LOAN_CONFIG.business.minMonths} до ${LOAN_CONFIG.business.maxMonths} месяцев`), v.maxValue(LOAN_CONFIG.business.maxMonths, `Срок — от ${LOAN_CONFIG.business.minMonths} до ${LOAN_CONFIG.business.maxMonths} месяцев`)]),
+  termDays: v.optional(v.number()),
+  consent: v.literal(true, 'Необходимо принять условия для продолжения'),
+  firstName: v.optional(v.string()),
+  lastName: v.optional(v.string()),
+  dateOfBirth: v.optional(v.string()),
+});
+
+const applySchema = v.variant('type', [personalSchema, businessSchema]);
+
+type ApplicantType = 'personal' | 'business';
+
+interface ApplyFormValues {
+  type: ApplicantType;
+  amount: number;
+  termDays: number;
+  termMonths: number;
+  consent: boolean;
+  phone: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  companyName: string;
+  regNumber: string;
+  repName: string;
+  repPosition: string;
 }
 
-function validateBusiness(f: Record<string, any>): ValidationErrors {
-  const e: ValidationErrors = {};
-  if (!f.companyName || String(f.companyName).trim().length < 2) e.companyName = 'Введите название компании (минимум 2 символа)';
-  if (!f.regNumber   || String(f.regNumber).trim().length < 2)   e.regNumber   = 'Введите регистрационный номер компании';
-  if (!f.repName     || String(f.repName).trim().length < 2)     e.repName     = 'Введите имя представителя';
-  if (!f.repPosition || String(f.repPosition).trim().length < 2) e.repPosition = 'Укажите должность представителя';
-  if (!f.email || !emailRe.test(f.email)) e.email = 'Введите корректный email, например: info@company.com';
-  if (!f.phone || !phoneRe.test(f.phone)) e.phone = 'Введите номер в международном формате, например: +35312345678';
-  const amt = Number(f.amount);
-  if (!amt || amt < LOAN_CONFIG.business.minAmount || amt > LOAN_CONFIG.business.maxAmount)
-    e.amount = `Сумма — от ${LOAN_CONFIG.business.minAmount.toLocaleString('ru')} до ${LOAN_CONFIG.business.maxAmount.toLocaleString('ru')} EUR`;
-  const months = Number(f.termMonths);
-  if (!months || months < LOAN_CONFIG.business.minMonths || months > LOAN_CONFIG.business.maxMonths)
-    e.termMonths = `Срок — от ${LOAN_CONFIG.business.minMonths} до ${LOAN_CONFIG.business.maxMonths} месяцев`;
-  if (!f.consent) e.consent = 'Необходимо принять условия для продолжения';
-  return e;
+interface SubmissionSuccess {
+  kind: ApplicantType;
+  id: string;
+  message?: string;
 }
 
-/* ─── Input components ─── */
+function validateDateOfBirth(value: string) {
+  const dob = new Date(value);
+  const year = dob.getFullYear();
+  return !Number.isNaN(dob.getTime()) && year >= 1900 && year <= maxBirthYear;
+}
+
 function InputField({
-  label, error, hint, locked, onSwitch, ...props
+  label,
+  registration,
+  error,
+  hint,
+  locked,
+  onSwitch,
+  ...props
 }: {
-  label: string; error?: string; hint?: string;
-  locked?: boolean; onSwitch?: () => void;
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+  label: string;
+  registration: UseFormRegisterReturn;
+  error?: string;
+  hint?: string;
+  locked?: boolean;
+  onSwitch?: () => void;
+} & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
@@ -72,15 +108,25 @@ function InputField({
           <button
             type="button"
             onClick={onSwitch}
-            style={{ background: 'none', border: 'none', color: 'var(--accent-indigo)', fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--accent-indigo)',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              padding: 0,
+              textDecoration: 'underline',
+            }}
           >
             Войти в другой аккаунт
           </button>
         )}
       </div>
       <input
+        {...registration}
         {...props}
-        disabled={locked || props.disabled}
+        className={props.type === 'date' ? 'lb-date-input' : undefined}
+        readOnly={locked || props.readOnly}
         style={{
           width: '100%',
           border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--line-soft)' : 'var(--line-strong)'}`,
@@ -88,182 +134,219 @@ function InputField({
           padding: '10px 14px',
           fontSize: '1rem',
           color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
-          background: locked ? 'var(--surface-2)' : 'var(--surface-2)',
+          background: 'var(--surface-2)',
           boxSizing: 'border-box',
           outline: 'none',
           cursor: locked ? 'not-allowed' : 'text',
         }}
       />
-      {hint && !error && !locked && <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '3px' }}>{hint}</p>}
+      {hint && !error && !locked && (
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '3px' }}>{hint}</p>
+      )}
       {error && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.75rem', marginTop: '3px' }}>{error}</p>}
     </div>
   );
 }
 
-function NumericField({ label, error, value, min, max, onChange }: {
-  label: string; error?: string; value: number;
-  min: number; max: number; onChange: (v: number) => void;
-}) {
-  const [raw, setRaw] = useState(String(value));
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setRaw(e.target.value);
-    const n = Number(e.target.value);
-    if (!isNaN(n)) onChange(n);
-  }
-
-  function handleBlur() {
-    const n = Math.min(max, Math.max(min, Number(raw) || min));
-    setRaw(String(n)); onChange(n);
-  }
-
-  return (
-    <InputField
-      label={label} type="number" min={min} max={max}
-      value={raw} onChange={handleChange} onBlur={handleBlur}
-      error={error} hint={`${min.toLocaleString('ru')} — ${max.toLocaleString('ru')}`}
-    />
-  );
-}
-
-/* ─── Main form ─── */
 function ApplyInner() {
   const searchParams = useSearchParams();
   const { user, logout, login } = useAuth();
 
-  const initAmount   = Number(searchParams.get('amount'))   || 10000;
+  const initAmount = Number(searchParams.get('amount')) || 10_000;
   const initTermDays = Number(searchParams.get('termDays')) || 30;
-
-  // Pre-fill phone from auth context if logged in
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [type, setType] = useState<'personal' | 'business'>('personal');
-  const [fields, setFields] = useState<Record<string, any>>({
-    amount: initAmount, termDays: initTermDays, termMonths: 3,
+  const [serverError, setServerError] = useState('');
+  const [successState, setSuccessState] = useState<SubmissionSuccess | null>(null);
+
+  const phoneLocked = Boolean(user);
+  const nameLocked = Boolean(user && (user.firstName || user.lastName));
+
+  const defaultValues = useMemo<ApplyFormValues>(() => ({
+    type: 'personal',
+    amount: initAmount,
+    termDays: initTermDays,
+    termMonths: 3,
     consent: false,
     phone: user?.phone ?? '',
+    email: '',
     firstName: user?.firstName ?? '',
     lastName: user?.lastName ?? '',
+    dateOfBirth: '',
+    companyName: '',
+    regNumber: '',
+    repName: '',
+    repPosition: '',
+  }), [initAmount, initTermDays, user?.firstName, user?.lastName, user?.phone]);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    clearErrors,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<ApplyFormValues>({
+    resolver: createValibotResolver(applySchema),
+    mode: 'onBlur',
+    defaultValues,
   });
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [loading, setLoading] = useState(false);
-  const [serverError, setServerError] = useState('');
-  const [createdId, setCreatedId] = useState('');
 
-  const phoneLocked = !!user;
-  // Lock name fields only when the user already has a name on file
-  const nameLocked = !!user && !!(user.firstName || user.lastName);
+  const applicantType = watch('type');
+  const amount = watch('amount');
+  const termDays = watch('termDays');
 
-  function set(key: string, val: any) {
-    setFields((f) => ({ ...f, [key]: val }));
-    setErrors((e) => { const n = { ...e }; delete n[key]; return n; });
-  }
+  useEffect(() => {
+    if (!user) return;
+    setValue('phone', user.phone, { shouldValidate: false });
+    if (user.firstName) setValue('firstName', user.firstName, { shouldValidate: false });
+    if (user.lastName) setValue('lastName', user.lastName, { shouldValidate: false });
+  }, [setValue, user]);
+
+  const personalPreview = useMemo(() => {
+    return calcAnnuity(amount || 0, LOAN_CONFIG.personal.dailyRate, termDays || 1);
+  }, [amount, termDays]);
+
+  const cardStyle = (selected: boolean) => ({
+    flex: 1,
+    border: `2px solid ${selected ? 'var(--accent-indigo)' : 'var(--line-strong)'}`,
+    borderRadius: '10px',
+    padding: '1rem',
+    cursor: 'pointer',
+    background: selected ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
+    textAlign: 'center' as const,
+    transition: 'border-color 150ms, background 150ms',
+  });
 
   function handleSwitchAccount() {
     logout();
-    set('phone', '');
+    setValue('phone', '');
+    clearErrors(['phone', 'firstName', 'lastName']);
   }
 
-  function validate(): boolean {
-    const effective = {
-      ...fields,
-      phone:     phoneLocked ? user!.phone         : fields.phone,
-      firstName: nameLocked  ? user!.firstName ?? '' : fields.firstName,
-      lastName:  nameLocked  ? user!.lastName  ?? '' : fields.lastName,
-    };
-    const errs = type === 'personal' ? validatePersonal(effective) : validateBusiness(effective);
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
+  const onSubmit = handleSubmit(async (data) => {
+    if (data.type === 'personal' && !validateDateOfBirth(data.dateOfBirth)) {
+      setError('dateOfBirth', {
+        message: `Укажите корректную дату рождения (от 1900 до ${maxBirthYear})`,
+      });
+      return;
+    }
 
-  async function submit() {
-    if (!validate()) return;
-    setLoading(true); setServerError('');
+    setServerError('');
+
     try {
-      const payload: any = {
-        type,
-        amount: fields.amount,
-        phone:     phoneLocked ? user!.phone         : fields.phone,
-        email:     fields.email,
-        ...(type === 'personal' ? {
-          termDays:    fields.termDays,
-          firstName:   nameLocked ? (user!.firstName ?? '') : fields.firstName,
-          lastName:    nameLocked ? (user!.lastName  ?? '') : fields.lastName,
-          dateOfBirth: fields.dateOfBirth,
-        } : {
-          termMonths:  fields.termMonths,
-          companyName: fields.companyName,
-          regNumber:   fields.regNumber,
-          repName:     fields.repName,
-          repPosition: fields.repPosition,
-        }),
-      };
+      if (data.type === 'business') {
+        const response = await api.post<{ id: string; message: string }>('/contact-requests', {
+          firstName: data.repName,
+          email: data.email,
+          phone: phoneLocked ? (user?.phone ?? data.phone) : data.phone,
+          message: [
+            'Запрос на бизнес-финансирование',
+            `Компания: ${data.companyName}`,
+            `Регистрационный номер: ${data.regNumber}`,
+            `Представитель: ${data.repName}`,
+            `Должность: ${data.repPosition}`,
+            `Сумма: ${formatCurrency(data.amount)}`,
+            `Срок: ${data.termMonths} мес.`,
+            'Онлайн-кабинет для бизнеса пока недоступен. Запрос принят через форму обратной связи.',
+          ].join('\n'),
+          consent: data.consent,
+        });
 
-      const res = await api.post<{ id: string; status: string; accessToken: string }>('/applications', payload);
+        setSuccessState({
+          kind: 'business',
+          id: response.id,
+          message: response.message,
+        });
+        setStep(3);
+        return;
+      }
 
-      // Always overwrite the stored token with the one returned for this
-      // phone number — covers the guest case (new token for new number)
-      // and keeps the auth user's session fresh.
+      const res = await api.post<{ id: string; status: string; accessToken: string }>('/applications', {
+        type: 'personal',
+        amount: data.amount,
+        termDays: data.termDays,
+        firstName: nameLocked ? (user?.firstName ?? data.firstName) : data.firstName,
+        lastName: nameLocked ? (user?.lastName ?? data.lastName) : data.lastName,
+        dateOfBirth: data.dateOfBirth,
+        email: data.email,
+        phone: phoneLocked ? (user?.phone ?? data.phone) : data.phone,
+      });
+
       saveToken(res.accessToken);
       document.cookie = `lb_session=1; path=/; max-age=${60 * 60 * 24 * 7}`;
       await login(res.accessToken);
 
-      setCreatedId(res.id);
+      setSuccessState({ kind: 'personal', id: res.id });
       setStep(3);
-    } catch (e: any) {
-      setServerError(e.message || 'Не удалось отправить заявку. Проверьте данные и попробуйте снова.');
-    } finally {
-      setLoading(false);
+    } catch (error: any) {
+      setServerError(error.message || 'Не удалось отправить заявку. Проверьте данные и попробуйте снова.');
     }
-  }
-
-  const { payment, total } = type === 'personal'
-    ? calcAnnuity(fields.amount || 0, LOAN_CONFIG.personal.dailyRate, fields.termDays || 1)
-    : { payment: 0, total: 0 };
-
-  const cardStyle = (selected: boolean): React.CSSProperties => ({
-    flex: 1, border: `2px solid ${selected ? 'var(--accent-indigo)' : 'var(--line-strong)'}`,
-    borderRadius: '10px', padding: '1rem', cursor: 'pointer',
-    background: selected ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
-    textAlign: 'center', transition: 'border-color 150ms, background 150ms',
   });
 
-  /* Step 3 — success */
-  if (step === 3 && createdId) {
+  if (step === 3 && successState) {
+    const isBusinessSubmission = successState.kind === 'business';
+
     return (
       <div style={{ textAlign: 'center', padding: '2rem 0' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-mint)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Заявка принята</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Номер заявки:</p>
-        <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.875rem', color: 'var(--accent-indigo)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>{createdId}</p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', marginBottom: '2rem' }}>
-          Мы уведомим вас о статусе по указанному номеру телефона.
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+          {isBusinessSubmission ? 'Запрос принят' : 'Заявка принята'}
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+          {isBusinessSubmission ? 'Номер обращения:' : 'Номер заявки:'}
         </p>
-        <Link href="/cabinet/applications" style={{ display: 'inline-block', background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 18px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
-          Перейти в личный кабинет
-        </Link>
+        <p style={{ fontFamily: 'var(--f-mono)', fontSize: '0.875rem', color: 'var(--accent-indigo)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>{successState.id}</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem', marginBottom: '0.75rem' }}>
+          {isBusinessSubmission
+            ? 'Запрос на бизнес-финансирование отправлен через форму обратной связи.'
+            : 'Мы уведомим вас о статусе по указанному номеру телефона.'}
+        </p>
+        {isBusinessSubmission && (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+            {successState.message ?? 'Онлайн-кабинет для бизнеса будет доступен позже.'}
+          </p>
+        )}
+        {!isBusinessSubmission && (
+          <Link href="/cabinet/applications" style={{ display: 'inline-block', background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 18px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
+            Перейти в личный кабинет
+          </Link>
+        )}
+        {isBusinessSubmission && (
+          <Link href="/contacts" style={{ display: 'inline-block', background: 'var(--accent-indigo)', color: '#fff', borderRadius: '8px', padding: '10px 18px', fontWeight: 600, textDecoration: 'none', fontSize: '1rem' }}>
+            Открыть контакты
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
-    <>
-      {/* Stepper */}
+    <form onSubmit={onSubmit}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
         {(['Тип заявителя', 'Ваши данные', 'Отправка'] as const).map((label, idx) => {
           const num = idx + 1;
-          const done = step > num; const active = step === num;
+          const done = step > num;
+          const active = step === num;
           return (
             <div key={num} style={{ display: 'flex', alignItems: 'center', flex: num < 3 ? 1 : undefined }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <div style={{
-                  width: '32px', height: '32px', borderRadius: '50%',
-                  background: done ? 'var(--accent-mint)' : active ? 'var(--accent-indigo)' : 'var(--surface-2)',
-                  color: (done || active) ? '#fff' : 'var(--text-secondary)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.875rem', fontWeight: 700,
-                }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: done ? 'var(--accent-mint)' : active ? 'var(--accent-indigo)' : 'var(--surface-2)',
+                    color: done || active ? '#fff' : 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                  }}
+                >
                   {done ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg> : num}
                 </div>
                 <span style={{ fontSize: '0.6875rem', color: active ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: active ? 600 : 400, whiteSpace: 'nowrap' }}>{label}</span>
@@ -274,99 +357,125 @@ function ApplyInner() {
         })}
       </div>
 
-      {/* Step 1 — type */}
       {step === 1 && (
         <>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>Выберите тип заявителя</h2>
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <div style={cardStyle(type === 'personal')} onClick={() => setType('personal')}>
+            <button type="button" style={cardStyle(applicantType === 'personal')} onClick={() => { setValue('type', 'personal'); clearErrors(); }}>
               <div style={{ marginBottom: '0.5rem' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></svg>
               </div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Физическое лицо</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>500 — 50 000 EUR, 7–90 дней</div>
-            </div>
-            <div style={cardStyle(type === 'business')} onClick={() => setType('business')}>
+            </button>
+            <button type="button" style={cardStyle(applicantType === 'business')} onClick={() => { setValue('type', 'business'); clearErrors(); }}>
               <div style={{ marginBottom: '0.5rem' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" strokeWidth="1.5"><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
               </div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Бизнес</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>30 000 — 500 000 EUR, 1–12 мес.</div>
-            </div>
+            </button>
           </div>
-          <button onClick={() => setStep(2)} style={{ width: '100%', background: 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}>
+          <button type="button" onClick={() => setStep(2)} style={{ width: '100%', background: 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}>
             Далее
           </button>
         </>
       )}
 
-      {/* Step 2 — data */}
       {step === 2 && (
         <>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem' }}>
-            {type === 'personal' ? 'Личные данные' : 'Данные компании'}
+            {applicantType === 'personal' ? 'Личные данные' : 'Данные компании'}
           </h2>
 
-          {type === 'personal' ? (
+          {applicantType === 'personal' ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
-                <InputField label="Имя" value={nameLocked ? (user!.firstName ?? '') : (fields.firstName || '')} onChange={(e) => !nameLocked && set('firstName', e.target.value)} error={errors.firstName} placeholder="Иван" locked={nameLocked} />
-                <InputField label="Фамилия" value={nameLocked ? (user!.lastName ?? '') : (fields.lastName || '')} onChange={(e) => !nameLocked && set('lastName', e.target.value)} error={errors.lastName} placeholder="Иванов" locked={nameLocked} />
+                <InputField label="Имя" registration={register('firstName')} error={errors.firstName?.message} placeholder="Иван" locked={nameLocked} />
+                <InputField label="Фамилия" registration={register('lastName')} error={errors.lastName?.message} placeholder="Иванов" locked={nameLocked} />
               </div>
-              <InputField label="Дата рождения" type="date" value={fields.dateOfBirth || ''} onChange={(e) => set('dateOfBirth', e.target.value)} error={errors.dateOfBirth} min="1900-01-01" max={`${new Date().getFullYear() - 18}-12-31`} />
-              <InputField label="Email" type="email" value={fields.email || ''} onChange={(e) => set('email', e.target.value)} error={errors.email} placeholder="ivan@example.com" />
+              <InputField label="Дата рождения" registration={register('dateOfBirth')} error={errors.dateOfBirth?.message} type="date" min="1900-01-01" max={`${maxBirthYear}-12-31`} />
+              <InputField label="Email" registration={register('email')} error={errors.email?.message} type="email" placeholder="ivan@example.com" />
               <InputField
                 label="Номер телефона"
+                registration={register('phone')}
+                error={errors.phone?.message}
                 placeholder="+353..."
-                value={phoneLocked ? user!.phone : (fields.phone || '')}
-                onChange={(e) => !phoneLocked && set('phone', e.target.value)}
-                error={errors.phone}
                 hint="Международный формат: +35312345678"
                 locked={phoneLocked}
                 onSwitch={handleSwitchAccount}
               />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
-                <NumericField label="Сумма займа (EUR)" value={fields.amount} min={LOAN_CONFIG.personal.minAmount} max={LOAN_CONFIG.personal.maxAmount} onChange={(v) => set('amount', v)} error={errors.amount} />
-                <NumericField label="Срок (дней)" value={fields.termDays} min={LOAN_CONFIG.personal.minDays} max={LOAN_CONFIG.personal.maxDays} onChange={(v) => set('termDays', v)} error={errors.termDays} />
+                <InputField
+                  label="Сумма займа (EUR)"
+                  registration={register('amount', { valueAsNumber: true })}
+                  error={errors.amount?.message}
+                  type="number"
+                  min={LOAN_CONFIG.personal.minAmount}
+                  max={LOAN_CONFIG.personal.maxAmount}
+                />
+                <InputField
+                  label="Срок (дней)"
+                  registration={register('termDays', { valueAsNumber: true })}
+                  error={errors.termDays?.message}
+                  type="number"
+                  min={LOAN_CONFIG.personal.minDays}
+                  max={LOAN_CONFIG.personal.maxDays}
+                />
               </div>
               <div style={{ background: 'var(--surface-0)', borderRadius: '10px', padding: '0.875rem 1rem', marginBottom: '1rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                 <div>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '3px' }}>Ежедневный платёж</p>
-                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#fff', fontSize: '1.125rem' }}>{formatCurrency(payment)}</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: '#fff', fontSize: '1.125rem' }}>{formatCurrency(personalPreview.payment)}</p>
                 </div>
                 <div>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '3px' }}>Итого к возврату</p>
-                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--accent-indigo)', fontSize: '1.125rem' }}>{formatCurrency(total)}</p>
+                  <p style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: 'var(--accent-indigo)', fontSize: '1.125rem' }}>{formatCurrency(personalPreview.total)}</p>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <InputField label="Название компании" value={fields.companyName || ''} onChange={(e) => set('companyName', e.target.value)} error={errors.companyName} placeholder="LumenBridge OU" />
-              <InputField label="Регистрационный номер" value={fields.regNumber || ''} onChange={(e) => set('regNumber', e.target.value)} error={errors.regNumber} placeholder="EE123456789" />
-              <InputField label="Имя представителя" value={fields.repName || ''} onChange={(e) => set('repName', e.target.value)} error={errors.repName} placeholder="Иван Иванов" />
-              <InputField label="Должность представителя" value={fields.repPosition || ''} onChange={(e) => set('repPosition', e.target.value)} error={errors.repPosition} placeholder="Генеральный директор" />
-              <InputField label="Email" type="email" value={fields.email || ''} onChange={(e) => set('email', e.target.value)} error={errors.email} placeholder="info@company.com" />
+              <div style={{ background: 'rgba(201,146,58,0.14)', border: '1px solid rgba(201,146,58,0.26)', borderRadius: '10px', padding: '0.875rem 1rem', marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.6 }}>
+                На данный момент заявки для бизнеса принимаются через форму обратной связи. Онлайн-кабинет для бизнеса будет доступен позже.
+              </div>
+              <InputField label="Название компании" registration={register('companyName')} error={errors.companyName?.message} placeholder="LumenBridge OU" />
+              <InputField label="Регистрационный номер" registration={register('regNumber')} error={errors.regNumber?.message} placeholder="EE123456789" />
+              <InputField label="Имя представителя" registration={register('repName')} error={errors.repName?.message} placeholder="Иван Иванов" />
+              <InputField label="Должность представителя" registration={register('repPosition')} error={errors.repPosition?.message} placeholder="Генеральный директор" />
+              <InputField label="Email" registration={register('email')} error={errors.email?.message} type="email" placeholder="info@company.com" />
               <InputField
                 label="Номер телефона"
+                registration={register('phone')}
+                error={errors.phone?.message}
                 placeholder="+353..."
-                value={phoneLocked ? user!.phone : (fields.phone || '')}
-                onChange={(e) => !phoneLocked && set('phone', e.target.value)}
-                error={errors.phone}
                 hint="Международный формат: +35312345678"
                 locked={phoneLocked}
                 onSwitch={handleSwitchAccount}
               />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1rem' }}>
-                <NumericField label="Сумма займа (EUR)" value={fields.amount} min={LOAN_CONFIG.business.minAmount} max={LOAN_CONFIG.business.maxAmount} onChange={(v) => set('amount', v)} error={errors.amount} />
-                <NumericField label="Срок (месяцев)" value={fields.termMonths} min={LOAN_CONFIG.business.minMonths} max={LOAN_CONFIG.business.maxMonths} onChange={(v) => set('termMonths', v)} error={errors.termMonths} />
+                <InputField
+                  label="Сумма займа (EUR)"
+                  registration={register('amount', { valueAsNumber: true })}
+                  error={errors.amount?.message}
+                  type="number"
+                  min={LOAN_CONFIG.business.minAmount}
+                  max={LOAN_CONFIG.business.maxAmount}
+                />
+                <InputField
+                  label="Срок (месяцев)"
+                  registration={register('termMonths', { valueAsNumber: true })}
+                  error={errors.termMonths?.message}
+                  type="number"
+                  min={LOAN_CONFIG.business.minMonths}
+                  max={LOAN_CONFIG.business.maxMonths}
+                />
               </div>
             </>
           )}
 
-          {/* Consent */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', marginBottom: '0.5rem' }}>
-            <input type="checkbox" id="consent" checked={!!fields.consent} onChange={(e) => set('consent', e.target.checked)} style={{ marginTop: '3px', cursor: 'pointer', accentColor: 'var(--accent-indigo)' }} />
+            <input type="checkbox" id="consent" {...register('consent')} style={{ marginTop: '3px', cursor: 'pointer', accentColor: 'var(--accent-indigo)' }} />
             <label htmlFor="consent" style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', cursor: 'pointer', lineHeight: 1.5 }}>
               Я ознакомлен(-а) с{' '}
               <Link href="/terms" target="_blank" style={{ color: 'var(--accent-indigo)' }}>условиями использования</Link>{' '}
@@ -374,7 +483,7 @@ function ApplyInner() {
               <Link href="/privacy" target="_blank" style={{ color: 'var(--accent-indigo)' }}>политикой конфиденциальности</Link>
             </label>
           </div>
-          {errors.consent && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.75rem', marginBottom: '0.875rem' }}>{errors.consent}</p>}
+          {errors.consent?.message && <p style={{ color: 'var(--accent-crimson)', fontSize: '0.75rem', marginBottom: '0.875rem' }}>{errors.consent.message}</p>}
 
           {serverError && (
             <div style={{ background: 'rgba(239, 71, 111, 0.16)', borderLeft: '4px solid var(--accent-crimson)', borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: '#fecdd3' }}>
@@ -383,27 +492,32 @@ function ApplyInner() {
           )}
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-            <button onClick={() => setStep(1)} style={{ flex: 1, background: 'var(--surface-1)', border: '1.5px solid var(--accent-indigo)', color: 'var(--accent-indigo)', borderRadius: '8px', padding: '11px', fontWeight: 600, cursor: 'pointer' }}>
+            <button type="button" onClick={() => setStep(1)} style={{ flex: 1, background: 'var(--surface-1)', border: '1.5px solid var(--accent-indigo)', color: 'var(--accent-indigo)', borderRadius: '8px', padding: '11px', fontWeight: 600, cursor: 'pointer' }}>
               Назад
             </button>
-            <button onClick={submit} disabled={loading} style={{ flex: 2, background: loading ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading ? 'Отправка...' : 'Отправить заявку'}
+            <button type="submit" disabled={isSubmitting} style={{ flex: 2, background: isSubmitting ? 'rgba(79, 70, 229, 0.55)' : 'var(--accent-indigo)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
+              {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
             </button>
           </div>
         </>
       )}
-    </>
+    </form>
   );
 }
 
 export default function ApplyPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--surface-0)', padding: '3rem 1rem 2rem' }}>
-      <div style={{
-        maxWidth: '640px', margin: '0 auto', background: 'var(--surface-1)',
-        borderRadius: '12px', padding: '1rem',
-        boxShadow: '0 4px 24px rgba(13,27,42,0.08), 0 1px 3px rgba(13,27,42,0.04)',
-      }}>
+      <div
+        style={{
+          maxWidth: '640px',
+          margin: '0 auto',
+          background: 'var(--surface-1)',
+          borderRadius: '12px',
+          padding: '1rem',
+          boxShadow: '0 4px 24px rgba(13,27,42,0.08), 0 1px 3px rgba(13,27,42,0.04)',
+        }}
+      >
         <div style={{ marginBottom: '1.5rem' }}>
           <p style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-indigo)', marginBottom: '0.375rem' }}>
             Оформление займа

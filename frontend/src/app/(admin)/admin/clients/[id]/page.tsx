@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getLoanTermLabel } from '@/shared/lib/loan-display';
 import { ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
@@ -17,7 +18,7 @@ function getAdminToken(): string | null {
 interface PaymentReqItem { id: string; amount: number; reference: string; status: string; createdAt: string }
 interface PaymentItem    { id: string; amount: number; recordedAt: string; note?: string | null }
 interface LoanItem {
-  id: string; amount: number; termDays: number; totalRepayment: number;
+  id: string; type: 'personal' | 'business'; amount: number; termDays?: number; termMonths?: number; totalRepayment: number;
   paidAmount: number; remainingAmount: number; status: string;
   issuedAt?: string; closedAt?: string;
   payments: PaymentItem[];
@@ -160,7 +161,7 @@ export default function AdminClientDetailPage() {
                       {client.loans.map((l) => (
                         <tr key={l.id}>
                           <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
-                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{l.termDays} дн.</td>
+                          <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{getLoanTermLabel(l, 'short')}</td>
                           <td style={{ fontFamily: 'var(--f-mono)', color: 'var(--accent-mint)' }}>{formatCurrency(l.paidAmount)}</td>
                           <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700, color: l.remainingAmount === 0 ? 'var(--accent-mint)' : 'var(--text-primary)' }}>{formatCurrency(l.remainingAmount)}</td>
                           <td style={{ fontSize: '0.8125rem', color: l.status === 'overdue' ? 'var(--accent-crimson)' : l.status === 'closed' ? 'var(--accent-mint)' : 'var(--text-secondary)' }}>

@@ -5,13 +5,16 @@ import CabinetShell from '@/widgets/sidebar/CabinetShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { getToken } from '@/shared/lib/auth';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getLoanTermLabel } from '@/shared/lib/loan-display';
 import { CalendarClock, CreditCard, Wallet } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/Skeleton';
 
 interface LoanDto {
   id: string;
+  type: 'personal' | 'business';
   amount: number;
-  termDays: number;
+  termDays?: number;
+  termMonths?: number;
   dailyPayment: number;
   totalRepayment: number;
   paidAmount: number;
@@ -62,7 +65,7 @@ function LoanCard({ loan }: { loan: LoanDto }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '1rem', marginBottom: '1rem' }}>
         <div>
           <p style={{ fontFamily: 'var(--f-mono)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{formatCurrency(loan.amount)}</p>
-          <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{loan.issuedAt ? `Выдан ${formatDate(loan.issuedAt)}` : `${loan.termDays} дней`}</p>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{loan.issuedAt ? `Выдан ${formatDate(loan.issuedAt)}` : getLoanTermLabel(loan)}</p>
         </div>
         <span className={`badge ${status.cls}`}>{status.label}</span>
       </div>
@@ -90,7 +93,7 @@ function LoanCard({ loan }: { loan: LoanDto }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-          {loan.nextPaymentDate ? `Платёж до ${formatDate(loan.nextPaymentDate)}` : loan.closedAt ? `Закрыт ${formatDate(loan.closedAt)}` : `${loan.termDays} дней`}
+          {loan.nextPaymentDate ? `Платёж до ${formatDate(loan.nextPaymentDate)}` : loan.closedAt ? `Закрыт ${formatDate(loan.closedAt)}` : getLoanTermLabel(loan)}
         </div>
         <Link href={`/cabinet/loans/${loan.id}`} style={{ background: 'var(--accent-indigo)', color: '#fff', borderRadius: '10px', padding: '9px 16px', fontWeight: 600, textDecoration: 'none' }}>
           Открыть

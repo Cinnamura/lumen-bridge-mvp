@@ -7,6 +7,7 @@ import CabinetShell from '@/widgets/sidebar/CabinetShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { getToken } from '@/shared/lib/auth';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getLoanPaymentLabel, getLoanRateLabel, getLoanTermLabel } from '@/shared/lib/loan-display';
 import { Skeleton } from '@/shared/ui/Skeleton';
 
 interface ScheduleItem {
@@ -31,8 +32,10 @@ interface PaymentReq {
 
 interface LoanDetail {
   id: string;
+  type: 'personal' | 'business';
   amount: number;
-  termDays: number;
+  termDays?: number;
+  termMonths?: number;
   dailyRate: number;
   dailyPayment: number;
   totalRepayment: number;
@@ -400,8 +403,8 @@ export default function LoanDetailPage() {
               {[
                 { label: 'Итого к возврату', value: formatCurrency(loan.totalRepayment), tone: 'rgba(59,130,246,0.14)' },
                 { label: 'Выплачено', value: formatCurrency(loan.paidAmount), tone: 'rgba(16,185,129,0.14)' },
-                { label: 'Ставка', value: `${(loan.dailyRate * 100).toFixed(1)}% / день`, tone: 'rgba(139,92,246,0.14)' },
-                { label: 'Срок', value: `${loan.termDays} дней`, tone: 'rgba(245,158,11,0.14)' },
+                { label: 'Ставка', value: getLoanRateLabel(loan), tone: 'rgba(139,92,246,0.14)' },
+                { label: 'Срок', value: getLoanTermLabel(loan), tone: 'rgba(245,158,11,0.14)' },
               ].map((item) => (
                 <div key={item.label} style={{ ...darkCard({ padding: '1rem 1.05rem', background: `linear-gradient(180deg, ${item.tone} 0%, rgba(11,15,25,0.96) 100%)` }) }}>
                   <p style={{ fontSize: '0.75rem', color: 'rgba(154,164,182,0.86)', marginBottom: '4px' }}>{item.label}</p>
@@ -469,7 +472,7 @@ export default function LoanDetailPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.875rem', gap: '1rem', flexWrap: 'wrap' }}>
                   <div>
                     <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#F8FAFC', marginBottom: '0.25rem' }}>График платежей</h3>
-                    <p style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>Календарные даты зафиксированы, а переплата уменьшает только будущие суммы.</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>Переплата может закрыть будущие строки заранее и сдвинуть следующий обязательный платёж.</p>
                   </div>
                   <span style={{ fontFamily: 'var(--f-mono)', fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>{openRows.length} актуальных · {paidRows.length} оплаченных</span>
                 </div>
@@ -484,7 +487,7 @@ export default function LoanDetailPage() {
                   <div style={{ marginTop: '0.875rem' }}>
                     <button onClick={() => setShowPaidRows((value) => !value)} className="btn btn-secondary btn-sm" style={{ gap: '0.5rem' }}>
                       {showPaidRows ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      {showPaidRows ? 'Скрыть оплаченные дни' : 'Показать оплаченные дни'}
+                      {showPaidRows ? 'Скрыть оплаченные строки графика' : 'Показать оплаченные строки графика'}
                     </button>
                     {showPaidRows && <div style={{ marginTop: '0.75rem' }}><ScheduleRows rows={paidRows} tone="paid" nearestPendingId={nearestPendingId} /></div>}
                   </div>
@@ -603,7 +606,7 @@ export default function LoanDetailPage() {
                   { label: 'Дата выдачи', value: loan.issuedAt ? formatDate(loan.issuedAt) : '—' },
                   { label: 'Дата подписания', value: loan.signedAt ? formatDate(loan.signedAt) : '—' },
                   { label: 'Дата закрытия', value: loan.closedAt ? formatDate(loan.closedAt) : '—' },
-                  { label: 'Ежедневный платёж', value: formatCurrency(loan.dailyPayment) },
+                  { label: getLoanPaymentLabel(loan.type), value: formatCurrency(loan.dailyPayment) },
                 ].map((item) => (
                   <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', paddingBottom: '0.625rem', borderBottom: '1px solid rgba(140,144,159,0.14)' }}>
                     <span style={{ fontSize: '0.8125rem', color: 'rgba(154,164,182,0.88)' }}>{item.label}</span>

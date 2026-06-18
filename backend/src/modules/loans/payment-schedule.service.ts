@@ -10,6 +10,12 @@ function addDays(base: Date, days: number): Date {
   return d;
 }
 
+function addMonths(base: Date, months: number): Date {
+  const d = new Date(base);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d;
+}
+
 @Injectable()
 export class PaymentScheduleService {
   constructor(
@@ -17,9 +23,12 @@ export class PaymentScheduleService {
     private notifications: NotificationsService,
   ) {}
 
-  /** Создаёт график ежедневных платежей после подписания займа (одной транзакцией). */
+  /** Создаёт график платежей после подписания займа (одной транзакцией). */
   async build(loanId: string) {
-    const loan = await this.prisma.loan.findUnique({ where: { id: loanId } });
+    const loan = await this.prisma.loan.findUnique({
+      where: { id: loanId },
+      include: { application: { select: { type: true } } },
+    });
     if (!loan) return;
 
     const issued = loan.issuedAt ?? new Date();
@@ -28,11 +37,12 @@ export class PaymentScheduleService {
       Number(loan.dailyRate),
       loan.termDays,
     );
+    const isBusinessLoan = loan.application.type === 'business';
 
     const rows: Prisma.PaymentScheduleCreateManyInput[] = amounts.map((amount, index) => ({
       loanId,
       seq: index + 1,
-      dueDate: addDays(issued, index + 1),
+      dueDate: isBusinessLoan ? addMonths(issued, index + 1) : addDays(issued, index + 1),
       amountRequired: new Prisma.Decimal(amount),
       amountPaid: new Prisma.Decimal(0),
       status: 'UNPAID',
@@ -43,8 +53,9 @@ export class PaymentScheduleService {
   }
 
   /**
-   * Полностью перестраивает календарный график по истории успешных платежей.
-   * Даты и seq никогда не сдвигаются: меняются только amountRequired/amountPaid/status.
+   * Полностью перестраивает график по истории успешных платежей.
+   * Переплата может закрывать будущие строки раньше срока, сдвигая
+   * ближайший обязательный платёж на более позднюю дату.
    */
   async synchronize(loanId: string): Promise<{
     rows: Array<{
@@ -117,16 +128,16 @@ export class PaymentScheduleService {
     await this.prisma.$transaction(
       [
         ...normalized.rows.map((row) =>
-        this.prisma.paymentSchedule.update({
-          where: { id: row.id },
-          data: {
-            amountRequired: new Prisma.Decimal(row.amountRequired),
-            amountPaid: new Prisma.Decimal(row.amountPaid),
-            status: row.status,
-            paidAt: row.paidAt,
-          },
-        }),
-      ),
+          this.prisma.paymentSchedule.update({
+            where: { id: row.id },
+            data: {
+              amountRequired: new Prisma.Decimal(row.amountRequired),
+              amountPaid: new Prisma.Decimal(row.amountPaid),
+              status: row.status,
+              paidAt: row.paidAt,
+            },
+          }),
+        ),
         this.prisma.loan.update({
           where: { id: loanId },
           data: {

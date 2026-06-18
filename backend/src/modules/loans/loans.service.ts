@@ -13,7 +13,7 @@ import { PaymentScheduleService } from './payment-schedule.service';
 
 function nextPayment(schedule: any[]) {
   const pending = schedule
-    .filter((s) => s.status !== 'PAID')
+    .filter((s) => s.status !== 'PAID' && s.status !== 'SKIPPED_EARLY_PAYMENT')
     .sort((a, b) => a.seq - b.seq)[0];
   return pending
     ? {
@@ -27,12 +27,15 @@ function nextPayment(schedule: any[]) {
 }
 
 function toLoanDto(loan: any, schedule: any[] = []) {
+  const type = loan.application?.type === 'business' ? 'business' : 'personal';
   const np = nextPayment(schedule.length ? schedule : loan.schedule ?? []);
   return {
     id: loan.id,
     applicationId: loan.applicationId,
+    type,
     amount: Number(loan.amount),
-    termDays: loan.termDays,
+    termDays: type === 'personal' ? loan.termDays : undefined,
+    termMonths: type === 'business' ? loan.application?.termMonths ?? loan.termDays : undefined,
     dailyRate: Number(loan.dailyRate),
     dailyPayment: Number(loan.dailyPayment),
     totalRepayment: Number(loan.totalRepayment),
@@ -81,13 +84,19 @@ export class LoansService {
   async listForUser(userId: string) {
     const loans = await this.prisma.loan.findMany({
       where: { userId },
-      include: { schedule: { orderBy: { seq: 'asc' } } },
+      include: {
+        application: { select: { type: true, termMonths: true } },
+        schedule: { orderBy: { seq: 'asc' } },
+      },
       orderBy: { createdAt: 'desc' },
     });
     await Promise.all(loans.map((loan) => this.synchronizeSafely(loan.id)));
     const syncedLoans = await this.prisma.loan.findMany({
       where: { userId },
-      include: { schedule: { orderBy: { seq: 'asc' } } },
+      include: {
+        application: { select: { type: true, termMonths: true } },
+        schedule: { orderBy: { seq: 'asc' } },
+      },
       orderBy: { createdAt: 'desc' },
     });
     const active = syncedLoans
@@ -104,7 +113,11 @@ export class LoansService {
 
     const loan = await this.prisma.loan.findUnique({
       where: { id },
-      include: { schedule: { orderBy: { seq: 'asc' } }, payments: true },
+      include: {
+        application: { select: { type: true, termMonths: true } },
+        schedule: { orderBy: { seq: 'asc' } },
+        payments: true,
+      },
     });
     if (!loan) throw new NotFoundException('Займ не найден');
     if (loan.userId !== userId) throw new ForbiddenException('Нет доступа к займу');

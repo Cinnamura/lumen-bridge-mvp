@@ -33,10 +33,10 @@ describe('payment schedule utils', () => {
     expect(normalized.rows[1].status).toBe('UNPAID');
   });
 
-  it('reduces only future installment amounts after an overpayment', () => {
+  it('reduces future obligations when the payment exceeds the current installment', () => {
     const rows = buildRows();
     const base = buildInstallmentAmounts(1000, 0.008, rows.length);
-    const firstDayPayment = base[0] + 150;
+    const firstDayPayment = base[0] + 50;
 
     const normalized = replayScheduleRows({
       rows,
@@ -47,10 +47,27 @@ describe('payment schedule utils', () => {
     });
 
     expect(normalized.rows[0].status).toBe('PAID');
+    expect(normalized.rows[1].status).toBe('UNPAID');
     expect(normalized.rows[1].dueDate.toISOString()).toBe('2026-06-18T00:00:00.000Z');
     expect(normalized.rows[1].amountRequired).toBeLessThan(base[1]);
-    expect(normalized.rows[2].amountRequired).toBeLessThan(base[2]);
     expect(normalized.totalRepayment).toBeLessThan(Number(base.reduce((sum, value) => sum + value, 0).toFixed(2)));
+    expect(normalized.outstandingPrincipal).toBeLessThan(752.98);
+  });
+
+  it('closes the loan when the borrower pays principal plus one day of interest on day one', () => {
+    const normalized = replayScheduleRows({
+      rows: buildRows(),
+      principal: 1000,
+      dailyRate: 0.008,
+      payments: [{ amount: 1008, recordedAt: new Date('2026-06-17T10:00:00.000Z') }],
+      now: new Date('2026-06-17T12:00:00.000Z'),
+    });
+
+    expect(normalized.rows[0].status).toBe('PAID');
+    expect(normalized.rows.slice(1).every((row) => row.status === 'SKIPPED_EARLY_PAYMENT')).toBe(true);
+    expect(normalized.remainingAmount).toBe(0);
+    expect(normalized.outstandingPrincipal).toBe(0);
+    expect(normalized.allPaid).toBe(true);
   });
 
   it('marks an unpaid past day as overdue while preserving already paid part', () => {

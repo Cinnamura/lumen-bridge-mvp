@@ -5,6 +5,7 @@ import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getLoanTermLabel } from '@/shared/lib/loan-display';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TableSkeleton } from '@/shared/ui/Skeleton';
 
@@ -15,8 +16,10 @@ function getAdminToken(): string | null {
 
 interface LoanRow {
   id: string;
+  type: 'personal' | 'business';
   amount: number;
-  termDays: number;
+  termDays?: number;
+  termMonths?: number;
   dailyPayment: number;
   totalRepayment: number;
   paidAmount: number;
@@ -115,7 +118,7 @@ export default function AdminLoansPage() {
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--f-mono)' }}>{l.user?.phone ?? '—'}</div>
                         </td>
                         <td style={{ fontFamily: 'var(--f-mono)', fontWeight: 700 }}>{formatCurrency(l.amount)}</td>
-                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{l.termDays} дн.</td>
+                        <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>{getLoanTermLabel(l, 'short')}</td>
                         <td>
                           {l.status === 'pending_signing' ? (
                             <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>Ожидает подписания клиентом</span>

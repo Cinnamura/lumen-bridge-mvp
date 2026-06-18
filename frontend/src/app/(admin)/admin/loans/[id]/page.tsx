@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AdminShell from '@/widgets/sidebar/AdminShell';
 import { api, authHeader } from '@/shared/lib/api';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
+import { getLoanPaymentLabel, getLoanRateLabel, getLoanTermLabel } from '@/shared/lib/loan-display';
 import { ChevronLeft } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { useAdminAuth, useAdminErrorHandler } from '@/shared/lib/admin-auth-context';
@@ -30,7 +31,8 @@ interface LoanDetail {
   id: string; applicationId: string;
   userId: string;
   user?: { id: string; phone: string; firstName?: string; lastName?: string; email?: string };
-  amount: number; termDays: number;
+  type: 'personal' | 'business';
+  amount: number; termDays?: number; termMonths?: number;
   dailyRate: number; dailyPayment: number; totalRepayment: number;
   paidAmount: number; remainingAmount: number;
   status: string;
@@ -126,7 +128,7 @@ export default function AdminLoanDetailPage() {
   const loanStatusStyle = loan ? LOAN_STATUS_COLORS[loan.status] ?? { bg: '#F0F3F6', color: 'var(--text-secondary)' } : null;
   const transitions     = loan ? ALLOWED_LOAN_TRANSITIONS[loan.status] ?? [] : [];
   const paidCount       = loan?.schedule.filter(s => s.status === 'PAID').length ?? 0;
-  const nextSchedule    = loan?.schedule.find(s => s.status !== 'PAID');
+  const nextSchedule    = loan?.schedule.find((s) => s.status !== 'PAID' && s.status !== 'SKIPPED_EARLY_PAYMENT');
 
   return (
     <AdminShell>
@@ -184,9 +186,9 @@ export default function AdminLoanDetailPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
                 {[
                   { label: 'Сумма займа',       value: formatCurrency(loan.amount) },
-                  { label: 'Ставка',             value: `${(loan.dailyRate * 100).toFixed(1)}% / день` },
-                  { label: 'Срок',               value: `${loan.termDays} дней` },
-                  { label: 'Ежедневный платёж',  value: formatCurrency(loan.dailyPayment) },
+                  { label: 'Ставка',             value: getLoanRateLabel(loan) },
+                  { label: 'Срок',               value: getLoanTermLabel(loan) },
+                  { label: getLoanPaymentLabel(loan.type),  value: formatCurrency(loan.dailyPayment) },
                   { label: 'Дата выдачи',        value: loan.issuedAt ? formatDate(loan.issuedAt) : '—' },
                   { label: 'Дата закрытия',      value: loan.closedAt ? formatDate(loan.closedAt) : '—' },
                   ...(loan.signedIp ? [{ label: 'IP подписания', value: loan.signedIp }] : []),

@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { calcAnnuity } from '../../common/utils/loan-calculator';
+import { calcAnnuity, LOAN_CONFIG } from '../../common/utils/loan-calculator';
 
 const DAILY_RATE = 0.008;
 
@@ -43,6 +43,14 @@ export class ApplicationsService {
    * frontend can overwrite any stale token in localStorage.
    */
   async create(dto: any) {
+    if (dto.type === 'business') {
+      throw new BadRequestException(
+        'Заявки для бизнеса принимаются через форму обратной связи. Онлайн-кабинет будет доступен позже.',
+      );
+    }
+
+    this.validateLoanBounds(dto);
+
     // Validate dateOfBirth range server-side to prevent year > 9999 and
     // other out-of-range values that would crash Postgres or produce garbage data.
     if (dto.dateOfBirth) {
@@ -71,8 +79,14 @@ export class ApplicationsService {
       // Backfill name/email on existing user if previously empty
       const updates: Record<string, string> = {};
       if (!user.firstName && dto.firstName) updates.firstName = dto.firstName;
-      if (!user.lastName  && dto.lastName)  updates.lastName  = dto.lastName;
-      if (!user.email     && dto.email)     updates.email     = dto.email;
+      if (!user.lastName && dto.lastName) updates.lastName = dto.lastName;
+      if (!user.email && dto.email) updates.email = dto.email;
+      if (Object.keys(updates).length > 0) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
+      }
+    } else {
+      const updates: Record<string, string> = {};
+      if (!user.email && dto.email) updates.email = dto.email;
       if (Object.keys(updates).length > 0) {
         user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
       }
@@ -123,26 +137,29 @@ export class ApplicationsService {
 
   /** Список всех заявок для админ-панели с пагинацией и фильтром по статусу. */
   async listAll(opts: { page?: number; limit?: number; status?: string; search?: string } = {}) {
-    const page  = Math.max(1, opts.page  ?? 1);
+    const page = Math.max(1, opts.page ?? 1);
     const limit = Math.min(100, Math.max(1, opts.limit ?? 20));
-    const skip  = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     const where: any = {};
     if (opts.status) where.status = opts.status;
     if (opts.search) {
       where.OR = [
-        { firstName:  { contains: opts.search, mode: 'insensitive' } },
-        { lastName:   { contains: opts.search, mode: 'insensitive' } },
-        { phone:      { contains: opts.search, mode: 'insensitive' } },
-        { email:      { contains: opts.search, mode: 'insensitive' } },
-        { companyName:{ contains: opts.search, mode: 'insensitive' } },
+        { firstName: { contains: opts.search, mode: 'insensitive' } },
+        { lastName: { contains: opts.search, mode: 'insensitive' } },
+        { phone: { contains: opts.search, mode: 'insensitive' } },
+        { email: { contains: opts.search, mode: 'insensitive' } },
+        { companyName: { contains: opts.search, mode: 'insensitive' } },
       ];
     }
 
     const [total, items] = await this.prisma.$transaction([
       this.prisma.application.count({ where }),
       this.prisma.application.findMany({
-        where, orderBy: { createdAt: 'desc' }, skip, take: limit,
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
         include: { user: { select: { id: true, phone: true, firstName: true, lastName: true } } },
       }),
     ]);
@@ -150,14 +167,18 @@ export class ApplicationsService {
     return {
       data: items.map((a) => ({
         ...toApplicationDto(a),
-        user: a.user ? {
-          id: a.user.id,
-          phone: a.user.phone,
-          firstName: a.user.firstName ?? undefined,
-          lastName: a.user.lastName ?? undefined,
-        } : undefined,
+        user: a.user
+          ? {
+              id: a.user.id,
+              phone: a.user.phone,
+              firstName: a.user.firstName ?? undefined,
+              lastName: a.user.lastName ?? undefined,
+            }
+          : undefined,
       })),
-      total, page, limit,
+      total,
+      page,
+      limit,
     };
   }
 
@@ -169,18 +190,21 @@ export class ApplicationsService {
     if (!app) throw new NotFoundException('Заявка не найдена');
     return {
       ...toApplicationDto(app),
-      user: app.user ? {
-        id: app.user.id, phone: app.user.phone,
-        firstName: app.user.firstName ?? undefined,
-        lastName:  app.user.lastName  ?? undefined,
-        email:     app.user.email     ?? undefined,
-      } : undefined,
+      user: app.user
+        ? {
+            id: app.user.id,
+            phone: app.user.phone,
+            firstName: app.user.firstName ?? undefined,
+            lastName: app.user.lastName ?? undefined,
+            email: app.user.email ?? undefined,
+          }
+        : undefined,
     };
   }
 
   /**
    * Смена статуса заявки оператором/админом.
-   * При approved для personal-заявки создаётся займ (pending_signing)
+   * При approved создаётся займ (pending_signing)
    * и отправляются уведомления пользователю.
    */
   async updateStatus(id: string, status: string, comment?: string) {
@@ -190,10 +214,10 @@ export class ApplicationsService {
     // Конечный автомат статусов заявки. approved/rejected — терминальные:
     // одобренную заявку (по которой уже создан займ) нельзя отклонить.
     const ALLOWED: Record<string, string[]> = {
-      new:       ['in_review', 'approved', 'rejected'],
+      new: ['in_review', 'approved', 'rejected'],
       in_review: ['approved', 'rejected'],
-      approved:  [],
-      rejected:  [],
+      approved: [],
+      rejected: [],
     };
     if (app.status !== status) {
       const allowed = ALLOWED[app.status] ?? [];
@@ -209,7 +233,12 @@ export class ApplicationsService {
       data: { status, comment: comment ?? app.comment },
     });
 
-    if (status === 'approved' && app.type === 'personal' && app.userId && app.termDays) {
+    if (
+      status === 'approved'
+      && app.userId
+      && app.type === 'personal'
+      && app.termDays
+    ) {
       await this.createLoanForApplication(updated);
     }
 
@@ -226,17 +255,46 @@ export class ApplicationsService {
     return toApplicationDto(updated);
   }
 
+  private validateLoanBounds(dto: any) {
+    if (dto.type === 'personal') {
+      if (dto.amount < LOAN_CONFIG.personal.minAmount || dto.amount > LOAN_CONFIG.personal.maxAmount) {
+        throw new BadRequestException(
+          `Сумма займа должна быть от ${LOAN_CONFIG.personal.minAmount} до ${LOAN_CONFIG.personal.maxAmount} EUR`,
+        );
+      }
+      if (dto.termDays < LOAN_CONFIG.personal.minDays || dto.termDays > LOAN_CONFIG.personal.maxDays) {
+        throw new BadRequestException(
+          `Срок займа должен быть от ${LOAN_CONFIG.personal.minDays} до ${LOAN_CONFIG.personal.maxDays} дней`,
+        );
+      }
+      return;
+    }
+
+    if (dto.amount < LOAN_CONFIG.business.minAmount || dto.amount > LOAN_CONFIG.business.maxAmount) {
+      throw new BadRequestException(
+        `Сумма займа должна быть от ${LOAN_CONFIG.business.minAmount} до ${LOAN_CONFIG.business.maxAmount} EUR`,
+      );
+    }
+    if (dto.termMonths < LOAN_CONFIG.business.minMonths || dto.termMonths > LOAN_CONFIG.business.maxMonths) {
+      throw new BadRequestException(
+        `Срок займа должен быть от ${LOAN_CONFIG.business.minMonths} до ${LOAN_CONFIG.business.maxMonths} месяцев`,
+      );
+    }
+  }
+
   private async createLoanForApplication(app: any) {
     const amount = Number(app.amount);
-    const termDays = app.termDays as number;
-    const { payment, total } = calcAnnuity(amount, DAILY_RATE, termDays);
+    const installmentsCount = app.type === 'business'
+      ? (app.termMonths as number)
+      : (app.termDays as number);
+    const { payment, total } = calcAnnuity(amount, DAILY_RATE, installmentsCount);
 
     const loan = await this.prisma.loan.create({
       data: {
         applicationId: app.id,
         userId: app.userId,
         amount: new Prisma.Decimal(amount),
-        termDays,
+        termDays: installmentsCount,
         dailyRate: new Prisma.Decimal(DAILY_RATE),
         dailyPayment: new Prisma.Decimal(payment),
         totalRepayment: new Prisma.Decimal(total),
@@ -258,7 +316,5 @@ export class ApplicationsService {
       body: 'Перейдите в раздел «Мои займы», чтобы подписать договор.',
       relatedId: loan.id,
     });
-
-    return loan;
   }
 }

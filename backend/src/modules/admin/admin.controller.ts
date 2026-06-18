@@ -259,6 +259,7 @@ export class AdminController {
         loans: {
           orderBy: { createdAt: 'desc' },
           include: {
+            application: { select: { type: true, termMonths: true } },
             payments: { orderBy: { recordedAt: 'desc' } },
             paymentRequests: { orderBy: { createdAt: 'desc' } },
           },
@@ -276,7 +277,11 @@ export class AdminController {
         status: a.status, createdAt: a.createdAt.toISOString(),
       })),
       loans: user.loans.map((l) => ({
-        id: l.id, amount: Number(l.amount), termDays: l.termDays,
+        id: l.id,
+        type: l.application.type,
+        amount: Number(l.amount),
+        termDays: l.application.type === 'personal' ? l.termDays : undefined,
+        termMonths: l.application.type === 'business' ? l.application.termMonths ?? l.termDays : undefined,
         totalRepayment: Number(l.totalRepayment),
         paidAmount: Number(l.paidAmount), remainingAmount: Number(l.remainingAmount),
         status: l.status,
@@ -306,14 +311,20 @@ export class AdminController {
       this.prisma.loan.count({ where }),
       this.prisma.loan.findMany({
         where, orderBy: { createdAt: 'desc' }, skip: (pg - 1) * lm, take: lm,
-        include: { user: { select: { id: true, phone: true, firstName: true, lastName: true } } },
+        include: {
+          application: { select: { type: true, termMonths: true } },
+          user: { select: { id: true, phone: true, firstName: true, lastName: true } },
+        },
       }),
     ]);
     return {
       data: items.map((l) => ({
         id: l.id, applicationId: l.applicationId,
         userId: l.userId, user: l.user,
-        amount: Number(l.amount), termDays: l.termDays,
+        type: l.application.type,
+        amount: Number(l.amount),
+        termDays: l.application.type === 'personal' ? l.termDays : undefined,
+        termMonths: l.application.type === 'business' ? l.application.termMonths ?? l.termDays : undefined,
         dailyRate: Number(l.dailyRate), dailyPayment: Number(l.dailyPayment),
         totalRepayment: Number(l.totalRepayment),
         paidAmount: Number(l.paidAmount), remainingAmount: Number(l.remainingAmount),
@@ -334,6 +345,7 @@ export class AdminController {
     const loan = await this.prisma.loan.findUnique({
       where: { id },
       include: {
+        application: { select: { type: true, termMonths: true } },
         user: { select: { id: true, phone: true, firstName: true, lastName: true, email: true } },
         schedule: { orderBy: { seq: 'asc' } },
         payments: { orderBy: { recordedAt: 'desc' } },
@@ -344,7 +356,10 @@ export class AdminController {
     return {
       id: loan.id, applicationId: loan.applicationId,
       userId: loan.userId, user: loan.user,
-      amount: Number(loan.amount), termDays: loan.termDays,
+      type: loan.application.type,
+      amount: Number(loan.amount),
+      termDays: loan.application.type === 'personal' ? loan.termDays : undefined,
+      termMonths: loan.application.type === 'business' ? loan.application.termMonths ?? loan.termDays : undefined,
       dailyRate: Number(loan.dailyRate), dailyPayment: Number(loan.dailyPayment),
       totalRepayment: Number(loan.totalRepayment),
       paidAmount: Number(loan.paidAmount), remainingAmount: Number(loan.remainingAmount),

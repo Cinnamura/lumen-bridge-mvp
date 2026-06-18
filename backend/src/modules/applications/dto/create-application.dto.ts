@@ -12,23 +12,27 @@ import {
   ValidateIf,
   IsDateString,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateApplicationDto {
   @IsIn(['personal', 'business'])
   type!: 'personal' | 'business';
 
+  @Type(() => Number)
   @IsNumber()
   @Min(500)
   @Max(500000)
   amount!: number;
 
   @ValidateIf((o) => o.type === 'personal')
+  @Type(() => Number)
   @IsNumber()
   @Min(7)
   @Max(90)
   termDays?: number;
 
   @ValidateIf((o) => o.type === 'business')
+  @Type(() => Number)
   @IsNumber()
   @Min(1)
   @Max(12)

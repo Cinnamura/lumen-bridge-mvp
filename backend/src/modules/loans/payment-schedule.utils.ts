@@ -61,6 +61,28 @@ function computeScheduledPrincipal(principal: number, dailyRate: number, amountR
   return roundMoney(Math.min(principal, Math.max(0, principalPart)));
 }
 
+function resetFutureRows(
+  rows: ReplayedScheduleRow[],
+  startIndex: number,
+  outstandingPrincipal: number,
+  dailyRate: number,
+  paidAt: Date | null,
+) {
+  const futureAmounts = buildInstallmentAmounts(
+    outstandingPrincipal,
+    dailyRate,
+    rows.length - startIndex,
+  );
+
+  for (let index = startIndex; index < rows.length; index += 1) {
+    const nextAmount = futureAmounts[index - startIndex] ?? 0;
+    rows[index].amountRequired = nextAmount;
+    rows[index].amountPaid = 0;
+    rows[index].amountRemaining = nextAmount;
+    rows[index].paidAt = nextAmount <= 0.0001 ? paidAt : null;
+  }
+}
+
 function deriveStatus(row: {
   dueDate: Date;
   amountRequired: number;
@@ -154,27 +176,21 @@ export function replayScheduleRows(params: {
           currentRow.amountRequired,
         );
         outstandingPrincipal = roundMoney(Math.max(0, outstandingPrincipal - scheduledPrincipal));
-        currentIndex += 1;
 
-        if (remainingPayment > 0.0001) {
+        if (remainingPayment > 0.0001 && outstandingPrincipal > 0.0001) {
           const extraPrincipal = roundMoney(Math.min(remainingPayment, outstandingPrincipal));
           outstandingPrincipal = roundMoney(Math.max(0, outstandingPrincipal - extraPrincipal));
           remainingPayment = roundMoney(remainingPayment - extraPrincipal);
-
-          const futureAmounts = buildInstallmentAmounts(
-            outstandingPrincipal,
-            params.dailyRate,
-            rows.length - currentIndex,
-          );
-
-          for (let index = currentIndex; index < rows.length; index += 1) {
-            const nextAmount = futureAmounts[index - currentIndex] ?? 0;
-            rows[index].amountRequired = nextAmount;
-            rows[index].amountPaid = 0;
-            rows[index].amountRemaining = nextAmount;
-            rows[index].paidAt = outstandingPrincipal <= 0.0001 ? payment.recordedAt : null;
-          }
         }
+
+        currentIndex += 1;
+        resetFutureRows(
+          rows,
+          currentIndex,
+          outstandingPrincipal,
+          params.dailyRate,
+          outstandingPrincipal <= 0.0001 ? payment.recordedAt : null,
+        );
       }
     }
   }
@@ -184,7 +200,7 @@ export function replayScheduleRows(params: {
     row.amountPaid = roundMoney(Math.min(row.amountPaid, row.amountRequired));
     row.amountRemaining = roundMoney(Math.max(0, row.amountRequired - row.amountPaid));
     row.status = deriveStatus(row, today);
-    if (row.status !== 'PAID' && row.amountRequired > 0.0001) {
+    if (row.status !== 'PAID' && row.status !== 'SKIPPED_EARLY_PAYMENT' && row.amountRequired > 0.0001) {
       row.paidAt = null;
     }
   }
@@ -198,7 +214,7 @@ export function replayScheduleRows(params: {
   const totalRepayment = roundMoney(
     rows.reduce((sum, row) => sum + row.amountRequired, 0),
   );
-  const nextOpenRow = rows.find((row) => row.status !== 'PAID' && row.amountRemaining > 0.0001);
+  const nextOpenRow = rows.find((row) => row.status !== 'PAID' && row.status !== 'SKIPPED_EARLY_PAYMENT' && row.amountRemaining > 0.0001);
 
   return {
     rows,

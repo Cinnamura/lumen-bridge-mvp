@@ -1,94 +1,201 @@
-# LumenBridge Finance — MVP
+# LumenBridge Finance
 
-Учебный финтех-сервис краткосрочного кредитования для физических лиц и малого
-бизнеса. Fullstack MVP: публичный сайт с кредитным калькулятором, личный кабинет
-клиента с подписанием займа и графиком платежей, административная панель для
-операторов и администраторов.
+LumenBridge Finance - учебный fullstack MVP сервиса краткосрочного кредитования.
+В репозитории есть:
 
-> Это учебный проект. Реальные SMS, платежи и скоринг не используются — все
-> такие операции имитируются (mock) и помечены в интерфейсе жёлтым баннером.
+- публичный сайт с кредитным калькулятором;
+- личный кабинет клиента с OTP-входом, подписанием займа и графиком платежей;
+- административная панель для операторов и администраторов;
+- backend API на NestJS;
+- PostgreSQL через Prisma.
 
----
+Важно: это учебный проект. SMS, платежи и часть бизнес-процессов работают в mock-режиме.
 
-## Стек
+## Что нужно для запуска
 
-| Слой | Технология |
-|---|---|
-| Frontend | Next.js 14 (App Router), TypeScript (strict), Tailwind CSS v4 |
-| Формы / валидация | React Hook Form + Valibot (клиент), class-validator (сервер) |
-| Архитектура фронта | Feature-Sliced Design |
-| Backend | NestJS (Node.js) |
-| ORM | Prisma |
-| База данных | PostgreSQL 16 |
-| Авторизация | JWT (клиент — телефон + OTP, персонал — login/password) |
+Минимально:
 
-## Структура репозитория
+- Git
+- Docker Engine / Docker Desktop
+- Docker Compose v2
+- Node.js
+- npm
 
-```
-frontend/            — Next.js (публичный сайт, ЛК клиента, админ-панель)
-backend/             — NestJS (REST API, Prisma-схема, миграции, сиды)
-docker-compose.yml   — контейнер PostgreSQL для локальной разработки
-AGENTS.md            — архитектурный закон проекта (дизайн, схема БД, API)
-TASK.md              — пошаговый план реализации
-```
+Проверенные версии:
 
----
+- Node.js: 20+ или 24+
+- npm: ставится вместе с Node.js
+- Docker Compose: `docker compose` (не старый `docker-compose`)
 
-## Требования
+Если система совсем пустая, сначала установите инструменты ниже, затем переходите к разделу `Запуск проекта`.
 
-- **Node.js** >= 18 (проверено на 24.x)
-- **Docker** + Docker Compose — для базы данных (либо локально установленный PostgreSQL >= 14)
-- Свободные порты: **5432** (БД), **3001** (backend), **3000** (frontend)
+## 1. Подготовка системы с нуля
 
----
+### Windows 10/11
 
-## Запуск с нуля до рабочего состояния
-
-Ниже — полная последовательность от чистого клона до работающего приложения.
-Откройте **два терминала**: один для backend, второй для frontend.
-
-### Шаг 1. Поднять базу данных (PostgreSQL в Docker)
-
-В корне репозитория уже лежит `docker-compose.yml`, который поднимает
-PostgreSQL 16 с нужными кредами (БД `lumenbridge`, пользователь `lumenuser`,
-пароль `lumenpass`, порт `5432`).
+1. Установите Git:
+   - https://git-scm.com/download/win
+2. Установите Node.js LTS:
+   - https://nodejs.org/en/download
+   - достаточно стандартного установщика `.msi`
+3. Установите Docker Desktop:
+   - https://www.docker.com/products/docker-desktop/
+4. Перезагрузите систему, если установщик Docker или WSL этого попросит.
+5. Откройте PowerShell и проверьте:
 
 ```bash
-# из корня проекта
-docker compose up -d            # поднять контейнер в фоне
-docker compose ps               # убедиться, что статус "Up"/"healthy"
+git --version
+node -v
+npm -v
+docker --version
+docker compose version
 ```
 
-Данные сохраняются в Docker-volume `postgres_data` и переживают перезапуск.
-Остановить БД: `docker compose down`. Полностью удалить вместе с данными:
-`docker compose down -v`.
+### macOS
 
-> **Без Docker:** установите PostgreSQL локально, создайте БД и пользователя,
-> затем пропишите свою строку подключения в `backend/.env` (см. шаг 2).
-> ```sql
-> CREATE USER lumenuser WITH PASSWORD 'lumenpass';
-> CREATE DATABASE lumenbridge OWNER lumenuser;
-> ```
+1. Установите Git:
+   - либо через Xcode Command Line Tools: `xcode-select --install`
+   - либо через Homebrew: `brew install git`
+2. Установите Node.js LTS:
+   - через официальный pkg: https://nodejs.org/en/download
+   - или через Homebrew: `brew install node`
+3. Установите Docker Desktop:
+   - https://www.docker.com/products/docker-desktop/
+4. Проверьте версии:
 
-### Шаг 2. Настроить и запустить backend
+```bash
+git --version
+node -v
+npm -v
+docker --version
+docker compose version
+```
+
+### Ubuntu / Debian
+
+#### Git и базовые пакеты
+
+```bash
+sudo apt update
+sudo apt install -y git curl ca-certificates gnupg
+```
+
+#### Node.js LTS
+
+Самый простой и безопасный путь для локальной разработки - через NodeSource:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+Проверка:
+
+```bash
+node -v
+npm -v
+```
+
+#### Docker Engine + Docker Compose plugin
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+echo   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Чтобы запускать Docker без `sudo`:
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+Проверка:
+
+```bash
+docker --version
+docker compose version
+```
+
+## 2. Клонирование репозитория
+
+```bash
+git clone <URL_ВАШЕГО_РЕПОЗИТОРИЯ>
+cd lumen-bridge-finance
+```
+
+Если репозиторий уже на машине, просто перейдите в его каталог.
+
+## 3. Структура проекта
+
+```text
+frontend/            Next.js приложение
+backend/             NestJS API + Prisma
+backend/prisma/      схема БД и миграции
+docker-compose.yml   локальный PostgreSQL
+AGENTS.md            зафиксированные правила проекта
+TASK.md              рабочее задание
+```
+
+## 4. Запуск проекта
+
+Ниже - полный путь от пустой БД до работающего интерфейса.
+
+### Шаг 1. Поднять PostgreSQL через Docker Compose
+
+Из корня проекта:
+
+```bash
+docker compose up -d
+```
+
+Проверить, что контейнер запущен:
+
+```bash
+docker compose ps
+```
+
+Ожидаемый контейнер: `lumenbridge-postgres`.
+
+Остановить БД:
+
+```bash
+docker compose down
+```
+
+Полностью удалить БД вместе с данными:
+
+```bash
+docker compose down -v
+```
+
+### Шаг 2. Настроить backend
+
+Перейдите в каталог backend:
 
 ```bash
 cd backend
-cp .env.example .env            # значения уже совпадают с docker-compose
-npm install
-npm run db:migrate              # применить миграции Prisma к БД
-npm run db:seed                 # создать тестовых admin и operator
-npm run start:dev               # backend на http://localhost:3001
 ```
 
-Базовый префикс API — `/api` (например, `http://localhost:3001/api/applications`).
-Если порт 3001 занят — измените `PORT` в `backend/.env`.
-
-`backend/.env` (создаётся из `.env.example`):
+Создайте `.env`:
 
 ```bash
+cp .env.example .env
+```
+
+Текущий рабочий `.env` для локального запуска:
+
+```env
 DATABASE_URL=postgresql://lumenuser:lumenpass@localhost:5432/lumenbridge
-JWT_SECRET=change-me-in-production
+JWT_SECRET=учебный-секрет-не-для-прода
 ADMIN_SEED_PASSWORD=admin123
 OPERATOR_SEED_PASSWORD=operator123
 PORT=3001
@@ -96,146 +203,214 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 ```
 
-### Шаг 3. Настроить и запустить frontend
+Установите зависимости и подготовьте БД:
 
-Во **втором терминале**:
+```bash
+npm install
+npm run db:migrate
+npm run db:seed
+```
+
+Запустите backend:
+
+```bash
+npm run start:dev
+```
+
+Backend будет доступен по адресу:
+
+```text
+http://localhost:3001/api
+```
+
+### Шаг 3. Настроить frontend
+
+Откройте второй терминал и перейдите в каталог frontend:
 
 ```bash
 cd frontend
-cp .env.local.example .env.local
-npm install
-npm run dev                     # frontend на http://localhost:3000
 ```
 
-`frontend/.env.local`:
+Создайте `.env.local`:
 
 ```bash
+cp .env.local.example .env.local
+```
+
+Содержимое:
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-### Шаг 4. Открыть приложение
-
-- Публичный сайт и калькулятор: **http://localhost:3000**
-- Вход клиента (OTP): **http://localhost:3000/login**
-- Вход персонала: **http://localhost:3000/admin/login**
-
-Оба сервера (backend на 3001 и frontend на 3000) должны работать одновременно:
-frontend ходит в backend по `NEXT_PUBLIC_API_URL`, а backend разрешает CORS с
-`FRONTEND_URL`.
-
-### Шпаргалка команд
+Установите зависимости и запустите frontend:
 
 ```bash
-# БД
-docker compose up -d            # поднять PostgreSQL
-docker compose down             # остановить
-
-# Backend (каталог backend/)
-npm run db:migrate              # миграции
-npm run db:seed                 # тестовые admin/operator
-npm run start:dev               # dev-режим (watch)
-npm run build && npm start      # прод-сборка
-
-# Frontend (каталог frontend/)
-npm run dev                     # dev-режим
-npm run build && npm start      # прод-сборка
+npm install
+npm run dev
 ```
 
----
+Frontend будет доступен по адресу:
 
-## Калькулятор — формула
-
-Используется аннуитетный платёж:
-
-```
-A = P × (r × (1 + r)^n) / ((1 + r)^n − 1)
-Total = A × n
+```text
+http://localhost:3000
 ```
 
-где `P` — сумма займа, `r = 0.008` (0,8 % в день), `n` — срок в днях.
-Результат пересчитывается мгновенно при движении ползунков, без задержки.
+## 5. Что должно работать после запуска
 
-Пример: `P = 5000`, `n = 14` → ежедневный платёж ≈ `378.94`, итого ≈ `5305.18`.
+Если всё поднялось корректно:
 
----
+- главная страница: `http://localhost:3000`
+- форма заявки: `http://localhost:3000/apply`
+- контакты: `http://localhost:3000/contacts`
+- вход клиента: `http://localhost:3000/login`
+- вход персонала: `http://localhost:3000/admin/login`
+- backend API: `http://localhost:3001/api`
 
-## Mock OTP-flow и тестовые учётные данные
+## 6. Тестовые учётные данные
 
-### Клиент — вход по телефону + OTP (mock)
+### Админ-панель
 
-Реальные SMS **не отправляются**. Flow:
+Создаются через `npm run db:seed`.
 
-1. На `/login` клиент вводит номер телефона в формате E.164 (например,
-   `+35312345678`) — подойдёт любой корректный номер.
-2. Backend генерирует 6-значный код и в режиме `NODE_ENV=development`
-   возвращает его прямо в ответе API.
-3. Код показывается в интерфейсе в **жёлтом учебном баннере**; клиент вводит
-   его вручную в поле OTP.
-4. После подтверждения выдаётся JWT, и клиент попадает в личный кабинет.
+- `admin` / `admin123`
+- `operator` / `operator123`
 
-Тот же mock-OTP используется при **подписании займа** в ЛК: при подписании
-фиксируются `signed_at`, IP и User-Agent.
+Вход: `http://localhost:3000/admin/login`
 
-> Отдельная регистрация не требуется — личный кабинет создаётся автоматически
-> при первом входе или при подаче заявки с нового номера.
+### Клиентский вход
 
-### Персонал — вход по логину и паролю
+Реальной SMS нет. Используется mock OTP-flow:
 
-Тестовые учётные записи создаются командой `npm run db:seed`:
+1. Откройте `http://localhost:3000/login`
+2. Введите любой телефон в формате E.164, например `+35312345678`
+3. Backend вернёт тестовый OTP-код
+4. Код отображается в интерфейсе учебным баннером
+5. После подтверждения откроется личный кабинет
 
-| Логин | Пароль | Роль | Возможности |
-|---|---|---|---|
-| `admin` | `admin123` | `admin` | Всё, что у оператора, **плюс** фиксация фактических платежей и закрытие займов |
-| `operator` | `operator123` | `operator` | Заявки, смена статусов, подтверждение/отклонение заявок на оплату |
+Та же схема используется для подписания займа.
 
-Вход для персонала — **`/admin/login`**. Пароли задаются переменными
-`ADMIN_SEED_PASSWORD` / `OPERATOR_SEED_PASSWORD` в `backend/.env`.
+## 7. Бизнес-ветка в текущем MVP
 
----
+Сейчас бизнес-заявки не создают реальный займ в системе.
 
-## Ключевые маршруты
+Что работает:
 
-**Публичные:** `/` (главная + калькулятор), `/how-it-works`, `/business`,
-`/faq`, `/contacts`, `/apply` (форма заявки), юридические страницы
-(`/privacy`, `/cookies`, `/terms`, `/credit-policy`, `/aml-kyc`).
+- форма для бизнеса доступна на `/apply`;
+- заявка для бизнеса уходит в mock feedback flow;
+- запрос принимается как обращение через `/contact-requests`.
 
-**Личный кабинет** (`/cabinet/*`, требует входа): `applications`, `loans`,
-`loans/:id` (подписание + график + заявка на оплату), `notifications`.
+Что не работает намеренно:
 
-**Админ-панель** (`/admin/*`, требует входа персонала): `applications`,
-`clients`, `loans`, `payments`, `notifications`.
+- отдельный онлайн-кабинет для бизнеса;
+- полный жизненный цикл бизнес-займа.
 
----
+## 8. Полезные команды
 
-## Сценарий работы (end-to-end)
+### Docker
 
-1. Клиент рассчитывает условия в калькуляторе и подаёт заявку (`/apply`).
-2. Оператор видит заявку в админ-панели, берёт в работу и одобряет —
-   автоматически создаётся займ в статусе «ожидает подписания».
-3. Клиент входит в ЛК, подписывает займ через mock-OTP — фиксируются
-   `signed_at`, IP и User-Agent, формируется график ежедневных платежей.
-4. Клиент отправляет заявку на оплату с реквизитами.
-5. Оператор подтверждает заявку; администратор фиксирует фактический платёж —
-   график пересчитывается, при полном погашении займ закрывается, клиенту
-   приходит уведомление.
+```bash
+docker compose up -d
+docker compose ps
+docker compose down
+docker compose down -v
+```
 
----
+### Backend
 
-## Известные ограничения (mock)
+```bash
+cd backend
+npm install
+npm run db:migrate
+npm run db:seed
+npm run start:dev
+npm run build
+npm test
+```
 
-- **SMS не отправляется** — код OTP виден в интерфейсе (только в dev).
-- **Реальные платежи не проводятся**; договор — учебная заглушка.
-- **Скоринг не реализован** — заявки одобряются/отклоняются вручную оператором.
-- Тестовые данные не содержат реальных персональных данных.
-- Не подключены внешние провайдеры (SMS-шлюзы, платёжные системы, скоринг-API).
+### Frontend
 
----
+```bash
+cd frontend
+npm install
+npm run dev
+npm run build
+```
 
-## Возможные проблемы
+## 9. Частые проблемы
 
-| Симптом | Решение |
-|---|---|
-| `P1001: Can't reach database` при `db:migrate` | БД не поднята — выполните `docker compose up -d` и дождитесь статуса healthy |
-| `EADDRINUSE :3001` | Порт занят прошлым процессом: `lsof -i:3001 -t \| xargs kill -9` |
-| Frontend не видит API / CORS-ошибка | Проверьте, что backend запущен и `NEXT_PUBLIC_API_URL` совпадает с его адресом |
-| Вход персонала не работает | Не выполнен `npm run db:seed` — создайте тестовые учётные записи |
+### `docker: command not found`
+Docker не установлен или не добавлен в PATH.
+
+### `docker compose` не работает
+Установлен старый Docker без Compose plugin. Нужен именно `docker compose version`.
+
+### `P1001: Can't reach database server`
+PostgreSQL не поднят. Выполните:
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+### `EADDRINUSE: address already in use :::3000` или `:::3001`
+Порт уже занят другим процессом. Освободите порт или поменяйте его в `.env` / `.env.local`.
+
+### Frontend не видит backend
+Проверьте:
+
+- backend реально запущен;
+- `frontend/.env.local` содержит `NEXT_PUBLIC_API_URL=http://localhost:3001`;
+- `backend/.env` содержит `FRONTEND_URL=http://localhost:3000`.
+
+### Не получается войти в админку
+Скорее всего не выполнен сид:
+
+```bash
+cd backend
+npm run db:seed
+```
+
+## 10. Проверка production-сборки локально
+
+Backend:
+
+```bash
+cd backend
+npm run build
+npm run start
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+## 11. Кратко про стек
+
+- Frontend: Next.js 14, TypeScript, React Hook Form, Valibot
+- Backend: NestJS, TypeScript
+- База данных: PostgreSQL 16
+- ORM: Prisma
+- Авторизация: JWT, mock OTP
+
+## 12. Важно про данные
+
+Для локальной разработки база данных хранится в Docker volume `postgres_data`.
+Если вы хотите полностью обнулить состояние проекта, выполните:
+
+```bash
+docker compose down -v
+```
+
+После этого заново:
+
+```bash
+docker compose up -d
+cd backend
+npm run db:migrate
+npm run db:seed
+```
