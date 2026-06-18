@@ -2,6 +2,7 @@
 
 import type { InputHTMLAttributes } from 'react';
 import { Suspense, useEffect, useMemo, useState } from 'react';
+import { CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useForm, type UseFormRegisterReturn } from 'react-hook-form';
@@ -122,24 +123,43 @@ function InputField({
           </button>
         )}
       </div>
-      <input
-        {...registration}
-        {...props}
-        className={props.type === 'date' ? 'lb-date-input' : undefined}
-        readOnly={locked || props.readOnly}
-        style={{
-          width: '100%',
-          border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--line-soft)' : 'var(--line-strong)'}`,
-          borderRadius: '8px',
-          padding: '10px 14px',
-          fontSize: '1rem',
-          color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
-          background: 'var(--surface-2)',
-          boxSizing: 'border-box',
-          outline: 'none',
-          cursor: locked ? 'not-allowed' : 'text',
-        }}
-      />
+      <div style={{ position: 'relative' }}>
+        <input
+          {...registration}
+          {...props}
+          className={props.type === 'date' ? 'lb-date-input' : undefined}
+          readOnly={locked || props.readOnly}
+          style={{
+            width: '100%',
+            border: `1.5px solid ${error ? 'var(--accent-crimson)' : locked ? 'var(--line-soft)' : 'var(--line-strong)'}`,
+            borderRadius: '8px',
+            padding: props.type === 'date' ? '10px 44px 10px 14px' : '10px 14px',
+            fontSize: '1rem',
+            color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
+            background: 'var(--surface-2)',
+            boxSizing: 'border-box',
+            outline: 'none',
+            cursor: locked ? 'not-allowed' : 'text',
+          }}
+        />
+        {props.type === 'date' && (
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              right: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: locked ? 'var(--text-secondary)' : 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <CalendarDays size={18} strokeWidth={1.8} />
+          </span>
+        )}
+      </div>
       {hint && !error && !locked && (
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '3px' }}>{hint}</p>
       )}
