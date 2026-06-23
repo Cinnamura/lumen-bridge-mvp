@@ -29,7 +29,8 @@ export function middleware(req: NextRequest) {
     if (!admin?.value) {
       const url = req.nextUrl.clone();
       url.pathname = '/admin/login';
-      url.searchParams.set('from', pathname);
+      const safeFrom = (pathname === '/admin' || pathname === '/admin/') ? '/admin/applications' : pathname;
+      url.searchParams.set('from', safeFrom);
       return NextResponse.redirect(url);
     }
   }
